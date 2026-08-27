@@ -83,6 +83,15 @@ class AppRouter {
     // Update User Avatar and Name in Header/Sidebar
     this.syncUserUI();
 
+    // Route Guards (Protection des routes d'écriture privées)
+    const isAuth = this.store.state.isAuthenticated;
+    const protectedRoutes = ['/create'];
+    if (protectedRoutes.includes(pathPart) && !isAuth) {
+      Toast.show('Veuillez vous connecter pour accéder au Studio d\'Écriture ✍️', 'warning', '🔒');
+      this.navigate('/auth?mode=login');
+      return;
+    }
+
     // Route matching
     if (pathPart === '/' || pathPart === '') {
       this.renderView(this.routes['/'], queryObj);

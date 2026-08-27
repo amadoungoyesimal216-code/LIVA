@@ -1,6 +1,7 @@
 // LIVA - Espace Créateur / Studio Auteur (CreateView)
 import { Toast } from '../components/Toast.js';
 import { GENRES_DATA } from '../data/genres.js';
+import { escapeHTML } from '../utils/sanitize.js';
 
 export class CreateView {
   constructor(store, router) {
@@ -115,7 +116,7 @@ export class CreateView {
     return filtered.map(story => `
       <div class="authored-story-card" data-story-id="${story.id}">
         <div class="authored-story-cover">
-          <img src="${story.cover}" alt="${story.title}" />
+          <img src="${story.cover}" alt="${escapeHTML(story.title)}" />
         </div>
 
         <div class="authored-story-info">
@@ -123,12 +124,12 @@ export class CreateView {
             <span class="badge ${story.status === 'published' ? 'badge-primary' : 'badge-gold'}">
               ${story.status === 'published' ? '● Publiée' : '⚡ Brouillon'}
             </span>
-            <span style="font-size: 0.78rem; color: var(--text-muted);">${story.genre}</span>
+            <span style="font-size: 0.78rem; color: var(--text-muted);">${escapeHTML(story.genre)}</span>
           </div>
 
-          <h3 class="authored-story-title">${story.title}</h3>
+          <h3 class="authored-story-title">${escapeHTML(story.title)}</h3>
           <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;">
-            ${story.description || 'Aucune description...'}
+            ${escapeHTML(story.description || 'Aucune description...')}
           </p>
 
           <div class="authored-story-stats">

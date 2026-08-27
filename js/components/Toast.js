@@ -1,4 +1,6 @@
 // LIVA - Système de Toast Notifications
+import { escapeHTML } from '../utils/sanitize.js';
+
 export class Toast {
   static container = null;
 
@@ -21,8 +23,8 @@ export class Toast {
     const toast = document.createElement('div');
     toast.className = `toast-item toast-${type}`;
     toast.innerHTML = `
-      <span style="font-size: 1.2rem;">${icon}</span>
-      <span>${message}</span>
+      <span style="font-size: 1.2rem;">${escapeHTML(icon)}</span>
+      <span>${escapeHTML(message)}</span>
     `;
 
     this.container.appendChild(toast);

@@ -8,6 +8,8 @@ export class AuthView {
     this.router = router;
     this.activeTab = 'login'; // 'login' | 'register'
     this.selectedRegisterGenres = ['romance', 'african', 'thriller'];
+    this.failedAttempts = 0;
+    this.lockoutUntil = 0;
   }
 
   render(params = {}) {
@@ -384,6 +386,13 @@ export class AuthView {
   }
 
   handleLogin() {
+    // Brute-force lockout check
+    if (this.lockoutUntil && Date.now() < this.lockoutUntil) {
+      const remainingSec = Math.ceil((this.lockoutUntil - Date.now()) / 1000);
+      Toast.show(`Compte temporairement verrouillé. Veuillez patienter ${remainingSec}s.`, 'error', '⏳', 4000);
+      return;
+    }
+
     const identInput = this.container.querySelector('#login-identifier');
     const pwdInput = this.container.querySelector('#login-password');
 
@@ -397,11 +406,21 @@ export class AuthView {
 
     const success = this.store.login(identifier, password);
     if (success) {
+      this.failedAttempts = 0;
+      this.lockoutUntil = 0;
       const user = this.store.state.user;
       Toast.show(`Heureux de vous revoir, ${user.name} ! ✨`, 'success', '🎉');
       this.router.navigate('/profile');
     } else {
-      Toast.show('Identifiant ou mot de passe incorrect.', 'error', '❌');
+      this.failedAttempts += 1;
+      if (this.failedAttempts >= 5) {
+        this.lockoutUntil = Date.now() + 30000; // 30s lockout
+        this.failedAttempts = 0;
+        Toast.show('5 tentatives infructueuses. Accès temporairement bloqué pendant 30 secondes.', 'error', '🔒', 4500);
+      } else {
+        const triesLeft = 5 - this.failedAttempts;
+        Toast.show(`Identifiant ou mot de passe incorrect (${triesLeft} tentative(s) restante(s)).`, 'error', '❌');
+      }
     }
   }
 

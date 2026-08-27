@@ -1,6 +1,7 @@
 // LIVA - Page Profil Utilisateur & Profil Auteur Public (ProfileView)
 import { StoryCard } from '../components/StoryCard.js';
 import { Toast } from '../components/Toast.js';
+import { escapeHTML } from '../utils/sanitize.js';
 
 export class ProfileView {
   constructor(store, router) {
@@ -59,14 +60,14 @@ export class ProfileView {
         <!-- 1. Hero du Profil Lecteur -->
         <section class="profile-hero-card">
           <div class="profile-avatar-wrap">
-            <img src="${user.avatar}" alt="${user.name}" class="profile-avatar-img" />
+            <img src="${user.avatar}" alt="${escapeHTML(user.name)}" class="profile-avatar-img" />
           </div>
 
           <div class="profile-info">
             <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: var(--space-2);">
               <div>
-                <h1 class="profile-name">${user.name}</h1>
-                <span class="profile-handle">${user.username}</span>
+                <h1 class="profile-name">${escapeHTML(user.name)}</h1>
+                <span class="profile-handle">${escapeHTML(user.username)}</span>
               </div>
               <div class="profile-header-actions">
                 <button class="btn btn-secondary btn-sm" id="btn-edit-bio">
@@ -78,7 +79,7 @@ export class ProfileView {
               </div>
             </div>
 
-            <p class="profile-bio">${user.bio}</p>
+            <p class="profile-bio">${escapeHTML(user.bio)}</p>
 
             <!-- Statistiques de lecture -->
             <div class="profile-stats-row">
@@ -166,7 +167,7 @@ export class ProfileView {
                   <h1 style="font-size: 1.8rem; font-weight: 900; color: var(--text-primary);">${author.name}</h1>
                   ${author.verified ? `<span class="badge badge-primary" style="font-size: 0.75rem;">✓ Auteur Vérifié</span>` : ''}
                 </div>
-                <span style="font-size: 0.9rem; color: var(--color-primary-light); font-weight: 600;">${author.username}</span>
+                <span style="font-size: 0.9rem; color: var(--color-primary-light); font-weight: 600;">${escapeHTML(author.username)}</span>
               </div>
             </div>
 
@@ -176,7 +177,7 @@ export class ProfileView {
           </div>
 
           <p style="font-size: 1rem; color: var(--text-secondary); line-height: 1.6; max-width: 800px; margin-top: var(--space-3);">
-            ${author.bio}
+            ${escapeHTML(author.bio)}
           </p>
 
           <div style="display: flex; flex-wrap: wrap; gap: var(--space-4); padding-top: var(--space-3); border-top: 1px solid var(--border-subtle);">
@@ -204,7 +205,7 @@ export class ProfileView {
           <div class="section-header">
             <div class="section-title-wrap">
               <h2 class="section-title">Ses Histoires 📖</h2>
-              <span class="section-subtitle">Découvrez tous les récits de ${author.name}</span>
+              <span class="section-subtitle">Découvrez tous les récits de ${escapeHTML(author.name)}</span>
             </div>
           </div>
 

@@ -1,5 +1,6 @@
 // LIVA - Page d'Histoire Détaillée (StoryView)
 import { Toast } from '../components/Toast.js';
+import { escapeHTML } from '../utils/sanitize.js';
 
 export class StoryView {
   constructor(store, router) {
@@ -175,16 +176,16 @@ export class StoryView {
           <div class="comments-stream" id="comments-stream-list">
             ${(story.reviews || []).map(rev => `
               <div class="comment-card" data-comment-id="${rev.id}">
-                <img src="${rev.userAvatar}" alt="${rev.userName}" class="avatar avatar-md" />
+                <img src="${rev.userAvatar}" alt="${escapeHTML(rev.userName)}" class="avatar avatar-md" />
                 <div class="comment-body">
                   <div class="comment-header-row">
                     <div style="display: flex; align-items: center; gap: var(--space-2);">
-                      <span class="comment-author-name">${rev.userName}</span>
+                      <span class="comment-author-name">${escapeHTML(rev.userName)}</span>
                       <span style="color: var(--color-accent-gold); font-size: 0.8rem;">${'⭐'.repeat(rev.rating || 5)}</span>
                     </div>
-                    <span class="comment-date">${rev.date}</span>
+                    <span class="comment-date">${escapeHTML(rev.date)}</span>
                   </div>
-                  <p class="comment-text">${rev.content}</p>
+                  <p class="comment-text">${escapeHTML(rev.content)}</p>
                   <div class="comment-footer-actions">
                     <button class="comment-action-btn ${rev.isLiked ? 'active' : ''} btn-like-comment" data-comment-id="${rev.id}">
                       ❤️ <span>${rev.likes || 0}</span>
@@ -340,16 +341,16 @@ export class StoryView {
           const card = document.createElement('div');
           card.className = 'comment-card animate-fade-in';
           card.innerHTML = `
-            <img src="${newComment.userAvatar}" alt="${newComment.userName}" class="avatar avatar-md" />
+            <img src="${newComment.userAvatar}" alt="${escapeHTML(newComment.userName)}" class="avatar avatar-md" />
             <div class="comment-body">
               <div class="comment-header-row">
                 <div style="display: flex; align-items: center; gap: var(--space-2);">
-                  <span class="comment-author-name">${newComment.userName}</span>
+                  <span class="comment-author-name">${escapeHTML(newComment.userName)}</span>
                   <span style="color: var(--color-accent-gold); font-size: 0.8rem;">${'⭐'.repeat(newComment.rating)}</span>
                 </div>
                 <span class="comment-date">À l'instant</span>
               </div>
-              <p class="comment-text">${newComment.content}</p>
+              <p class="comment-text">${escapeHTML(newComment.content)}</p>
               <div class="comment-footer-actions">
                 <button class="comment-action-btn btn-like-comment" data-comment-id="${newComment.id}">
                   ❤️ <span>0</span>
@@ -438,10 +439,10 @@ export class StoryView {
           replyItem.style.fontSize = '0.85rem';
           replyItem.innerHTML = `
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
-              <span style="font-weight: 700;">${this.store.state.user.name}</span>
+              <span style="font-weight: 700;">${escapeHTML(this.store.state.user.name)}</span>
               <span style="font-size: 0.72rem; color: var(--text-muted);">À l'instant</span>
             </div>
-            <p style="color: var(--text-secondary);">${replyText}</p>
+            <p style="color: var(--text-secondary);">${escapeHTML(replyText)}</p>
           `;
           subList.appendChild(replyItem);
           replyBox.remove();
