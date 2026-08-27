@@ -34,10 +34,10 @@ export class CreateView {
       return String(n);
     };
 
-    const readsTrend = totalReadsCount > 0 ? '↑ En progression' : 'Commencez à publier';
-    const likesTrend = totalLikesCount > 0 ? '↑ Avis positifs' : '0 appréciation';
-    const commentsTrend = totalCommentsCount > 0 ? `↑ ${totalCommentsCount} avis` : '0 nouvel avis';
-    const followersTrend = userFollowersCount > 0 ? `+${userFollowersCount} lecteur(s)` : '0 abonné';
+    const readsTrend = totalReadsCount > 0 ? '↑ En progression' : 'Total cumulé';
+    const likesTrend = totalLikesCount > 0 ? '↑ Avis positifs' : 'Cœurs reçus';
+    const commentsTrend = totalCommentsCount > 0 ? `↑ +${totalCommentsCount}` : 'Avis lecteurs';
+    const followersTrend = userFollowersCount > 0 ? `↑ +${userFollowersCount}` : 'Lecteurs fidèles';
 
     return `
       <div class="author-studio-view page-container animate-fade-in">
@@ -57,7 +57,7 @@ export class CreateView {
         <div class="studio-metrics-grid">
           <div class="metric-card">
             <div class="metric-card-top">
-              <span class="metric-card-label">Lectures totales</span>
+              <span class="metric-card-label">Lectures</span>
               <span class="metric-card-icon">👁️</span>
             </div>
             <div class="metric-card-value">${formatNum(totalReadsCount)}</div>
@@ -75,7 +75,7 @@ export class CreateView {
 
           <div class="metric-card">
             <div class="metric-card-top">
-              <span class="metric-card-label">Commentaires reçus</span>
+              <span class="metric-card-label">Commentaires</span>
               <span class="metric-card-icon">💬</span>
             </div>
             <div class="metric-card-value">${formatNum(totalCommentsCount)}</div>
@@ -84,10 +84,10 @@ export class CreateView {
 
           <div class="metric-card">
             <div class="metric-card-top">
-              <span class="metric-card-label">Nouveaux Abonnés</span>
+              <span class="metric-card-label">Abonnés</span>
               <span class="metric-card-icon">👥</span>
             </div>
-            <div class="metric-card-value">${userFollowersCount > 0 ? '+' + formatNum(userFollowersCount) : '0'}</div>
+            <div class="metric-card-value">${formatNum(userFollowersCount)}</div>
             <div class="metric-card-trend trend-up">${followersTrend}</div>
           </div>
         </div>
