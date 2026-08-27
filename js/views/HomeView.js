@@ -7,6 +7,7 @@ export class HomeView {
   constructor(store, router) {
     this.store = store;
     this.router = router;
+    this.selectedGenre = 'all';
   }
 
   render() {
@@ -21,6 +22,11 @@ export class HomeView {
       : this.store.getAllStories().slice(0, 6);
     const isHeroSaved = this.store.isSaved(heroStory.id);
 
+    const initialGenreObj = GENRES_DATA.find(g => g.id === this.selectedGenre);
+    const initialGenreStories = this.selectedGenre === 'all' 
+      ? [] 
+      : this.store.getStoriesByGenre(this.selectedGenre);
+
     return `
       <div class="home-view page-container animate-fade-in">
         
@@ -33,13 +39,28 @@ export class HomeView {
           <h1 class="home-greeting-title">Qu'avez-vous envie de lire aujourd'hui ?</h1>
           
           <div class="genre-chips-carousel hide-scrollbar" id="home-genre-chips">
-            <button class="genre-chip active" data-genre-id="all">✨ Tout explorer</button>
+            <button class="genre-chip ${this.selectedGenre === 'all' ? 'active' : ''}" data-genre-id="all">✨ Tout explorer</button>
             ${GENRES_DATA.map(g => `
-              <button class="genre-chip" data-genre-id="${g.id}">
+              <button class="genre-chip ${this.selectedGenre === g.id ? 'active' : ''}" data-genre-id="${g.id}">
                 <span>${g.icon}</span>
                 <span>${g.name}</span>
               </button>
             `).join('')}
+          </div>
+        </section>
+
+        <!-- 1.bis Section Dynamique : Histoires filtrées par Genre sur l'Accueil -->
+        <section id="home-genre-stories-section" class="home-genre-stories-section animate-fade-in" style="${this.selectedGenre === 'all' ? 'display: none;' : ''}; margin-bottom: var(--space-6);">
+          <div class="section-header">
+            <div class="section-title-wrap">
+              <h2 class="section-title" id="home-genre-section-title">${initialGenreObj ? `${initialGenreObj.name} ${initialGenreObj.icon}` : 'Histoires'}</h2>
+              <span class="section-subtitle" id="home-genre-section-subtitle">${initialGenreObj?.description || 'Sélection personnalisée par genre'}</span>
+            </div>
+            <a href="#/explore${this.selectedGenre !== 'all' ? `?genre=${this.selectedGenre}` : ''}" class="section-link" id="home-genre-section-link">Tout voir dans Explorer →</a>
+          </div>
+
+          <div class="stories-horizontal-scroll hide-scrollbar" id="home-genre-stories-container">
+            ${initialGenreStories.map(story => StoryCard.renderVertical(story, this.store)).join('')}
           </div>
         </section>
 
@@ -165,15 +186,47 @@ export class HomeView {
   }
 
   attachEvents(container) {
-    // Genre chips filter
+    // Genre chips filter - Filtrage dynamique direct sur l'Accueil sans redirection
     container.querySelectorAll('#home-genre-chips .genre-chip').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const genreId = e.currentTarget.getAttribute('data-genre-id');
+        this.selectedGenre = genreId;
+
         container.querySelectorAll('#home-genre-chips .genre-chip').forEach(c => c.classList.remove('active'));
         e.currentTarget.classList.add('active');
 
-        if (genreId !== 'all') {
-          this.router.navigate(`/explore?genre=${genreId}`);
+        const genreSection = container.querySelector('#home-genre-stories-section');
+        const genreTitle = container.querySelector('#home-genre-section-title');
+        const genreSubtitle = container.querySelector('#home-genre-section-subtitle');
+        const genreLink = container.querySelector('#home-genre-section-link');
+        const genreContainer = container.querySelector('#home-genre-stories-container');
+
+        if (genreId === 'all') {
+          if (genreSection) genreSection.style.display = 'none';
+        } else {
+          const gObj = GENRES_DATA.find(g => g.id === genreId);
+          const stories = this.store.getStoriesByGenre(genreId);
+
+          if (genreTitle) genreTitle.textContent = `${gObj ? gObj.name : genreId} ${gObj?.icon || '✨'}`;
+          if (genreSubtitle) genreSubtitle.textContent = gObj?.description || `Sélection d'histoires dans la catégorie ${gObj ? gObj.name : genreId}`;
+          if (genreLink) genreLink.setAttribute('href', `#/explore?genre=${genreId}`);
+
+          if (genreContainer) {
+            if (stories.length > 0) {
+              genreContainer.innerHTML = stories.map(story => StoryCard.renderVertical(story, this.store)).join('');
+            } else {
+              genreContainer.innerHTML = `<div style="padding: var(--space-6); color: var(--text-muted); font-size: 0.9rem;">Aucune histoire trouvée pour ce genre actuellement. D'autres récits arrivent bientôt !</div>`;
+            }
+          }
+
+          if (genreSection) {
+            genreSection.style.display = 'block';
+            genreSection.classList.remove('animate-fade-in');
+            void genreSection.offsetWidth; // trigger reflow
+            genreSection.classList.add('animate-fade-in');
+            genreSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            this.bindCardClicks(genreSection);
+          }
         }
       });
     });

@@ -264,13 +264,32 @@ class AppStore {
 
   getStoriesByGenre(genreId) {
     if (!genreId || genreId === 'all') return this.stories;
-    const gObj = this.genres.find(g => g.id === genreId);
+    const gObj = this.genres.find(g => g.id === genreId.toLowerCase());
     const gName = gObj ? gObj.name.toLowerCase() : genreId.toLowerCase();
-    return this.stories.filter(s => 
-      s.genre.toLowerCase() === gName || 
-      (s.secondaryGenre && s.secondaryGenre.toLowerCase() === gName) ||
-      (s.tags && s.tags.some(t => t.toLowerCase() === gName))
-    );
+    const gId = genreId.toLowerCase();
+
+    return this.stories.filter(s => {
+      const storyGenre = (s.genre || '').toLowerCase();
+      const storySecGenre = (s.secondaryGenre || '').toLowerCase();
+      const storyTags = (s.tags || []).map(t => t.toLowerCase());
+
+      return storyGenre === gName ||
+             storyGenre === gId ||
+             storySecGenre === gName ||
+             storySecGenre === gId ||
+             storyTags.includes(gName) ||
+             storyTags.includes(gId) ||
+             (gId === 'african' && (storyGenre.includes('afric') || storySecGenre.includes('afric') || storyTags.some(t => t.includes('afric')))) ||
+             (gId === 'fantasy' && (storyGenre.includes('fanta') || storySecGenre.includes('fanta') || storyTags.some(t => t.includes('fanta')))) ||
+             (gId === 'horror' && (storyGenre.includes('horr') || storySecGenre.includes('horr') || storyTags.some(t => t.includes('horr')))) ||
+             (gId === 'tales' && (storyGenre.includes('conte') || storySecGenre.includes('conte') || storyTags.some(t => t.includes('conte') || t.includes('légende')))) ||
+             (gId === 'scifi' && (storyGenre.includes('sci') || storySecGenre.includes('sci') || storyTags.some(t => t.includes('sci')))) ||
+             (gId === 'romance' && (storyGenre.includes('roman') || storySecGenre.includes('roman') || storyTags.some(t => t.includes('roman')))) ||
+             (gId === 'thriller' && (storyGenre.includes('thrill') || storySecGenre.includes('thrill') || storyTags.some(t => t.includes('thrill') || t.includes('suspense')))) ||
+             (gId === 'mystery' && (storyGenre.includes('myst') || storySecGenre.includes('myst') || storyTags.some(t => t.includes('myst')))) ||
+             (gId === 'drama' && (storyGenre.includes('dram') || storySecGenre.includes('dram') || storyTags.some(t => t.includes('dram')))) ||
+             (gId === 'humor' && (storyGenre.includes('humour') || storySecGenre.includes('humour') || storyTags.some(t => t.includes('humour'))));
+    });
   }
 
   getRecommendedStories(limit = 6) {
