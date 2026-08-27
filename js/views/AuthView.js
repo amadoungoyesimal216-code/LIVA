@@ -385,7 +385,7 @@ export class AuthView {
     });
   }
 
-  handleLogin() {
+  async handleLogin() {
     // Brute-force lockout check
     if (this.lockoutUntil && Date.now() < this.lockoutUntil) {
       const remainingSec = Math.ceil((this.lockoutUntil - Date.now()) / 1000);
@@ -404,12 +404,25 @@ export class AuthView {
       return;
     }
 
-    const success = this.store.login(identifier, password);
-    if (success) {
+    const submitBtn = this.container.querySelector('#btn-submit-login');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Connexion en cours...';
+    }
+
+    const result = await this.store.login(identifier, password);
+
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Se connecter ✨';
+    }
+
+    if (result && result.success) {
       this.failedAttempts = 0;
       this.lockoutUntil = 0;
       const user = this.store.state.user;
       Toast.show(`Heureux de vous revoir, ${user.name} ! ✨`, 'success', '🎉');
+      this.router.syncUserUI();
       this.router.navigate('/profile');
     } else {
       this.failedAttempts += 1;
@@ -419,12 +432,12 @@ export class AuthView {
         Toast.show('5 tentatives infructueuses. Accès temporairement bloqué pendant 30 secondes.', 'error', '🔒', 4500);
       } else {
         const triesLeft = 5 - this.failedAttempts;
-        Toast.show(`Identifiant ou mot de passe incorrect (${triesLeft} tentative(s) restante(s)).`, 'error', '❌');
+        Toast.show(result?.error || `Identifiant ou mot de passe incorrect (${triesLeft} tentative(s) restante(s)).`, 'error', '❌');
       }
     }
   }
 
-  handleRegister() {
+  async handleRegister() {
     const nameInput = this.container.querySelector('#reg-fullname');
     const emailInput = this.container.querySelector('#reg-email');
     const pwdInput = this.container.querySelector('#reg-password');
@@ -457,9 +470,15 @@ export class AuthView {
       return;
     }
 
+    const submitBtn = this.container.querySelector('#btn-submit-register');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Création du compte...';
+    }
+
     const username = '@' + name.toLowerCase().replace(/[^a-z0-9]/g, '_').substring(0, 15);
 
-    this.store.register({
+    const result = await this.store.register({
       name,
       username,
       email,
@@ -467,7 +486,17 @@ export class AuthView {
       favoriteGenres: this.selectedRegisterGenres.length > 0 ? this.selectedRegisterGenres : ['romance', 'african']
     });
 
-    Toast.show(`Bienvenue dans la communauté Liva, ${name} ! 🌟`, 'success', '🚀', 3500);
-    this.router.navigate('/profile');
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Créer mon compte 🚀';
+    }
+
+    if (result && result.success) {
+      Toast.show(`Bienvenue dans la communauté Liva, ${name} ! 🌟`, 'success', '🚀', 3500);
+      this.router.syncUserUI();
+      this.router.navigate('/profile');
+    } else {
+      Toast.show(result?.error || 'Erreur lors de la création du compte.', 'error', '❌');
+    }
   }
 }

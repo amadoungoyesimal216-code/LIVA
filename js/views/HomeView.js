@@ -14,7 +14,11 @@ export class HomeView {
     const recommendedStories = this.store.getRecommendedStories(6);
     const trendingStories = this.store.getTrendingStories();
     const shortsStories = this.store.getShorts();
-    const romanceStories = this.store.getAllStories().filter(s => s.genre === 'Romance' || s.secondaryGenre === 'Romance');
+    const userFavGenres = this.store.state.user.favoriteGenres || [];
+    const targetGenre = userFavGenres.length > 0 ? userFavGenres[0] : null;
+    const curatedStories = targetGenre 
+      ? this.store.getStoriesByGenre(targetGenre)
+      : this.store.getAllStories().slice(0, 6);
     const isHeroSaved = this.store.isSaved(heroStory.id);
 
     return `
@@ -141,18 +145,18 @@ export class HomeView {
           </div>
         </section>
 
-        <!-- 6. Section "Parce que vous aimez la romance ❤️" -->
+        <!-- 6. Section Découverte ou Genre Favori -->
         <section>
           <div class="section-header">
             <div class="section-title-wrap">
-              <h2 class="section-title">Parce que vous aimez la romance ❤️</h2>
-              <span class="section-subtitle">Passions intenses, secrets et coups de foudre</span>
+              <h2 class="section-title">${targetGenre ? `Parce que vous aimez ${targetGenre} ✨` : 'Découvrez vos prochaines histoires ✨'}</h2>
+              <span class="section-subtitle">${targetGenre ? 'Sélection spéciale adaptée à vos préférences' : 'Récits sélectionnés par la rédaction de Liva'}</span>
             </div>
-            <a href="#/explore?genre=romance" class="section-link">Explorer le genre →</a>
+            <a href="#/explore${targetGenre ? `?genre=${targetGenre.toLowerCase()}` : ''}" class="section-link">Explorer →</a>
           </div>
 
           <div class="stories-horizontal-scroll hide-scrollbar">
-            ${romanceStories.map(story => StoryCard.renderVertical(story, this.store)).join('')}
+            ${curatedStories.map(story => StoryCard.renderVertical(story, this.store)).join('')}
           </div>
         </section>
 

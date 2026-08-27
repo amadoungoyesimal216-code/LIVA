@@ -1,22 +1,22 @@
 // LIVA - Application Principale & Routeur SPA
-import { store } from './state/store.js?v=6';
-import { ThemeManager } from './features/themeManager.js?v=6';
-import { AudioPlayer } from './features/audioPlayer.js?v=6';
-import { Toast } from './components/Toast.js?v=6';
-import { Modal } from './components/Modal.js?v=6';
-import { GENRES_DATA } from './data/genres.js?v=6';
+import { store } from './state/store.js?v=7';
+import { ThemeManager } from './features/themeManager.js?v=7';
+import { AudioPlayer } from './features/audioPlayer.js?v=7';
+import { Toast } from './components/Toast.js?v=7';
+import { Modal } from './components/Modal.js?v=7';
+import { GENRES_DATA } from './data/genres.js?v=7';
 
 // Views
-import { HomeView } from './views/HomeView.js?v=6';
-import { ExploreView } from './views/ExploreView.js?v=6';
-import { StoryView } from './views/StoryView.js?v=6';
-import { ReaderView } from './views/ReaderView.js?v=6';
-import { LibraryView } from './views/LibraryView.js?v=6';
-import { CreateView } from './views/CreateView.js?v=6';
-import { ProfileView } from './views/ProfileView.js?v=6';
-import { SwipeView } from './views/SwipeView.js?v=6';
-import { OnboardingView } from './views/OnboardingView.js?v=6';
-import { AuthView } from './views/AuthView.js?v=6';
+import { HomeView } from './views/HomeView.js?v=7';
+import { ExploreView } from './views/ExploreView.js?v=7';
+import { StoryView } from './views/StoryView.js?v=7';
+import { ReaderView } from './views/ReaderView.js?v=7';
+import { LibraryView } from './views/LibraryView.js?v=7';
+import { CreateView } from './views/CreateView.js?v=7';
+import { ProfileView } from './views/ProfileView.js?v=7';
+import { SwipeView } from './views/SwipeView.js?v=7';
+import { OnboardingView } from './views/OnboardingView.js?v=7';
+import { AuthView } from './views/AuthView.js?v=7';
 
 class AppRouter {
   constructor(store) {
@@ -200,15 +200,23 @@ function initApp() {
   });
 
   // Global Logout Action
-  document.addEventListener('click', (e) => {
+  document.addEventListener('click', async (e) => {
     const logoutBtn = e.target.closest('[data-action="logout"]');
     if (logoutBtn) {
       e.preventDefault();
       e.stopPropagation();
-      store.logout();
+      await store.logout();
       Toast.show('Vous avez été déconnecté avec succès. À bientôt !', 'info', '👋', 3000);
       router.syncUserUI();
       router.navigate('/auth?mode=login');
+    }
+  });
+
+  // Subscribe to store events (Auth & Cloud Sync)
+  store.subscribe((state, changeType) => {
+    router.syncUserUI();
+    if (changeType === 'USER_DATA_LOADED' || changeType === 'SUPABASE_SYNC_COMPLETE') {
+      router.refresh();
     }
   });
 

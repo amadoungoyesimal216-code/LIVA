@@ -81,26 +81,26 @@ export class ProfileView {
 
             <p class="profile-bio">${escapeHTML(user.bio)}</p>
 
-            <!-- Statistiques de lecture -->
+            <!-- Statistiques de lecture réelles -->
             <div class="profile-stats-row">
               <div class="profile-stat-box">
-                <span class="profile-stat-num">${user.stats?.storiesRead || 42}</span>
+                <span class="profile-stat-num">${user.stats?.storiesRead ?? 0}</span>
                 <span class="profile-stat-label">Histoires lues</span>
               </div>
               <div class="profile-stat-box">
-                <span class="profile-stat-num">${user.stats?.hoursRead || 68}h</span>
+                <span class="profile-stat-num">${user.stats?.hoursRead ?? 0}h</span>
                 <span class="profile-stat-label">Heures de lecture</span>
               </div>
               <div class="profile-stat-box">
-                <span class="profile-stat-num">${user.followedAuthorIds?.length || 18}</span>
+                <span class="profile-stat-num">${user.followedAuthorIds?.length ?? 0}</span>
                 <span class="profile-stat-label">Abonnements</span>
               </div>
               <div class="profile-stat-box">
-                <span class="profile-stat-num">${user.stats?.followersCount || 124}</span>
+                <span class="profile-stat-num">${user.stats?.followersCount ?? 0}</span>
                 <span class="profile-stat-label">Abonnés</span>
               </div>
               <div class="profile-stat-box">
-                <span class="profile-stat-num">${user.stats?.likesCount || 312}</span>
+                <span class="profile-stat-num">${user.likedStoryIds?.length ?? (user.stats?.likesCount ?? 0)}</span>
                 <span class="profile-stat-label">Likes</span>
               </div>
             </div>
@@ -138,9 +138,17 @@ export class ProfileView {
             </div>
           </div>
 
-          <div class="search-results-grid">
-            ${likedStories.map(story => StoryCard.renderVertical(story, this.store)).join('')}
-          </div>
+          ${likedStories.length === 0 ? `
+            <div class="empty-state">
+              <div class="empty-state-icon">❤️</div>
+              <h3 class="empty-state-title">Aucun coup de cœur pour le moment</h3>
+              <p class="empty-state-text">Explorez le catalogue et cliquez sur ❤️ pour retrouver vos histoires préférées ici.</p>
+            </div>
+          ` : `
+            <div class="search-results-grid">
+              ${likedStories.map(story => StoryCard.renderVertical(story, this.store)).join('')}
+            </div>
+          `}
         </section>
 
       </div>
