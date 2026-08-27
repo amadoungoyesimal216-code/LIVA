@@ -1,7 +1,8 @@
-// LIVA - Gestionnaire d'état réactif avec persistance LocalStorage
+// LIVA - Gestionnaire d'état réactif avec persistance LocalStorage & Synchronisation Supabase
 import { STORIES_DATA } from '../data/stories.js';
 import { AUTHORS_DATA } from '../data/authors.js';
 import { GENRES_DATA } from '../data/genres.js';
+import { SupabaseService } from '../services/supabaseClient.js';
 
 const STORAGE_KEY = 'liva_app_state_v1';
 
@@ -215,6 +216,26 @@ class AppStore {
     this.stories = [...STORIES_DATA];
     this.authors = [...AUTHORS_DATA];
     this.genres = [...GENRES_DATA];
+    this.initSupabaseSync();
+  }
+
+  async initSupabaseSync() {
+    try {
+      const [remoteStories, remoteAuthors] = await Promise.all([
+        SupabaseService.fetchStories(),
+        SupabaseService.fetchAuthors()
+      ]);
+
+      if (remoteStories && remoteStories.length > 0) {
+        this.stories = remoteStories;
+      }
+      if (remoteAuthors && remoteAuthors.length > 0) {
+        this.authors = remoteAuthors;
+      }
+      this.notify('SUPABASE_SYNC_COMPLETE');
+    } catch (e) {
+      console.warn('[AppStore] Erreur synchronisation Supabase:', e);
+    }
   }
 
   loadState() {
@@ -332,6 +353,7 @@ class AppStore {
     }
     this.state.library.saved = saved;
     this.saveState();
+    SupabaseService.syncUserLibrary(this.state.user.id, storyId, { isSaved: added });
     return added;
   }
 
@@ -347,6 +369,7 @@ class AppStore {
     }
     this.state.user.likedStoryIds = likes;
     this.saveState();
+    SupabaseService.syncUserLibrary(this.state.user.id, storyId, { isLiked: liked });
     return liked;
   }
 
@@ -385,6 +408,10 @@ class AppStore {
 
     this.state.library.reading = reading;
     this.saveState();
+    SupabaseService.syncUserLibrary(this.state.user.id, storyId, {
+      progressPercent: record.progressPercent,
+      currentChapterIndex: chapterIndex
+    });
   }
 
   markStoryAsFinished(storyId) {
@@ -456,6 +483,7 @@ class AppStore {
     story.reviews.unshift(newComment);
     story.reviewsCount = (story.reviewsCount || 0) + 1;
     this.notify('COMMENT_ADDED', { storyId, comment: newComment });
+    SupabaseService.addReview(storyId, newComment);
     return newComment;
   }
 
@@ -521,6 +549,7 @@ class AppStore {
     }
 
     this.saveState();
+    SupabaseService.saveAuthoredStory(newStory);
     return newStory;
   }
 
@@ -668,6 +697,7 @@ class AppStore {
     this.state.isAuthenticated = true;
     this.state.user = { ...newAccount };
     this.saveState();
+    SupabaseService.saveProfile(newAccount);
     return newAccount;
   }
 
@@ -695,6 +725,7 @@ class AppStore {
       Object.assign(registered, updates);
     }
     this.saveState();
+    SupabaseService.saveProfile(this.state.user);
   }
 }
 

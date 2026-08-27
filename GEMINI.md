@@ -127,6 +127,8 @@ LIVA/
     │   ├── StoryCard.js             # Générateur des cartes d'histoires (Vertical, Short, ReadingNow)
     │   ├── Modal.js                 # Contrôleur générique des fenêtres modales
     │   └── Toast.js                 # Système de notifications Toast flottantes
+    ├── services/
+    │   └── supabaseClient.js        # Client et services de persistance Supabase Cloud
     ├── utils/
     │   └── sanitize.js              # Utilitaires de sécurité anti-XSS (escapeHTML, sanitizeURL)
     └── views/
@@ -151,7 +153,8 @@ LIVA/
 | **Structure** | **HTML5 Sémantique** | Balisage accessible, léger et SEO-friendly. |
 | **Styles** | **Vanilla CSS3** | Custom Properties CSS, Grid & Flexbox, Glassmorphism, animations fluides `@keyframes`. Zéro dépendance CSS lourde. |
 | **Logique & SPA** | **JavaScript ES6+ (Modules Natifs)** | Architecture modulaire propre avec `import/export`, aucun bundler obligatoire, 0 ms de temps de compilation. |
-| **Stockage & État** | **LocalStorage & Store Réactif** | Persistance des préférences, de la bibliothèque, des brouillons et de la progression de lecture. |
+| **Base de Données Cloud** | **Supabase (PostgreSQL & REST)** | Base de données relationnelle temps réel avec RLS, sauvegarde des histoires, chapitres, commentaires et progrès. |
+| **Stockage Local** | **LocalStorage & Store Réactif** | Cache offline, persistance instantanée des préférences et de l'état de session. |
 | **Audio & Voix** | **Web Audio & Web Speech API** | Lecture d'ambiance et synthèse vocale sans dépendances cloud payantes. |
 | **Serveur de Dev** | **Python 3 (`http.server`)** | Serveur léger avec en-têtes HTTP de sécurité (`nosniff`, `SAMEORIGIN`, `strict-origin`). |
 | **Contrôle de Version** | **Git & GitHub** | Dépôt distant synchronisé en SSH sur la branche `main`. |
