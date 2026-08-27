@@ -1,22 +1,22 @@
 // LIVA - Application Principale & Routeur SPA
-import { store } from './state/store.js?v=4';
-import { ThemeManager } from './features/themeManager.js?v=4';
-import { AudioPlayer } from './features/audioPlayer.js?v=4';
-import { Toast } from './components/Toast.js?v=4';
-import { Modal } from './components/Modal.js?v=4';
-import { GENRES_DATA } from './data/genres.js?v=4';
+import { store } from './state/store.js?v=5';
+import { ThemeManager } from './features/themeManager.js?v=5';
+import { AudioPlayer } from './features/audioPlayer.js?v=5';
+import { Toast } from './components/Toast.js?v=5';
+import { Modal } from './components/Modal.js?v=5';
+import { GENRES_DATA } from './data/genres.js?v=5';
 
 // Views
-import { HomeView } from './views/HomeView.js?v=4';
-import { ExploreView } from './views/ExploreView.js?v=4';
-import { StoryView } from './views/StoryView.js?v=4';
-import { ReaderView } from './views/ReaderView.js?v=4';
-import { LibraryView } from './views/LibraryView.js?v=4';
-import { CreateView } from './views/CreateView.js?v=4';
-import { ProfileView } from './views/ProfileView.js?v=4';
-import { SwipeView } from './views/SwipeView.js?v=4';
-import { OnboardingView } from './views/OnboardingView.js?v=4';
-import { AuthView } from './views/AuthView.js?v=4';
+import { HomeView } from './views/HomeView.js?v=5';
+import { ExploreView } from './views/ExploreView.js?v=5';
+import { StoryView } from './views/StoryView.js?v=5';
+import { ReaderView } from './views/ReaderView.js?v=5';
+import { LibraryView } from './views/LibraryView.js?v=5';
+import { CreateView } from './views/CreateView.js?v=5';
+import { ProfileView } from './views/ProfileView.js?v=5';
+import { SwipeView } from './views/SwipeView.js?v=5';
+import { OnboardingView } from './views/OnboardingView.js?v=5';
+import { AuthView } from './views/AuthView.js?v=5';
 
 class AppRouter {
   constructor(store) {
@@ -46,8 +46,8 @@ class AppRouter {
 
     // Hide or show layout elements based on view (e.g. Reader view or Auth view)
     const isReader = pathPart.startsWith('/reader');
-    const isAuth = pathPart === '/auth';
-    const isStandalone = isReader || isAuth;
+    const isAuthPage = pathPart === '/auth';
+    const isStandalone = isReader || isAuthPage;
 
     const desktopSidebar = document.getElementById('desktop-sidebar');
     const bottomNav = document.getElementById('bottom-nav');
@@ -84,9 +84,9 @@ class AppRouter {
     this.syncUserUI();
 
     // Route Guards (Protection des routes d'écriture privées)
-    const isAuth = this.store.state.isAuthenticated;
+    const isAuthenticated = this.store.state.isAuthenticated;
     const protectedRoutes = ['/create'];
-    if (protectedRoutes.includes(pathPart) && !isAuth) {
+    if (protectedRoutes.includes(pathPart) && !isAuthenticated) {
       Toast.show('Veuillez vous connecter pour accéder au Studio d\'Écriture ✍️', 'warning', '🔒');
       this.navigate('/auth?mode=login');
       return;
