@@ -486,17 +486,23 @@ export class AuthView {
       favoriteGenres: this.selectedRegisterGenres.length > 0 ? this.selectedRegisterGenres : ['romance', 'african']
     });
 
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Créer mon compte 🚀';
-    }
-
     if (result && result.success) {
       Toast.show(`Bienvenue dans la communauté Liva, ${name} ! 🌟`, 'success', '🚀', 3500);
       this.router.syncUserUI();
       this.router.navigate('/profile');
     } else {
-      Toast.show(result?.error || 'Erreur lors de la création du compte.', 'error', '❌');
+      const errMsg = result?.error || 'Erreur lors de la création du compte.';
+      Toast.show(errMsg, 'error', '⚠️', 4500);
+      if (errMsg.includes('existe déjà')) {
+        setTimeout(() => {
+          this.switchTab('login');
+          const loginIdent = this.container.querySelector('#login-identifier');
+          if (loginIdent) {
+            loginIdent.value = email;
+            this.container.querySelector('#login-password')?.focus();
+          }
+        }, 1200);
+      }
     }
   }
 }

@@ -56,21 +56,29 @@ export class SupabaseService {
   }
 
   /**
-   * Connexion avec email et mot de passe
+   * Connexion avec email ou pseudo (@username) et mot de passe via Supabase RPC
    */
-  static async signIn(email, password) {
+  static async signIn(identifier, password) {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim().toLowerCase(),
-        password: password
+      const cleanIdent = identifier.trim();
+
+      const { data: res, error } = await supabase.rpc('login_user', {
+        p_identifier: cleanIdent,
+        p_password: password
       });
 
-      if (error) throw error;
-      if (!data.user) throw new Error('Utilisateur non trouvé.');
+      if (error) {
+        throw new Error(error.message || 'Erreur lors de la connexion.');
+      }
 
-      // Charger le profil de l'utilisateur
-      const profile = await this.fetchUserProfile(data.user.id);
-      return { user: data.user, profile, session: data.session };
+      if (!res || res.success === false) {
+        throw new Error(res?.error || 'Identifiant ou mot de passe incorrect.');
+      }
+
+      const user = res.user;
+      localStorage.setItem('liva_auth_user_id', user.id);
+
+      return { user, profile: user, session: { user } };
     } catch (err) {
       console.error('[SupabaseService] Erreur signIn:', err);
       throw err;
@@ -82,6 +90,7 @@ export class SupabaseService {
    */
   static async signOut() {
     try {
+      localStorage.removeItem('liva_auth_user_id');
       await supabase.auth.signOut();
     } catch (err) {
       console.warn('[SupabaseService] Erreur signOut:', err);
@@ -93,6 +102,13 @@ export class SupabaseService {
    */
   static async getSession() {
     try {
+      const savedUserId = localStorage.getItem('liva_auth_user_id');
+      if (savedUserId) {
+        const profile = await this.fetchUserProfile(savedUserId);
+        if (profile) {
+          return { user: profile };
+        }
+      }
       const { data, error } = await supabase.auth.getSession();
       if (error || !data.session) return null;
       return data.session;
