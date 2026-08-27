@@ -1,22 +1,22 @@
 // LIVA - Application Principale & Routeur SPA
-import { store } from './state/store.js?v=10';
-import { ThemeManager } from './features/themeManager.js?v=10';
-import { AudioPlayer } from './features/audioPlayer.js?v=10';
-import { Toast } from './components/Toast.js?v=10';
-import { Modal } from './components/Modal.js?v=10';
-import { GENRES_DATA } from './data/genres.js?v=10';
+import { store } from './state/store.js?v=11';
+import { ThemeManager } from './features/themeManager.js?v=11';
+import { AudioPlayer } from './features/audioPlayer.js?v=11';
+import { Toast } from './components/Toast.js?v=11';
+import { Modal } from './components/Modal.js?v=11';
+import { GENRES_DATA } from './data/genres.js?v=11';
 
 // Views
-import { HomeView } from './views/HomeView.js?v=10';
-import { ExploreView } from './views/ExploreView.js?v=10';
-import { StoryView } from './views/StoryView.js?v=10';
-import { ReaderView } from './views/ReaderView.js?v=10';
-import { LibraryView } from './views/LibraryView.js?v=10';
-import { CreateView } from './views/CreateView.js?v=10';
-import { ProfileView } from './views/ProfileView.js?v=10';
-import { SwipeView } from './views/SwipeView.js?v=10';
-import { OnboardingView } from './views/OnboardingView.js?v=10';
-import { AuthView } from './views/AuthView.js?v=10';
+import { HomeView } from './views/HomeView.js?v=11';
+import { ExploreView } from './views/ExploreView.js?v=11';
+import { StoryView } from './views/StoryView.js?v=11';
+import { ReaderView } from './views/ReaderView.js?v=11';
+import { LibraryView } from './views/LibraryView.js?v=11';
+import { CreateView } from './views/CreateView.js?v=11';
+import { ProfileView } from './views/ProfileView.js?v=11';
+import { SwipeView } from './views/SwipeView.js?v=11';
+import { OnboardingView } from './views/OnboardingView.js?v=11';
+import { AuthView } from './views/AuthView.js?v=11';
 
 class AppRouter {
   constructor(store) {
