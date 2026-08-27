@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>LIVA — Des histoires. Des émotions. Des mondes à découvrir.</title>
+  <meta name="description" content="Liva est la plateforme moderne de lecture et de découverte d'histoires. Romans, thrillers, fantasy, récits africains et shorts à lire et écouter gratuitement." />
+  <meta name="theme-color" content="#0D0B14" />
+
+  <!-- Google Fonts : Plus Jakarta Sans, Outfit, Literata & Merriweather -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;0,7..72,700;1,7..72,400&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Outfit:wght@500;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- LIVA Stylesheets (Cache-Busted) -->
+  <link rel="stylesheet" href="./css/design-system.css?v=4" />
+  <link rel="stylesheet" href="./css/base.css?v=4" />
+  <link rel="stylesheet" href="./css/components.css?v=4" />
+  <link rel="stylesheet" href="./css/navigation.css?v=4" />
+  <link rel="stylesheet" href="./css/home.css?v=4" />
+  <link rel="stylesheet" href="./css/explore.css?v=4" />
+  <link rel="stylesheet" href="./css/story-detail.css?v=4" />
+  <link rel="stylesheet" href="./css/reader.css?v=4" />
+  <link rel="stylesheet" href="./css/library.css?v=4" />
+  <link rel="stylesheet" href="./css/author-studio.css?v=4" />
+  <link rel="stylesheet" href="./css/profile.css?v=4" />
+  <link rel="stylesheet" href="./css/swipe-story.css?v=4" />
+  <link rel="stylesheet" href="./css/audio-player.css?v=4" />
+  <link rel="stylesheet" href="./css/auth.css?v=4" />
+</head>
+<body>
+
+  <div id="app">
+
+    <!-- ====================================================================
+         1. SIDEBAR DESKTOP
+         ==================================================================== -->
+    <aside class="sidebar-desktop" id="desktop-sidebar">
+      <div class="brand-logo" data-navigate="/">
+        <span class="brand-logo-text">LIVA</span>
+        <span class="brand-badge-dot"></span>
+      </div>
+
+      <div class="nav-section-title">Découverte</div>
+      <ul class="nav-menu">
+        <li>
+          <a class="nav-link active" data-nav-route="/" data-navigate="/">
+            <span class="nav-icon">🏠</span>
+            <span>Accueil</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" data-nav-route="/explore" data-navigate="/explore">
+            <span class="nav-icon">🔍</span>
+            <span>Explorer & Genres</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" data-nav-route="/swipe" data-navigate="/swipe">
+            <span class="nav-icon">⚡</span>
+            <span>Swipe Story</span>
+            <span class="nav-badge-pill">Nouveau</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="nav-section-title" style="margin-top: var(--space-4);">Personnel</div>
+      <ul class="nav-menu">
+        <li>
+          <a class="nav-link" data-nav-route="/library" data-navigate="/library">
+            <span class="nav-icon">📚</span>
+            <span>Ma Bibliothèque</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" data-nav-route="/create" data-navigate="/create">
+            <span class="nav-icon">✍️</span>
+            <span>Studio Auteur</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" data-nav-route="/profile" data-navigate="/profile">
+            <span class="nav-icon">👤</span>
+            <span>Mon Profil</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- Footer Sidebar : Mini profil -->
+      <div class="sidebar-footer">
+        <div class="user-mini-card" data-navigate="/profile">
+          <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80" alt="Alexandre Sow" class="avatar avatar-sm avatar-ring" />
+          <div class="user-mini-info">
+            <span class="user-mini-name">Alexandre Sow</span>
+            <span class="user-mini-handle">@alex_reads</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+
+    <!-- ====================================================================
+         2. LAYOUT PRINCIPAL (Main Content)
+         ==================================================================== -->
+    <div class="main-content">
+      
+      <!-- Topbar Header Dynamique -->
+      <header class="topbar-header" id="topbar-header">
+        <div class="topbar-brand" data-navigate="/">
+          <span class="brand-logo-text" style="font-size: 1.5rem;">LIVA</span>
+          <span class="brand-badge-dot"></span>
+        </div>
+
+        <div class="topbar-actions">
+          <!-- Raccourci recherche -->
+          <button class="btn btn-icon" data-navigate="/explore" title="Rechercher">
+            🔍
+          </button>
+
+          <!-- Bouton Notifications -->
+          <div style="position: relative;">
+            <button class="btn btn-icon" id="btn-topbar-notifications" title="Notifications">
+              🔔
+              <span id="notif-unread-count" class="nav-badge-pill" style="position: absolute; top: -2px; right: -2px; padding: 2px 6px; font-size: 0.65rem;">2</span>
+            </button>
+
+            <!-- Dropdown Notifications -->
+            <div class="notif-dropdown" id="notif-dropdown">
+              <div class="notif-header">
+                <span style="font-weight: 800; font-size: 0.95rem;">Notifications</span>
+                <div style="display: flex; align-items: center; gap: 2px;">
+                  <button class="btn btn-ghost btn-sm" id="btn-mark-all-read" style="font-size: 0.72rem; padding: 4px 8px;">✓ Tout lu</button>
+                  <button class="btn btn-ghost btn-sm" id="btn-clear-all-notifs" style="font-size: 0.72rem; padding: 4px 6px;" title="Effacer tout">🗑️</button>
+                </div>
+              </div>
+              <div class="notif-filter-tabs">
+                <button class="notif-tab-chip active" data-filter="all">Toutes</button>
+                <button class="notif-tab-chip" data-filter="unread">Non lues</button>
+              </div>
+              <div class="notif-list" id="notif-list-container">
+                <!-- Injected via JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Bascule de Thème -->
+          <button class="btn btn-icon" data-action="toggle-theme" title="Changer de thème">
+            <span class="theme-toggle-icon">🌙</span>
+          </button>
+
+          <!-- Avatar Profil Mobile -->
+          <div class="topbar-avatar-wrap" data-navigate="/profile" title="Mon Profil" style="cursor: pointer;">
+            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80" alt="Avatar" class="avatar avatar-sm avatar-ring" />
+          </div>
+        </div>
+      </header>
+
+      <!-- Viewport dynamique de rendu des pages (SPA) -->
+      <main id="view-container" style="flex: 1; padding: var(--space-4) 0 var(--space-8);"></main>
+
+    </div>
+
+
+    <!-- ====================================================================
+         3. BARRE AUDIO FLOTTANTE PERSISTANTE
+         ==================================================================== -->
+    <div class="floating-audio-bar" id="floating-audio-bar">
+      <!-- Scrubber continu en haut de la barre -->
+      <div class="audio-scrubber-track" id="audio-scrubber-track">
+        <div class="audio-scrubber-fill" id="audio-scrubber-fill" style="width: 0%;"></div>
+      </div>
+
+      <div class="audio-bar-cover">
+        <img id="audio-bar-cover-img" src="" alt="Audio Cover" />
+      </div>
+
+      <div class="audio-bar-info">
+        <div class="audio-bar-title" id="audio-bar-title">Titre de l'histoire</div>
+        <div class="audio-bar-voice" id="audio-bar-voice">🎙️ Voix IA Amira</div>
+      </div>
+
+      <!-- Animation audio wave -->
+      <div class="audio-waves">
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+      </div>
+
+      <!-- Contrôles Audio -->
+      <div class="audio-controls-row">
+        <button class="btn btn-icon btn-sm" id="audio-skip-back" title="Reculer 15s">⏪</button>
+        <button class="btn btn-primary btn-icon" id="audio-play-toggle" style="width: 38px; height: 38px;">▶️</button>
+        <button class="btn btn-icon btn-sm" id="audio-skip-forward" title="Avancer 15s">⏩</button>
+        <button class="audio-rate-btn" id="audio-rate-btn" title="Vitesse de lecture">1x</button>
+        <button class="btn btn-ghost btn-sm" id="audio-close-btn" title="Fermer le lecteur">✕</button>
+      </div>
+    </div>
+
+
+    <!-- ====================================================================
+         4. BOTTOM NAVIGATION MOBILE (5 Onglets)
+         ==================================================================== -->
+    <nav class="bottom-nav" id="bottom-nav">
+      <div class="bottom-nav-item active" data-nav-route="/" data-navigate="/">
+        <span class="bottom-nav-icon">🏠</span>
+        <span class="bottom-nav-label">Accueil</span>
+      </div>
+
+      <div class="bottom-nav-item" data-nav-route="/explore" data-navigate="/explore">
+        <span class="bottom-nav-icon">🔍</span>
+        <span class="bottom-nav-label">Explorer</span>
+      </div>
+
+      <div class="bottom-nav-item" data-nav-route="/library" data-navigate="/library">
+        <span class="bottom-nav-icon">📚</span>
+        <span class="bottom-nav-label">Bibliothèque</span>
+      </div>
+
+      <div class="bottom-nav-item" data-nav-route="/create" data-navigate="/create">
+        <span class="bottom-nav-icon">✍️</span>
+        <span class="bottom-nav-label">Créer</span>
+      </div>
+
+      <div class="bottom-nav-item" data-nav-route="/profile" data-navigate="/profile">
+        <span class="bottom-nav-icon">👤</span>
+        <span class="bottom-nav-label">Profil</span>
+      </div>
+    </nav>
+
+
+    <!-- ====================================================================
+         5. MODALES GLOBALES
+         ==================================================================== -->
+
+    <!-- Modale Création d'Histoire -->
+    <div class="modal-overlay" id="modal-create-story">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <h3 class="modal-title">✨ Nouvelle Histoire</h3>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-create-story').classList.remove('active')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Titre de l'histoire *</label>
+            <input type="text" id="create-story-title" class="form-input" placeholder="Ex: Les Secrets du Baobab" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Genre principal *</label>
+            <select id="create-story-genre" class="form-select">
+              <option value="Romance">❤️ Romance</option>
+              <option value="Thriller">🔥 Thriller</option>
+              <option value="Histoires africaines">🇸🇳 Histoires africaines</option>
+              <option value="Fantasy">🧙 Fantasy</option>
+              <option value="Science-fiction">🚀 Science-fiction</option>
+              <option value="Horreur">👻 Horreur</option>
+              <option value="Contes">🌍 Contes & Légendes</option>
+              <option value="Mystère">🔍 Mystère</option>
+              <option value="Drame">🎭 Drame</option>
+              <option value="Humour">😂 Humour</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Synopsis accrocheur *</label>
+            <textarea id="create-story-desc" class="form-textarea" placeholder="De quoi parle votre histoire ? Donnez envie aux lecteurs dès les premières lignes..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Tags (séparés par des virgules)</label>
+            <input type="text" id="create-story-tags" class="form-input" placeholder="Ex: Amour interdit, Dakar, Slow burn, Suspense" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">URL de couverture (Optionnel)</label>
+            <input type="url" id="create-story-cover" class="form-input" placeholder="https://images.unsplash.com/..." />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Texte du Chapitre 1 (Brouillon)</label>
+            <textarea id="create-story-chapter-1" class="form-textarea" style="min-height: 140px;" placeholder="Commencez à écrire votre premier chapitre..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" onclick="document.getElementById('modal-create-story').classList.remove('active')">Annuler</button>
+          <button class="btn btn-primary" id="btn-submit-create-story">Créer l'histoire 🚀</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modale Éditeur de Chapitre Avancé -->
+    <div class="modal-overlay" id="modal-chapter-editor">
+      <div class="modal-dialog chapter-editor-modal">
+        <div class="modal-header">
+          <div style="display: flex; flex-direction: column;">
+            <span style="font-size: 0.75rem; color: var(--color-primary-light); font-weight: 700; text-transform: uppercase;">Édition de chapitre</span>
+            <h3 class="modal-title" id="editor-story-title-display">Titre de l'histoire</h3>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-chapter-editor').classList.remove('active')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="editor-toolbar-header">
+            <div class="editor-stats-indicators">
+              <span id="editor-word-count">0 mots</span>
+              <span>·</span>
+              <span id="editor-read-time">⏱️ ~1 min</span>
+            </div>
+            <span class="editor-autosave-tag">● Sauvegarde auto active</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Titre du chapitre</label>
+            <input type="text" id="editor-chapter-title-input" class="form-input" placeholder="Chapitre 1 — La Rencontre" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Corps du chapitre</label>
+            <textarea id="editor-chapter-content-input" class="editor-textarea-main" placeholder="Écrivez votre récit ici avec passion et liberté..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="btn-editor-save-draft">💾 Sauvegarder brouillon</button>
+          <button class="btn btn-primary" id="btn-editor-publish">🌟 Publier le chapitre</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modale Nouvelle Collection -->
+    <div class="modal-overlay" id="modal-create-collection">
+      <div class="modal-dialog" style="max-width: 440px;">
+        <div class="modal-header">
+          <h3 class="modal-title">📚 Nouvelle Collection</h3>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-create-collection').classList.remove('active')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Nom de la collection *</label>
+            <input type="text" id="new-col-name" class="form-input" placeholder="Ex: Mes romances préférées, À lire la nuit..." />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Icône thématique</label>
+            <select id="new-col-icon" class="form-select">
+              <option value="❤️">❤️ Cœur / Romance</option>
+              <option value="👻">👻 Fantôme / Horreur</option>
+              <option value="🌙">🌙 Nuit / À lire ce soir</option>
+              <option value="🔥">🔥 Flamme / Coups de cœur</option>
+              <option value="🧙">🧙 Magie / Fantasy</option>
+              <option value="⚡">⚡ Flash / Shorts</option>
+              <option value="🌍">🌍 Monde / Voyage</option>
+              <option value="⭐">⭐ Étoiles / Favoris</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" onclick="document.getElementById('modal-create-collection').classList.remove('active')">Annuler</button>
+          <button class="btn btn-primary" id="btn-submit-create-collection">Créer la collection ✨</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modale Détails de Collection -->
+    <div class="modal-overlay" id="modal-collection-details">
+      <div class="modal-dialog" style="max-width: 580px;">
+        <div class="modal-header">
+          <div style="display: flex; align-items: center; gap: var(--space-2);">
+            <span id="col-detail-icon" style="font-size: 1.6rem;">📚</span>
+            <h3 class="modal-title" id="col-detail-title">Nom de la collection</h3>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-collection-details').classList.remove('active')">✕</button>
+        </div>
+        <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
+          <div id="col-detail-stories-list" style="display: flex; flex-direction: column; gap: var(--space-3);">
+            <!-- Dynamic stories in collection -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="document.getElementById('modal-collection-details').classList.remove('active')">Fermer</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modale Modifier Profil -->
+    <div class="modal-overlay" id="modal-edit-profile">
+      <div class="modal-dialog" style="max-width: 480px;">
+        <div class="modal-header">
+          <h3 class="modal-title">✏️ Modifier mon profil</h3>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-edit-profile').classList.remove('active')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Nom complet</label>
+            <input type="text" id="edit-user-name-input" class="form-input" value="Alexandre Sow" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Biographie</label>
+            <textarea id="edit-user-bio-input" class="form-textarea">Passionné de récits immersifs, de thrillers psychologiques et de romances intenses. Toujours un livre sous le bras.</textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" onclick="document.getElementById('modal-edit-profile').classList.remove('active')">Annuler</button>
+          <button class="btn btn-primary" id="btn-submit-edit-profile">Enregistrer</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Container Onboarding -->
+    <div id="onboarding-modal-container"></div>
+
+    <!-- Container Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+  </div>
+
+  <!-- Entry Script (Cache-Busted) -->
+  <script type="module" src="./js/app.js?v=4"></script>
+</body>
+</html>

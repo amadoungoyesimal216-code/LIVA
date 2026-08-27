@@ -1,0 +1,306 @@
+/* ==========================================================================
+   LIVA - PAGE BIBLIOTHÈQUE (LIBRARY VIEW)
+   ========================================================================== */
+
+.library-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding-top: var(--space-4);
+}
+
+.library-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.library-title {
+  font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+  font-weight: 900;
+}
+
+/* --------------------------------------------------------------------------
+   1. ONGLETS DE NAVIGATION DE LA BIBLIOTHÈQUE
+   -------------------------------------------------------------------------- */
+.library-tabs-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  border-bottom: 1px solid var(--border-subtle);
+  overflow-x: auto;
+  padding-bottom: var(--space-1);
+  -webkit-overflow-scrolling: touch;
+}
+
+.library-tab-btn {
+  padding: 8px 14px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  position: relative;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color var(--transition-fast);
+}
+
+@media (min-width: 480px) {
+  .library-tab-btn {
+    padding: 10px 18px;
+    font-size: 0.95rem;
+  }
+}
+
+.library-tab-btn:hover {
+  color: var(--text-primary);
+}
+
+.library-tab-btn.active {
+  color: var(--color-primary-light);
+}
+
+.library-tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--color-primary);
+  border-radius: var(--radius-full);
+  box-shadow: 0 0 8px var(--color-primary-glow);
+}
+
+/* --------------------------------------------------------------------------
+   2. ONGLET "EN COURS" (Cartes avec progression et bouton Continuer)
+   -------------------------------------------------------------------------- */
+.reading-now-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+@media (min-width: 480px) {
+  .reading-now-list {
+    gap: var(--space-4);
+  }
+}
+
+.reading-now-card {
+  display: flex;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  padding: 12px;
+  gap: 12px;
+  align-items: center;
+  transition: all var(--transition-normal);
+}
+
+@media (min-width: 480px) {
+  .reading-now-card {
+    padding: var(--space-4);
+    gap: var(--space-4);
+    border-radius: var(--radius-lg);
+  }
+}
+
+.reading-now-card:hover {
+  border-color: var(--border-focus);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.reading-now-cover {
+  width: 68px;
+  aspect-ratio: 2 / 3;
+  border-radius: var(--radius-xs);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+@media (min-width: 480px) {
+  .reading-now-cover {
+    width: 80px;
+    border-radius: var(--radius-sm);
+  }
+}
+
+@media (min-width: 640px) {
+  .reading-now-cover {
+    width: 100px;
+  }
+}
+
+.reading-now-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.reading-now-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+@media (min-width: 480px) {
+  .reading-now-info {
+    gap: var(--space-2);
+  }
+}
+
+.reading-now-title {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (min-width: 480px) {
+  .reading-now-title {
+    font-size: 1.1rem;
+  }
+}
+
+.reading-now-author {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.reading-progress-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.reading-progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+@media (min-width: 480px) {
+  .reading-progress-labels {
+    font-size: 0.78rem;
+  }
+}
+
+.reading-progress-percent {
+  color: var(--color-primary-light);
+}
+
+.btn-continue-reading {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  padding: 6px 10px;
+}
+
+@media (min-width: 480px) {
+  .btn-continue-reading {
+    font-size: 0.85rem;
+    padding: 6px 14px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   3. COLLECTIONS PERSONNELLES
+   -------------------------------------------------------------------------- */
+.collections-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+@media (min-width: 640px) {
+  .collections-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .collections-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.collection-card {
+  padding: var(--space-5);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-4);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.collection-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--border-focus);
+  box-shadow: var(--shadow-md);
+}
+
+.collection-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.collection-icon {
+  font-size: 2rem;
+}
+
+.collection-name {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.collection-count {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.collection-thumbnails-stack {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.collection-thumb {
+  width: 48px;
+  height: 64px;
+  border-radius: var(--radius-xs);
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+}
+
+.collection-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.create-collection-card {
+  border: 2px dashed var(--border-card);
+  background: transparent;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+  text-align: center;
+}
+
+.create-collection-card:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-subtle);
+}

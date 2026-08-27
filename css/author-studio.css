@@ -1,0 +1,290 @@
+/* ==========================================================================
+   LIVA - ESPACE CRÉATEUR / STUDIO AUTEUR (AUTHOR STUDIO VIEW)
+   ========================================================================== */
+
+.author-studio-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding-top: var(--space-4);
+}
+
+.studio-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.studio-title {
+  font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+  font-weight: 900;
+}
+
+/* --------------------------------------------------------------------------
+   1. STATISTIQUES GLOBALES DE L'AUTEUR
+   -------------------------------------------------------------------------- */
+.studio-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2);
+}
+
+@media (min-width: 480px) {
+  .studio-metrics-grid {
+    gap: var(--space-3);
+  }
+}
+
+@media (min-width: 768px) {
+  .studio-metrics-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-4);
+  }
+}
+
+.metric-card {
+  padding: 12px 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+@media (min-width: 480px) {
+  .metric-card {
+    padding: var(--space-4) var(--space-5);
+    border-radius: var(--radius-lg);
+    gap: var(--space-1);
+  }
+}
+
+.metric-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.metric-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+@media (min-width: 480px) {
+  .metric-label {
+    font-size: 0.8rem;
+  }
+}
+
+.metric-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+@media (min-width: 480px) {
+  .metric-icon {
+    font-size: 1.2rem;
+  }
+}
+
+.metric-value {
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: var(--text-primary);
+}
+
+@media (min-width: 480px) {
+  .metric-value {
+    font-size: 1.6rem;
+  }
+}
+
+.metric-trend {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-accent-emerald);
+}
+
+/* --------------------------------------------------------------------------
+   2. ONGLETS DE GESTION DES HISTOIRES
+   -------------------------------------------------------------------------- */
+.studio-tabs-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: var(--space-1);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.studio-tab-btn {
+  padding: 8px 14px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  position: relative;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+@media (min-width: 480px) {
+  .studio-tab-btn {
+    padding: 10px 18px;
+    font-size: 0.95rem;
+  }
+}
+
+.studio-tab-btn.active {
+  color: var(--color-primary-light);
+}
+
+.studio-tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--color-primary);
+  border-radius: var(--radius-full);
+}
+
+/* --------------------------------------------------------------------------
+   3. LISTE DES HISTOIRES DE L'AUTEUR
+   -------------------------------------------------------------------------- */
+.authored-stories-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+@media (min-width: 480px) {
+  .authored-stories-list {
+    gap: var(--space-4);
+  }
+}
+
+.authored-story-card {
+  display: flex;
+  align-items: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  gap: 12px;
+  transition: all var(--transition-fast);
+}
+
+@media (min-width: 480px) {
+  .authored-story-card {
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    gap: var(--space-4);
+  }
+}
+
+.authored-story-card:hover {
+  border-color: var(--border-focus);
+  background: var(--bg-card-hover);
+}
+
+.authored-story-cover {
+  width: 70px;
+  aspect-ratio: 2 / 3;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.authored-story-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.authored-story-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.authored-story-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.authored-story-badges {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.authored-story-stats {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: var(--space-1);
+}
+
+/* --------------------------------------------------------------------------
+   4. ÉDITEUR DE CHAPITRE (RICH CHAPTER EDITOR)
+   -------------------------------------------------------------------------- */
+.chapter-editor-modal {
+  max-width: 860px !important;
+}
+
+.editor-toolbar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: var(--space-4);
+}
+
+.editor-stats-indicators {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.editor-autosave-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--color-accent-emerald);
+}
+
+.editor-textarea-main {
+  width: 100%;
+  min-height: 280px;
+  padding: var(--space-4);
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  color: var(--text-primary);
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  line-height: 1.8;
+  resize: vertical;
+}
+
+.editor-textarea-main:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-subtle);
+}

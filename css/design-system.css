@@ -1,0 +1,189 @@
+/* ==========================================================================
+   LIVA - DESIGN SYSTEM & TOKENS
+   Thèmes : Dark (Défaut), Light (Clair raffiné), Cream (Liseuse confort)
+   ========================================================================== */
+
+:root {
+  /* Polices */
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Outfit', var(--font-sans);
+  --font-serif: 'Literata', 'Newsreader', 'Merriweather', Georgia, serif;
+  --font-dyslexic: 'OpenDyslexic', 'Comic Sans MS', sans-serif;
+
+  /* Rayons de courbure */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --radius-full: 9999px;
+
+  /* Transitions fluides */
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-fast: 0.18s var(--ease-smooth);
+  --transition-normal: 0.28s var(--ease-smooth);
+  --transition-slow: 0.45s var(--ease-smooth);
+
+  /* Espacements */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Z-Index */
+  --z-base: 1;
+  --z-sticky: 100;
+  --z-drawer: 500;
+  --z-modal: 1000;
+  --z-reader-controls: 1100;
+  --z-toast: 2000;
+
+  /* Safe Area Insets (iOS & Android Notch / Home Bar) */
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+
+  /* Touch Targets & Icon Sizing Standards */
+  --touch-target-min: 44px;
+  --icon-size-xs: 14px;
+  --icon-size-sm: 18px;
+  --icon-size-md: 22px;
+  --icon-size-lg: 28px;
+  --icon-size-xl: 36px;
+}
+
+/* ==========================================================================
+   THÈME SOMBRE (Par défaut — Immersion nocturne & élégance violette)
+   ========================================================================== */
+:root, [data-theme="dark"] {
+  --color-primary: #8B5CF6;
+  --color-primary-light: #A78BFA;
+  --color-primary-dark: #6D28D9;
+  --color-primary-glow: rgba(139, 92, 246, 0.35);
+  --color-primary-subtle: rgba(139, 92, 246, 0.12);
+
+  --color-accent-rose: #F43F5E;
+  --color-accent-rose-glow: rgba(244, 63, 94, 0.3);
+  --color-accent-gold: #F59E0B;
+  --color-accent-emerald: #10B981;
+  --color-accent-cyan: #06B6D4;
+
+  --bg-body: #0D0B14;
+  --bg-surface: #14111E;
+  --bg-card: #1A1628;
+  --bg-card-hover: #221D34;
+  --bg-elevated: #26203A;
+  --bg-glass: rgba(20, 17, 30, 0.75);
+  --bg-glass-heavy: rgba(13, 11, 20, 0.88);
+
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-card: rgba(255, 255, 255, 0.12);
+  --border-focus: rgba(139, 92, 246, 0.6);
+
+  --text-primary: #F8F7FC;
+  --text-secondary: #B4B0C7;
+  --text-muted: #797394;
+  --text-inverse: #0D0B14;
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 30px rgba(139, 92, 246, 0.25);
+
+  --reader-bg: #0D0B14;
+  --reader-text: #E6E4EE;
+  --reader-text-muted: #8E88A8;
+}
+
+/* ==========================================================================
+   THÈME CLAIR (Blanc cassé, touches crème & indigo profond)
+   ========================================================================== */
+[data-theme="light"] {
+  --color-primary: #6366F1;
+  --color-primary-light: #818CF8;
+  --color-primary-dark: #4F46E5;
+  --color-primary-glow: rgba(99, 102, 241, 0.25);
+  --color-primary-subtle: rgba(99, 102, 241, 0.08);
+
+  --color-accent-rose: #E11D48;
+  --color-accent-rose-glow: rgba(225, 29, 72, 0.2);
+  --color-accent-gold: #D97706;
+  --color-accent-emerald: #059669;
+  --color-accent-cyan: #0891B2;
+
+  --bg-body: #FAF9F6;
+  --bg-surface: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #F4F2EB;
+  --bg-elevated: #EDEAE1;
+  --bg-glass: rgba(255, 255, 255, 0.85);
+  --bg-glass-heavy: rgba(250, 249, 246, 0.94);
+
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --border-card: rgba(0, 0, 0, 0.09);
+  --border-focus: rgba(99, 102, 241, 0.6);
+
+  --text-primary: #12111A;
+  --text-secondary: #585566;
+  --text-muted: #8E8A9E;
+  --text-inverse: #FFFFFF;
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.12);
+  --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.18);
+
+  --reader-bg: #FAF9F6;
+  --reader-text: #1E1D26;
+  --reader-text-muted: #6B687B;
+}
+
+/* ==========================================================================
+   THÈME CRÈME (Liseuse confort — Idéal pour lecture longue durée)
+   ========================================================================== */
+[data-theme="cream"] {
+  --color-primary: #854D0E;
+  --color-primary-light: #A16207;
+  --color-primary-dark: #713F12;
+  --color-primary-glow: rgba(161, 98, 7, 0.2);
+  --color-primary-subtle: rgba(161, 98, 7, 0.09);
+
+  --color-accent-rose: #BE123C;
+  --color-accent-rose-glow: rgba(190, 18, 60, 0.2);
+  --color-accent-gold: #B45309;
+  --color-accent-emerald: #047857;
+  --color-accent-cyan: #0E7490;
+
+  --bg-body: #F5EFE6;
+  --bg-surface: #ECE3D4;
+  --bg-card: #EFE8DA;
+  --bg-card-hover: #E4D8C4;
+  --bg-elevated: #DFD1BC;
+  --bg-glass: rgba(245, 239, 230, 0.88);
+  --bg-glass-heavy: rgba(236, 227, 212, 0.96);
+
+  --border-subtle: rgba(113, 63, 18, 0.08);
+  --border-card: rgba(113, 63, 18, 0.12);
+  --border-focus: rgba(161, 98, 7, 0.5);
+
+  --text-primary: #2C241B;
+  --text-secondary: #5F5243;
+  --text-muted: #8C7B68;
+  --text-inverse: #FAF8F5;
+
+  --shadow-sm: 0 2px 8px rgba(74, 52, 28, 0.05);
+  --shadow-md: 0 8px 24px rgba(74, 52, 28, 0.08);
+  --shadow-lg: 0 16px 40px rgba(74, 52, 28, 0.12);
+  --shadow-glow: 0 0 30px rgba(161, 98, 7, 0.15);
+
+  --reader-bg: #F5EFE6;
+  --reader-text: #2C241B;
+  --reader-text-muted: #6B5D4D;
+}

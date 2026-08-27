@@ -1,0 +1,314 @@
+/* ==========================================================================
+   LIVA - PAGE EXPLORER & RECHERCHE (EXPLORE VIEW)
+   ========================================================================== */
+
+.explore-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding-top: var(--space-4);
+}
+
+/* --------------------------------------------------------------------------
+   1. EXPLORE SEARCH HEADER
+   -------------------------------------------------------------------------- */
+.explore-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 760px;
+}
+
+.explore-title {
+  font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+  font-weight: 900;
+}
+
+.explore-search-container {
+  position: relative;
+  width: 100%;
+}
+
+.explore-search-box {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 14px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+}
+
+.explore-search-box:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-subtle), var(--shadow-md);
+  background: var(--bg-surface);
+}
+
+.explore-search-input {
+  flex: 1;
+  font-size: 1.05rem;
+  color: var(--text-primary);
+}
+
+.explore-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Popular Searches */
+.popular-searches {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.popular-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-right: var(--space-1);
+}
+
+.popular-tag-chip {
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.popular-tag-chip:hover {
+  background: var(--color-primary-subtle);
+  border-color: var(--color-primary-glow);
+  color: var(--color-primary-light);
+  transform: translateY(-1px);
+}
+
+/* --------------------------------------------------------------------------
+   2. AI STORY FINDER WIDGET
+   -------------------------------------------------------------------------- */
+.ai-finder-card {
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(6, 182, 212, 0.15));
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  position: relative;
+  overflow: hidden;
+}
+
+.ai-finder-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ai-finder-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(139, 92, 246, 0.25);
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--color-primary-light);
+}
+
+.ai-prompt-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.ai-prompt-input {
+  width: 100%;
+  padding: 14px 18px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  min-height: 80px;
+  resize: vertical;
+}
+
+.ai-prompt-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-subtle);
+}
+
+.ai-preset-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.ai-preset-btn {
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-subtle);
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.ai-preset-btn:hover {
+  background: rgba(139, 92, 246, 0.2);
+  color: var(--text-primary);
+  border-color: var(--color-primary);
+}
+
+.ai-results-wrapper {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-subtle);
+  display: none;
+  flex-direction: column;
+  gap: var(--space-3);
+  animation: fadeIn 0.3s ease-out;
+}
+
+.ai-results-wrapper.active {
+  display: flex;
+}
+
+/* --------------------------------------------------------------------------
+   3. GENRE VISUAL CARDS GRID
+   -------------------------------------------------------------------------- */
+.genres-visual-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2);
+}
+
+@media (min-width: 480px) {
+  .genres-visual-grid {
+    gap: var(--space-3);
+  }
+}
+
+@media (min-width: 640px) {
+  .genres-visual-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
+  }
+}
+
+@media (min-width: 1024px) {
+  .genres-visual-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.genre-card {
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100px;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  border: 1px solid var(--border-subtle);
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (min-width: 480px) {
+  .genre-card {
+    padding: var(--space-5);
+    border-radius: var(--radius-lg);
+    min-height: 120px;
+  }
+}
+
+.genre-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.genre-card-icon {
+  font-size: 1.6rem;
+  margin-bottom: var(--space-1);
+  line-height: 1;
+}
+
+@media (min-width: 480px) {
+  .genre-card-icon {
+    font-size: 2rem;
+    margin-bottom: var(--space-2);
+  }
+}
+
+.genre-card-name {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  line-height: 1.2;
+}
+
+@media (min-width: 480px) {
+  .genre-card-name {
+    font-size: 1.1rem;
+  }
+}
+
+.genre-card-count {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 600;
+}
+
+@media (min-width: 480px) {
+  .genre-card-count {
+    font-size: 0.78rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   4. SEARCH RESULTS GRID
+   -------------------------------------------------------------------------- */
+.search-results-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+
+@media (min-width: 640px) {
+  .search-results-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
+  }
+}
+
+@media (min-width: 1200px) {
+  .search-results-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.search-highlight {
+  background: rgba(245, 158, 11, 0.35);
+  color: inherit;
+  padding: 0 2px;
+  border-radius: 2px;
+}

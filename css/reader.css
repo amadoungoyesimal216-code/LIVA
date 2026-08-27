@@ -1,0 +1,412 @@
+/* ==========================================================================
+   LIVA - PAGE DE LECTURE IMMERSIVE (READER VIEW)
+   ========================================================================== */
+
+.reader-view {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  background: var(--reader-bg);
+  color: var(--reader-text);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+}
+
+/* --------------------------------------------------------------------------
+   1. TOPBAR DE LECTURE (Auto-hide on scroll/idle)
+   -------------------------------------------------------------------------- */
+.reader-topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 54px;
+  background: var(--bg-glass-heavy);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  z-index: var(--z-reader-controls);
+  transform: translateY(0);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+@media (min-width: 768px) {
+  .reader-topbar {
+    height: 64px;
+    padding: 0 var(--space-8);
+  }
+}
+
+.reader-topbar.hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.reader-header-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 55%;
+}
+
+.reader-story-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--reader-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (min-width: 768px) {
+  .reader-story-title {
+    font-size: 0.95rem;
+  }
+}
+
+.reader-chapter-title {
+  font-size: 0.72rem;
+  color: var(--reader-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (min-width: 768px) {
+  .reader-chapter-title {
+    font-size: 0.78rem;
+  }
+}
+
+.reader-header-progress {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-primary-light);
+}
+
+@media (min-width: 768px) {
+  .reader-header-progress {
+    gap: var(--space-2);
+    font-size: 0.85rem;
+  }
+}
+
+/* Top Reading Progress Bar */
+.reader-fixed-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: transparent;
+}
+
+.reader-fixed-progress-fill {
+  height: 100%;
+  background: var(--color-primary);
+  box-shadow: 0 0 8px var(--color-primary-glow);
+  transition: width 0.1s linear;
+}
+
+/* --------------------------------------------------------------------------
+   2. CONTENU DU TEXTE DU LECTEUR
+   -------------------------------------------------------------------------- */
+.reader-content-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 68px var(--space-3) 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 768px) {
+  .reader-content-scroll {
+    padding: 100px var(--space-8) 140px;
+  }
+}
+
+.reader-article-container {
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+@media (min-width: 768px) {
+  .reader-article-container {
+    gap: var(--space-6);
+  }
+}
+
+.reader-article-header {
+  margin-bottom: var(--space-3);
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .reader-article-header {
+    margin-bottom: var(--space-4);
+  }
+}
+
+.reader-article-chapter-num {
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-primary-light);
+  margin-bottom: var(--space-1);
+}
+
+@media (min-width: 768px) {
+  .reader-article-chapter-num {
+    font-size: 0.85rem;
+    margin-bottom: var(--space-2);
+  }
+}
+
+.reader-article-chapter-heading {
+  font-size: clamp(1.4rem, 4vw, 2.2rem);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.reader-text-body {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  line-height: 1.8;
+  letter-spacing: 0.01em;
+  color: var(--reader-text);
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.reader-text-body p {
+  color: inherit;
+  margin-bottom: 1.5em;
+  text-indent: 1em;
+}
+
+.reader-text-body p:first-of-type {
+  text-indent: 0;
+}
+
+.reader-text-body p:first-of-type::first-letter {
+  font-size: 3em;
+  float: left;
+  line-height: 0.8;
+  margin: 0.1em 0.15em 0 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  color: var(--color-primary-light);
+}
+
+/* Reader Typography & Size Classes */
+.reader-size-small .reader-text-body { font-size: 0.95rem; line-height: 1.65; }
+.reader-size-normal .reader-text-body { font-size: 1.1rem; line-height: 1.8; }
+.reader-size-large .reader-text-body { font-size: 1.28rem; line-height: 1.9; }
+.reader-size-xlarge .reader-text-body { font-size: 1.48rem; line-height: 2.05; }
+
+.reader-font-literata { font-family: 'Literata', Georgia, serif; }
+.reader-font-merriweather { font-family: 'Merriweather', serif; }
+.reader-font-sans { font-family: var(--font-sans); }
+.reader-font-dyslexic { font-family: var(--font-dyslexic); }
+
+/* --------------------------------------------------------------------------
+   3. TOOLBAR INFÉRIEURE DE CONTRÔLE
+   -------------------------------------------------------------------------- */
+.reader-bottom-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(56px + var(--safe-area-bottom));
+  padding-bottom: var(--safe-area-bottom);
+  background: var(--bg-glass-heavy);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding-left: var(--space-2);
+  padding-right: var(--space-2);
+  z-index: var(--z-reader-controls);
+  transform: translateY(0);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.reader-bottom-bar.hidden {
+  transform: translateY(100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.reader-ctrl-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.reader-ctrl-btn:hover {
+  color: var(--text-primary);
+  background: var(--border-subtle);
+}
+
+.reader-ctrl-btn.active {
+  color: var(--color-primary-light);
+}
+
+/* --------------------------------------------------------------------------
+   4. PANNEAU DE PERSONNALISATION DE LA LECTURE (Aa) - BOTTOM SHEET
+   -------------------------------------------------------------------------- */
+.reader-settings-panel {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-width: none;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-card);
+  border-radius: 24px 24px 0 0;
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
+  padding: 20px 18px calc(20px + var(--safe-area-bottom));
+  display: none;
+  flex-direction: column;
+  gap: var(--space-4);
+  z-index: var(--z-modal);
+  transform: translateY(100%);
+  transition: transform 0.28s var(--ease-smooth);
+}
+
+@media (min-width: 640px) {
+  .reader-settings-panel {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    right: auto;
+    width: 90%;
+    max-width: 420px;
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-xl);
+    padding: var(--space-5);
+    transform: translateX(-50%) translateY(20px);
+  }
+}
+
+.reader-settings-panel.active {
+  display: flex;
+  transform: translateY(0);
+}
+
+@media (min-width: 640px) {
+  .reader-settings-panel.active {
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.settings-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.settings-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.settings-options-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-card);
+  padding: 4px;
+  border-radius: var(--radius-full);
+}
+
+.settings-pill-btn {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.settings-pill-btn.active {
+  background: var(--color-primary);
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px var(--color-primary-glow);
+}
+
+/* --------------------------------------------------------------------------
+   5. MENU CONTEXTUEL DE SÉLECTION DE TEXTE
+   -------------------------------------------------------------------------- */
+.text-selection-popover {
+  position: fixed;
+  z-index: var(--z-modal);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
+  padding: 4px 8px;
+  display: none;
+  align-items: center;
+  gap: var(--space-1);
+  animation: fadeIn 0.15s ease-out;
+  transform: translateX(-50%);
+}
+
+.text-selection-popover.active {
+  display: flex;
+}
+
+.popover-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.popover-action-btn:hover {
+  background: var(--color-primary-subtle);
+  color: var(--color-primary-light);
+}
