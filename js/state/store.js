@@ -6,12 +6,14 @@ import { SupabaseService } from '../services/supabaseClient.js';
 
 const STORAGE_KEY = 'liva_app_state_v2';
 
+export const DEFAULT_AVATAR = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"><defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%237928CA"/><stop offset="100%" stop-color="%23FF0080"/></linearGradient></defs><rect width="128" height="128" rx="64" fill="url(%23grad)"/><circle cx="64" cy="50" r="22" fill="%23FFFFFF" opacity="0.9"/><path d="M28 106 C28 84 44 76 64 76 C84 76 100 84 100 106 Z" fill="%23FFFFFF" opacity="0.9"/></svg>';
+
 const GUEST_USER = {
   id: 'guest',
   email: '',
   name: 'Visiteur',
   username: '@visiteur',
-  avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=400&q=80',
+  avatar: DEFAULT_AVATAR,
   bio: 'Connectez-vous pour débloquer votre bibliothèque et sauvegarder vos lectures.',
   stats: {
     storiesRead: 0,

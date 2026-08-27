@@ -1,22 +1,22 @@
 // LIVA - Application Principale & Routeur SPA
-import { store } from './state/store.js?v=9';
-import { ThemeManager } from './features/themeManager.js?v=9';
-import { AudioPlayer } from './features/audioPlayer.js?v=9';
-import { Toast } from './components/Toast.js?v=9';
-import { Modal } from './components/Modal.js?v=9';
-import { GENRES_DATA } from './data/genres.js?v=9';
+import { store } from './state/store.js?v=10';
+import { ThemeManager } from './features/themeManager.js?v=10';
+import { AudioPlayer } from './features/audioPlayer.js?v=10';
+import { Toast } from './components/Toast.js?v=10';
+import { Modal } from './components/Modal.js?v=10';
+import { GENRES_DATA } from './data/genres.js?v=10';
 
 // Views
-import { HomeView } from './views/HomeView.js?v=9';
-import { ExploreView } from './views/ExploreView.js?v=9';
-import { StoryView } from './views/StoryView.js?v=9';
-import { ReaderView } from './views/ReaderView.js?v=9';
-import { LibraryView } from './views/LibraryView.js?v=9';
-import { CreateView } from './views/CreateView.js?v=9';
-import { ProfileView } from './views/ProfileView.js?v=9';
-import { SwipeView } from './views/SwipeView.js?v=9';
-import { OnboardingView } from './views/OnboardingView.js?v=9';
-import { AuthView } from './views/AuthView.js?v=9';
+import { HomeView } from './views/HomeView.js?v=10';
+import { ExploreView } from './views/ExploreView.js?v=10';
+import { StoryView } from './views/StoryView.js?v=10';
+import { ReaderView } from './views/ReaderView.js?v=10';
+import { LibraryView } from './views/LibraryView.js?v=10';
+import { CreateView } from './views/CreateView.js?v=10';
+import { ProfileView } from './views/ProfileView.js?v=10';
+import { SwipeView } from './views/SwipeView.js?v=10';
+import { OnboardingView } from './views/OnboardingView.js?v=10';
+import { AuthView } from './views/AuthView.js?v=10';
 
 class AppRouter {
   constructor(store) {
@@ -481,17 +481,58 @@ function setupGlobalModals(store, router) {
     router.refresh();
   });
 
-  // 4. Edit Profile Bio Modal
+  // 4. Edit Profile Modal (Photo, Nom & Biographie)
   const btnSaveBio = document.getElementById('btn-submit-edit-profile');
   const inputBio = document.getElementById('edit-user-bio-input');
   const inputName = document.getElementById('edit-user-name-input');
+  const btnTriggerAvatar = document.getElementById('btn-trigger-avatar-file');
+  const inputAvatarFile = document.getElementById('edit-user-avatar-file');
+  const previewAvatar = document.getElementById('edit-user-avatar-preview');
+
+  let pendingAvatarDataUrl = null;
+
+  btnTriggerAvatar?.addEventListener('click', () => {
+    inputAvatarFile?.click();
+  });
+
+  inputAvatarFile?.addEventListener('change', (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      Toast.show('Veuillez sélectionner un fichier image valide (JPG, PNG, WEBP).', 'warning', '⚠️');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      Toast.show('L\'image est trop volumineuse (maximum 5 Mo).', 'warning', '⚠️');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      pendingAvatarDataUrl = event.target.result;
+      if (previewAvatar) {
+        previewAvatar.src = pendingAvatarDataUrl;
+      }
+      Toast.show('Photo sélectionnée avec succès ! Cliquez sur Enregistrer.', 'info', '📷', 2500);
+    };
+    reader.readAsDataURL(file);
+  });
 
   btnSaveBio?.addEventListener('click', () => {
-    if (inputName?.value.trim()) store.state.user.name = inputName.value.trim();
-    if (inputBio?.value.trim()) store.state.user.bio = inputBio.value.trim();
-    store.saveState();
+    const updates = {};
+    if (inputName && inputName.value.trim()) updates.name = inputName.value.trim();
+    if (inputBio) updates.bio = inputBio.value.trim();
+    if (pendingAvatarDataUrl) {
+      updates.avatar = pendingAvatarDataUrl;
+    }
+
+    store.updateUserProfile(updates);
+    pendingAvatarDataUrl = null;
     Modal.close('modal-edit-profile');
-    Toast.show('Profil mis à jour !', 'success', '✨');
+    Toast.show('Profil et photo mis à jour avec succès !', 'success', '✨');
+    router.syncUserUI();
     router.refresh();
   });
 }

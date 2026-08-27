@@ -15,11 +15,29 @@ export class CreateView {
     const drafts = authoredStories.filter(s => s.status === 'draft');
     const published = authoredStories.filter(s => s.status === 'published');
 
-    // Aggregate stats
-    const totalReads = '12.4K';
-    const totalLikes = '3.2K';
-    const totalComments = 84;
-    const newFollowers = '+140';
+    // Calcul des métriques réelles à partir des histoires publiées de l'utilisateur
+    let totalReadsCount = 0;
+    let totalLikesCount = 0;
+    let totalCommentsCount = 0;
+
+    published.forEach(s => {
+      totalReadsCount += (s.readsRaw || (s.stats?.reads || 0));
+      totalLikesCount += (s.likesCount || (s.stats?.likes || 0));
+      totalCommentsCount += (s.reviewsCount || (s.reviews?.length || 0));
+    });
+
+    const userFollowersCount = this.store.state.user.stats?.followersCount || 0;
+
+    const formatNum = (n) => {
+      if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+      if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+      return String(n);
+    };
+
+    const readsTrend = totalReadsCount > 0 ? '↑ En progression' : 'Commencez à publier';
+    const likesTrend = totalLikesCount > 0 ? '↑ Avis positifs' : '0 appréciation';
+    const commentsTrend = totalCommentsCount > 0 ? `↑ ${totalCommentsCount} avis` : '0 nouvel avis';
+    const followersTrend = userFollowersCount > 0 ? `+${userFollowersCount} lecteur(s)` : '0 abonné';
 
     return `
       <div class="author-studio-view page-container animate-fade-in">
@@ -35,15 +53,15 @@ export class CreateView {
           </button>
         </div>
 
-        <!-- 2. Métriques de Performance -->
+        <!-- 2. Métriques de Performance Réelles -->
         <div class="studio-metrics-grid">
           <div class="metric-card">
             <div class="metric-card-top">
               <span class="metric-card-label">Lectures totales</span>
               <span class="metric-card-icon">👁️</span>
             </div>
-            <div class="metric-card-value">${totalReads}</div>
-            <div class="metric-card-trend trend-up">↑ +18% ce mois-ci</div>
+            <div class="metric-card-value">${formatNum(totalReadsCount)}</div>
+            <div class="metric-card-trend trend-up">${readsTrend}</div>
           </div>
 
           <div class="metric-card">
@@ -51,8 +69,8 @@ export class CreateView {
               <span class="metric-card-label">Appréciations</span>
               <span class="metric-card-icon">❤️</span>
             </div>
-            <div class="metric-card-value">${totalLikes}</div>
-            <div class="metric-card-trend trend-up">↑ +24% ce mois-ci</div>
+            <div class="metric-card-value">${formatNum(totalLikesCount)}</div>
+            <div class="metric-card-trend trend-up">${likesTrend}</div>
           </div>
 
           <div class="metric-card">
@@ -60,8 +78,8 @@ export class CreateView {
               <span class="metric-card-label">Commentaires reçus</span>
               <span class="metric-card-icon">💬</span>
             </div>
-            <div class="metric-card-value">${totalComments}</div>
-            <div class="metric-card-trend trend-up">↑ 12 nouveaux avis</div>
+            <div class="metric-card-value">${formatNum(totalCommentsCount)}</div>
+            <div class="metric-card-trend trend-up">${commentsTrend}</div>
           </div>
 
           <div class="metric-card">
@@ -69,8 +87,8 @@ export class CreateView {
               <span class="metric-card-label">Nouveaux Abonnés</span>
               <span class="metric-card-icon">👥</span>
             </div>
-            <div class="metric-card-value">${newFollowers}</div>
-            <div class="metric-card-trend trend-up">↑ En constante hausse</div>
+            <div class="metric-card-value">${userFollowersCount > 0 ? '+' + formatNum(userFollowersCount) : '0'}</div>
+            <div class="metric-card-trend trend-up">${followersTrend}</div>
           </div>
         </div>
 

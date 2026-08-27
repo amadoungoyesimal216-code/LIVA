@@ -238,19 +238,34 @@ export class ProfileView {
       });
     });
 
-    // Edit bio modal
+    // Edit profile modal
+    const openEditModal = () => {
+      const modal = document.getElementById('modal-edit-profile');
+      if (modal) {
+        const nameInput = modal.querySelector('#edit-user-name-input');
+        const bioInput = modal.querySelector('#edit-user-bio-input');
+        const avatarPreview = modal.querySelector('#edit-user-avatar-preview');
+        const fileInput = modal.querySelector('#edit-user-avatar-file');
+
+        if (nameInput) nameInput.value = this.store.state.user.name || '';
+        if (bioInput) bioInput.value = this.store.state.user.bio || '';
+        if (avatarPreview) avatarPreview.src = this.store.state.user.avatar || '';
+        if (fileInput) fileInput.value = '';
+
+        modal.classList.add('active');
+      }
+    };
+
     const editBioBtn = container.querySelector('#btn-edit-bio');
     if (editBioBtn) {
-      editBioBtn.addEventListener('click', () => {
-        const modal = document.getElementById('modal-edit-profile');
-        if (modal) {
-          const nameInput = modal.querySelector('#edit-user-name-input');
-          const bioInput = modal.querySelector('#edit-user-bio-input');
-          if (nameInput) nameInput.value = this.store.state.user.name || '';
-          if (bioInput) bioInput.value = this.store.state.user.bio || '';
-          modal.classList.add('active');
-        }
-      });
+      editBioBtn.addEventListener('click', openEditModal);
+    }
+
+    const avatarClickable = container.querySelector('.profile-avatar-wrap');
+    if (avatarClickable) {
+      avatarClickable.style.cursor = 'pointer';
+      avatarClickable.title = 'Cliquez pour modifier votre photo de profil';
+      avatarClickable.addEventListener('click', openEditModal);
     }
 
     // Relaunch Onboarding
