@@ -43,6 +43,8 @@ export class AdminLayout {
       logs: 'Journal des Actions Administratives'
     };
 
+    const isModOnly = role === 'MODERATOR';
+
     return `
       <div class="admin-view-root">
         
@@ -57,37 +59,39 @@ export class AdminLayout {
           </div>
 
           <div class="admin-nav-menu">
-            <div class="admin-nav-section-title">Général</div>
-            <a href="#/admin" class="admin-nav-item ${this.currentSection === 'dashboard' ? 'active' : ''}">
-              <div class="admin-nav-item-left">
-                <span>📊</span>
-                <span>Dashboard</span>
-              </div>
-            </a>
-            <a href="#/admin/stories" class="admin-nav-item ${this.currentSection === 'stories' ? 'active' : ''}">
-              <div class="admin-nav-item-left">
-                <span>📚</span>
-                <span>Histoires</span>
-              </div>
-            </a>
-            <a href="#/admin/chapters" class="admin-nav-item ${this.currentSection === 'chapters' ? 'active' : ''}">
-              <div class="admin-nav-item-left">
-                <span>📑</span>
-                <span>Chapitres</span>
-              </div>
-            </a>
-            <a href="#/admin/authors" class="admin-nav-item ${this.currentSection === 'authors' ? 'active' : ''}">
-              <div class="admin-nav-item-left">
-                <span>✍️</span>
-                <span>Auteurs</span>
-              </div>
-            </a>
-            <a href="#/admin/users" class="admin-nav-item ${this.currentSection === 'users' ? 'active' : ''}">
-              <div class="admin-nav-item-left">
-                <span>👥</span>
-                <span>Utilisateurs</span>
-              </div>
-            </a>
+            ${!isModOnly ? `
+              <div class="admin-nav-section-title">Général</div>
+              <a href="#/admin" class="admin-nav-item ${this.currentSection === 'dashboard' ? 'active' : ''}">
+                <div class="admin-nav-item-left">
+                  <span>📊</span>
+                  <span>Dashboard</span>
+                </div>
+              </a>
+              <a href="#/admin/stories" class="admin-nav-item ${this.currentSection === 'stories' ? 'active' : ''}">
+                <div class="admin-nav-item-left">
+                  <span>📚</span>
+                  <span>Histoires</span>
+                </div>
+              </a>
+              <a href="#/admin/chapters" class="admin-nav-item ${this.currentSection === 'chapters' ? 'active' : ''}">
+                <div class="admin-nav-item-left">
+                  <span>📑</span>
+                  <span>Chapitres</span>
+                </div>
+              </a>
+              <a href="#/admin/authors" class="admin-nav-item ${this.currentSection === 'authors' ? 'active' : ''}">
+                <div class="admin-nav-item-left">
+                  <span>✍️</span>
+                  <span>Auteurs</span>
+                </div>
+              </a>
+              <a href="#/admin/users" class="admin-nav-item ${this.currentSection === 'users' ? 'active' : ''}">
+                <div class="admin-nav-item-left">
+                  <span>👥</span>
+                  <span>Utilisateurs</span>
+                </div>
+              </a>
+            ` : ''}
 
             <div class="admin-nav-section-title">Modération & Sécurité</div>
             <a href="#/admin/comments" class="admin-nav-item ${this.currentSection === 'comments' ? 'active' : ''}">
@@ -99,42 +103,44 @@ export class AdminLayout {
             <a href="#/admin/moderation" class="admin-nav-item ${this.currentSection === 'moderation' ? 'active' : ''}">
               <div class="admin-nav-item-left">
                 <span>🚨</span>
-                <span>Modération</span>
+                <span>Signalements</span>
               </div>
               ${pendingReportsCount > 0 ? `<span class="admin-nav-badge">${pendingReportsCount}</span>` : ''}
             </a>
 
-            <div class="admin-nav-section-title">Configuration & Données</div>
-            <a href="#/admin/categories" class="admin-nav-item ${this.currentSection === 'categories' ? 'active' : ''}">
-              <div class="admin-nav-item-left">
-                <span>🏷️</span>
-                <span>Catégories & Tags</span>
-              </div>
-            </a>
-            <a href="#/admin/notifications" class="admin-nav-item ${this.currentSection === 'notifications' ? 'active' : ''}">
-              <div class="admin-nav-item-left">
-                <span>🔔</span>
-                <span>Notifications</span>
-              </div>
-            </a>
-            <a href="#/admin/analytics" class="admin-nav-item ${this.currentSection === 'analytics' ? 'active' : ''}">
-              <div class="admin-nav-item-left">
-                <span>📈</span>
-                <span>Analytics</span>
-              </div>
-            </a>
-            <a href="#/admin/settings" class="admin-nav-item ${this.currentSection === 'settings' ? 'active' : ''}">
-              <div class="admin-nav-item-left">
-                <span>⚙️</span>
-                <span>Paramètres</span>
-              </div>
-            </a>
-            <a href="#/admin/logs" class="admin-nav-item ${this.currentSection === 'logs' ? 'active' : ''}">
-              <div class="admin-nav-item-left">
-                <span>📜</span>
-                <span>Journal d'Audit</span>
-              </div>
-            </a>
+            ${!isModOnly ? `
+              <div class="admin-nav-section-title">Configuration & Données</div>
+              <a href="#/admin/categories" class="admin-nav-item ${this.currentSection === 'categories' ? 'active' : ''}">
+                <div class="admin-nav-item-left">
+                  <span>🏷️</span>
+                  <span>Catégories & Tags</span>
+                </div>
+              </a>
+              <a href="#/admin/notifications" class="admin-nav-item ${this.currentSection === 'notifications' ? 'active' : ''}">
+                <div class="admin-nav-item-left">
+                  <span>🔔</span>
+                  <span>Notifications</span>
+                </div>
+              </a>
+              <a href="#/admin/analytics" class="admin-nav-item ${this.currentSection === 'analytics' ? 'active' : ''}">
+                <div class="admin-nav-item-left">
+                  <span>📈</span>
+                  <span>Analytics</span>
+                </div>
+              </a>
+              <a href="#/admin/settings" class="admin-nav-item ${this.currentSection === 'settings' ? 'active' : ''}">
+                <div class="admin-nav-item-left">
+                  <span>⚙️</span>
+                  <span>Paramètres</span>
+                </div>
+              </a>
+              <a href="#/admin/logs" class="admin-nav-item ${this.currentSection === 'logs' ? 'active' : ''}">
+                <div class="admin-nav-item-left">
+                  <span>📜</span>
+                  <span>Journal d'Audit</span>
+                </div>
+              </a>
+            ` : ''}
           </div>
 
           <div class="admin-sidebar-footer">
@@ -168,9 +174,11 @@ export class AdminLayout {
               <a href="#/" class="btn btn-secondary btn-sm" style="font-size: 0.82rem;">
                 👁️ Voir Liva User
               </a>
-              <button class="btn btn-primary btn-sm" id="btn-admin-quick-story">
-                + Nouvelle histoire
-              </button>
+              ${!isModOnly ? `
+                <button class="btn btn-primary btn-sm" id="btn-admin-quick-story">
+                  + Nouvelle histoire
+                </button>
+              ` : ''}
             </div>
           </header>
 

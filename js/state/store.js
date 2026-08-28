@@ -241,6 +241,25 @@ class AppStore {
     }
   }
 
+  // --- Permissions & Contrôle d'Accès par Rôle ---
+  getUserRole() {
+    return (this.state.user?.role || 'USER').toUpperCase();
+  }
+
+  isAdmin() {
+    return Boolean(this.state.isAuthenticated && this.getUserRole() === 'ADMIN');
+  }
+
+  isModerator() {
+    const role = this.getUserRole();
+    return Boolean(this.state.isAuthenticated && (role === 'MODERATOR' || role === 'ADMIN'));
+  }
+
+  isAuthor() {
+    const role = this.getUserRole();
+    return Boolean(this.state.isAuthenticated && (role === 'AUTHOR' || role === 'ADMIN'));
+  }
+
   // --- Histoires & Auteurs ---
   getAllStories() {
     return this.stories;

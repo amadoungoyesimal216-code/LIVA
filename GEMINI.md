@@ -235,3 +235,10 @@ Lors de toute intervention future sur ce projet, vous **DEVEZ** respecter scrupu
    Lors d'une modification structurelle des scripts ou feuilles de style, incrémentez le paramètre de version (`?v=X`) dans [`index.html`](file:///Users/macbookairm2/Documents/LIVA/index.html) et les imports de [`js/app.js`](file:///Users/macbookairm2/Documents/LIVA/js/app.js) pour éviter tout problème de cache navigateur.
 7. **Validation Avant Commit** :
    Avant de pousser du code sur GitHub, vérifiez systématiquement la syntaxe des fichiers JavaScript à l'aide de l'interpréteur système.
+8. **Sécurité RBAC & Double Protection (Frontend + Backend)** :
+   - **`USER`** : Lecture, bibliothèque, avis, profil. Aucun bouton admin, accès bloqué à `#/admin/*`.
+   - **`AUTHOR`** : Tout `USER` + Studio de création `#/create` pour gérer ses propres histoires et chapitres.
+   - **`MODERATOR`** : Tout `USER` + Accès restreint à Liva Admin (`#/admin/comments` et `#/admin/moderation`).
+   - **`ADMIN`** : Accès complet à Liva User et aux 12 modules de Liva Admin (`#/admin/*`).
+   - **Trigger Anti-Tampering PostgreSQL** : Les colonnes `role` et `status` de `public.profiles` sont protégées par trigger et ne peuvent être altérées que via la fonction RPC sécurisée `admin_set_user_role`.
+

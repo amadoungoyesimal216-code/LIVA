@@ -1,38 +1,38 @@
 // LIVA - Application Principale & Routeur SPA
-import { store } from './state/store.js?v=14';
-import { ThemeManager } from './features/themeManager.js?v=14';
-import { AudioPlayer } from './features/audioPlayer.js?v=14';
-import { Toast } from './components/Toast.js?v=14';
-import { Modal } from './components/Modal.js?v=14';
-import { GENRES_DATA } from './data/genres.js?v=14';
-import { SupabaseAdminService } from './services/supabaseAdmin.js?v=14';
+import { store } from './state/store.js?v=15';
+import { ThemeManager } from './features/themeManager.js?v=15';
+import { AudioPlayer } from './features/audioPlayer.js?v=15';
+import { Toast } from './components/Toast.js?v=15';
+import { Modal } from './components/Modal.js?v=15';
+import { GENRES_DATA } from './data/genres.js?v=15';
+import { SupabaseAdminService } from './services/supabaseAdmin.js?v=15';
 
 // Views Liva User
-import { HomeView } from './views/HomeView.js?v=14';
-import { ExploreView } from './views/ExploreView.js?v=14';
-import { StoryView } from './views/StoryView.js?v=14';
-import { ReaderView } from './views/ReaderView.js?v=14';
-import { LibraryView } from './views/LibraryView.js?v=14';
-import { CreateView } from './views/CreateView.js?v=14';
-import { ProfileView } from './views/ProfileView.js?v=14';
-import { SwipeView } from './views/SwipeView.js?v=14';
-import { OnboardingView } from './views/OnboardingView.js?v=14';
-import { AuthView } from './views/AuthView.js?v=14';
+import { HomeView } from './views/HomeView.js?v=15';
+import { ExploreView } from './views/ExploreView.js?v=15';
+import { StoryView } from './views/StoryView.js?v=15';
+import { ReaderView } from './views/ReaderView.js?v=15';
+import { LibraryView } from './views/LibraryView.js?v=15';
+import { CreateView } from './views/CreateView.js?v=15';
+import { ProfileView } from './views/ProfileView.js?v=15';
+import { SwipeView } from './views/SwipeView.js?v=15';
+import { OnboardingView } from './views/OnboardingView.js?v=15';
+import { AuthView } from './views/AuthView.js?v=15';
 
 // Views Liva Admin
-import { AdminLayout } from './views/admin/AdminLayout.js?v=14';
-import { AdminDashboardView } from './views/admin/AdminDashboardView.js?v=14';
-import { AdminStoriesView } from './views/admin/AdminStoriesView.js?v=14';
-import { AdminChaptersView } from './views/admin/AdminChaptersView.js?v=14';
-import { AdminAuthorsView } from './views/admin/AdminAuthorsView.js?v=14';
-import { AdminUsersView } from './views/admin/AdminUsersView.js?v=14';
-import { AdminCommentsView } from './views/admin/AdminCommentsView.js?v=14';
-import { AdminModerationView } from './views/admin/AdminModerationView.js?v=14';
-import { AdminCategoriesView } from './views/admin/AdminCategoriesView.js?v=14';
-import { AdminNotificationsView } from './views/admin/AdminNotificationsView.js?v=14';
-import { AdminAnalyticsView } from './views/admin/AdminAnalyticsView.js?v=14';
-import { AdminSettingsView } from './views/admin/AdminSettingsView.js?v=14';
-import { AdminLogsView } from './views/admin/AdminLogsView.js?v=14';
+import { AdminLayout } from './views/admin/AdminLayout.js?v=15';
+import { AdminDashboardView } from './views/admin/AdminDashboardView.js?v=15';
+import { AdminStoriesView } from './views/admin/AdminStoriesView.js?v=15';
+import { AdminChaptersView } from './views/admin/AdminChaptersView.js?v=15';
+import { AdminAuthorsView } from './views/admin/AdminAuthorsView.js?v=15';
+import { AdminUsersView } from './views/admin/AdminUsersView.js?v=15';
+import { AdminCommentsView } from './views/admin/AdminCommentsView.js?v=15';
+import { AdminModerationView } from './views/admin/AdminModerationView.js?v=15';
+import { AdminCategoriesView } from './views/admin/AdminCategoriesView.js?v=15';
+import { AdminNotificationsView } from './views/admin/AdminNotificationsView.js?v=15';
+import { AdminAnalyticsView } from './views/admin/AdminAnalyticsView.js?v=15';
+import { AdminSettingsView } from './views/admin/AdminSettingsView.js?v=15';
+import { AdminLogsView } from './views/admin/AdminLogsView.js?v=15';
 
 class AppRouter {
   constructor(store) {
@@ -119,10 +119,18 @@ class AppRouter {
         return;
       }
 
-      const userRole = (this.store.state.user.role || 'USER').toUpperCase();
+      const userRole = this.store.getUserRole();
       if (userRole !== 'ADMIN' && userRole !== 'MODERATOR') {
         Toast.show('Accès refusé : votre compte n\'a pas les autorisations d\'administration.', 'error', '⛔');
         this.navigate('/');
+        return;
+      }
+
+      // Permissions spécifiques MODERATOR : accès uniquement à comments et moderation
+      const modAllowedPaths = ['/admin', '/admin/dashboard', '/admin/comments', '/admin/moderation'];
+      if (userRole === 'MODERATOR' && !modAllowedPaths.includes(pathPart)) {
+        Toast.show('Accès restreint : les modérateurs ont accès uniquement aux commentaires et signalements.', 'warning', '🛡️');
+        this.navigate('/admin/moderation');
         return;
       }
 
@@ -130,8 +138,14 @@ class AppRouter {
       let section = 'dashboard';
 
       if (pathPart === '/admin' || pathPart === '/admin/dashboard') {
-        section = 'dashboard';
-        adminSubView = new AdminDashboardView(this.store, this, SupabaseAdminService);
+        if (userRole === 'MODERATOR') {
+          // Rediriger le modérateur directement vers le centre de signalements
+          section = 'moderation';
+          adminSubView = new AdminModerationView(this.store, this, SupabaseAdminService, queryObj);
+        } else {
+          section = 'dashboard';
+          adminSubView = new AdminDashboardView(this.store, this, SupabaseAdminService);
+        }
       } else if (pathPart === '/admin/stories') {
         section = 'stories';
         adminSubView = new AdminStoriesView(this.store, this, SupabaseAdminService, queryObj);
@@ -166,8 +180,10 @@ class AppRouter {
         section = 'logs';
         adminSubView = new AdminLogsView(this.store, this, SupabaseAdminService, queryObj);
       } else {
-        section = 'dashboard';
-        adminSubView = new AdminDashboardView(this.store, this, SupabaseAdminService);
+        section = userRole === 'MODERATOR' ? 'moderation' : 'dashboard';
+        adminSubView = userRole === 'MODERATOR' 
+          ? new AdminModerationView(this.store, this, SupabaseAdminService, queryObj)
+          : new AdminDashboardView(this.store, this, SupabaseAdminService);
       }
 
       const layout = new AdminLayout(this.store, this, section, queryObj);
