@@ -302,16 +302,18 @@ class AppStore {
              storySecGenre === gId ||
              storyTags.includes(gName) ||
              storyTags.includes(gId) ||
-             (gId === 'african' && (storyGenre.includes('afric') || storySecGenre.includes('afric') || storyTags.some(t => t.includes('afric')))) ||
+             (gId === 'african' && (storyGenre.includes('afric') || storySecGenre.includes('afric') || storyTags.some(t => t.includes('afric') || t.includes('dakar') || t.includes('baobab')))) ||
              (gId === 'fantasy' && (storyGenre.includes('fanta') || storySecGenre.includes('fanta') || storyTags.some(t => t.includes('fanta')))) ||
              (gId === 'horror' && (storyGenre.includes('horr') || storySecGenre.includes('horr') || storyTags.some(t => t.includes('horr')))) ||
-             (gId === 'tales' && (storyGenre.includes('conte') || storySecGenre.includes('conte') || storyTags.some(t => t.includes('conte') || t.includes('légende')))) ||
+             ((gId === 'contes' || gId === 'tales') && (storyGenre.includes('conte') || storySecGenre.includes('conte') || storyTags.some(t => t.includes('conte') || t.includes('légende')))) ||
              (gId === 'scifi' && (storyGenre.includes('sci') || storySecGenre.includes('sci') || storyTags.some(t => t.includes('sci')))) ||
              (gId === 'romance' && (storyGenre.includes('roman') || storySecGenre.includes('roman') || storyTags.some(t => t.includes('roman')))) ||
              (gId === 'thriller' && (storyGenre.includes('thrill') || storySecGenre.includes('thrill') || storyTags.some(t => t.includes('thrill') || t.includes('suspense')))) ||
              (gId === 'mystery' && (storyGenre.includes('myst') || storySecGenre.includes('myst') || storyTags.some(t => t.includes('myst')))) ||
              (gId === 'drama' && (storyGenre.includes('dram') || storySecGenre.includes('dram') || storyTags.some(t => t.includes('dram')))) ||
-             (gId === 'humor' && (storyGenre.includes('humour') || storySecGenre.includes('humour') || storyTags.some(t => t.includes('humour'))));
+             ((gId === 'humour' || gId === 'humor') && (storyGenre.includes('humour') || storySecGenre.includes('humour') || storyGenre.includes('humor') || storyTags.some(t => t.includes('humour')))) ||
+             (gId === 'realfacts' && (storyGenre.includes('réel') || storyGenre.includes('reel') || storyTags.some(t => t.includes('histoire vraie') || t.includes('réel')))) ||
+             (gId === 'personal_dev' && (storyGenre.includes('personnel') || storyTags.some(t => t.includes('bien-être') || t.includes('mindset'))));
     });
   }
 

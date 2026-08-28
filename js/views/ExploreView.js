@@ -19,10 +19,7 @@ export class ExploreView {
 
     let filteredStories = allStories;
     if (this.selectedGenre) {
-      filteredStories = allStories.filter(s => 
-        s.genre.toLowerCase().includes(this.selectedGenre.toLowerCase()) || 
-        (s.secondaryGenre && s.secondaryGenre.toLowerCase().includes(this.selectedGenre.toLowerCase()))
-      );
+      filteredStories = this.store.getStoriesByGenre(this.selectedGenre);
     }
 
     return `
@@ -111,7 +108,7 @@ export class ExploreView {
               <h2 class="section-title" id="explore-results-heading">
                 ${this.selectedGenre ? `Genre : ${this.selectedGenre.toUpperCase()}` : 'Toutes les histoires 📚'}
               </h2>
-              <span class="section-subtitle" id="explore-results-count">${filteredStories.length} histoires disponibles</span>
+              <span class="section-subtitle" id="explore-results-count">${filteredStories.length} histoire${filteredStories.length > 1 ? 's' : ''} disponible${filteredStories.length > 1 ? 's' : ''}</span>
             </div>
             ${this.selectedGenre ? `<button id="btn-reset-genre-filter" class="btn btn-outline btn-sm">Réinitialiser le filtre ✕</button>` : ''}
           </div>
@@ -121,7 +118,7 @@ export class ExploreView {
           </div>
         </section>
 
-        <!-- 4. Grille Visuelle des Genres -->
+        <!-- 4. Grille Visuelle des Genres (Données 100% Réelles) -->
         <section>
           <div class="section-header">
             <div class="section-title-wrap">
@@ -131,15 +128,20 @@ export class ExploreView {
           </div>
 
           <div class="genres-visual-grid">
-            ${GENRES_DATA.map(genre => `
-              <div class="genre-card" style="background: ${genre.gradient};" data-genre-id="${genre.id}" data-genre-name="${genre.name}">
-                <div class="genre-card-icon">${genre.icon}</div>
-                <div>
-                  <h3 class="genre-card-name">${genre.name}</h3>
-                  <span class="genre-card-count">${genre.count} histoires</span>
+            ${GENRES_DATA.map(genre => {
+              const genreStories = this.store.getStoriesByGenre(genre.id);
+              const count = genreStories.length;
+              const countText = count === 0 ? '0 histoire' : (count === 1 ? '1 histoire' : `${count} histoires`);
+              return `
+                <div class="genre-card" style="background: ${genre.gradient};" data-genre-id="${genre.id}" data-genre-name="${genre.name}">
+                  <div class="genre-card-icon">${genre.icon}</div>
+                  <div>
+                    <h3 class="genre-card-name">${genre.name}</h3>
+                    <span class="genre-card-count">${countText}</span>
+                  </div>
                 </div>
-              </div>
-            `).join('')}
+              `;
+            }).join('')}
           </div>
         </section>
 
@@ -246,10 +248,7 @@ export class ExploreView {
         s.tags.some(t => t.toLowerCase().includes(lower))
       );
     } else if (this.selectedGenre) {
-      filtered = allStories.filter(s => 
-        s.genre.toLowerCase().includes(this.selectedGenre.toLowerCase()) || 
-        (s.secondaryGenre && s.secondaryGenre.toLowerCase().includes(this.selectedGenre.toLowerCase()))
-      );
+      filtered = this.store.getStoriesByGenre(this.selectedGenre);
     }
 
     if (headingEl) {
@@ -257,7 +256,7 @@ export class ExploreView {
     }
 
     if (countEl) {
-      countEl.textContent = `${filtered.length} histoires trouvées`;
+      countEl.textContent = `${filtered.length} histoire${filtered.length > 1 ? 's' : ''} disponible${filtered.length > 1 ? 's' : ''}`;
     }
 
     if (filtered.length === 0) {
