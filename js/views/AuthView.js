@@ -1,6 +1,9 @@
-// LIVA - Vue d'Authentification (Connexion & Inscription)
+// LIVA - Vue d'Authentification (Connexion, Inscription & Récupération de mot de passe)
 import { Toast } from '../components/Toast.js';
+import { Modal } from '../components/Modal.js';
 import { GENRES_DATA } from '../data/genres.js';
+import { SupabaseService } from '../services/supabaseClient.js';
+import { escapeHTML } from '../utils/sanitize.js';
 
 export class AuthView {
   constructor(store, router) {
@@ -13,6 +16,9 @@ export class AuthView {
   }
 
   render(params = {}) {
+    const isResetMode = params.mode === 'reset';
+    const resetEmail = params.email ? decodeURIComponent(params.email) : '';
+
     if (params.mode === 'register') {
       this.activeTab = 'register';
     } else if (params.mode === 'login') {
@@ -42,26 +48,34 @@ export class AuthView {
               <span class="brand-badge-dot"></span>
             </div>
             <h1 class="auth-title" id="auth-main-title">
-              ${this.activeTab === 'login' ? 'Bon retour parmi nous 👋' : 'Rejoignez l\'aventure LIVA ✨'}
+              ${isResetMode 
+                ? 'Nouveau mot de passe 🔒' 
+                : this.activeTab === 'login' 
+                  ? 'Bon retour parmi nous 👋' 
+                  : 'Rejoignez l\'aventure LIVA ✨'}
             </h1>
             <p class="auth-subtitle" id="auth-main-subtitle">
-              ${this.activeTab === 'login' 
-                ? 'Connectez-vous pour retrouver vos lectures et vos auteurs favoris.' 
-                : 'Créez votre compte gratuit et explorez des milliers de récits.'}
+              ${isResetMode 
+                ? 'Définissez votre nouveau mot de passe sécurisé pour accéder à votre compte.' 
+                : this.activeTab === 'login' 
+                  ? 'Connectez-vous pour retrouver vos lectures et vos auteurs favoris.' 
+                  : 'Créez votre compte gratuit et explorez des milliers de récits.'}
             </p>
           </div>
 
-          <!-- 2. Commutateur d'onglets (Connexion / Inscription) -->
-          <div class="auth-tabs-switcher">
-            <button class="auth-tab-btn ${this.activeTab === 'login' ? 'active' : ''}" id="tab-btn-login" data-tab="login">
-              <span>🔐</span>
-              <span>Connexion</span>
-            </button>
-            <button class="auth-tab-btn ${this.activeTab === 'register' ? 'active' : ''}" id="tab-btn-register" data-tab="register">
-              <span>✍️</span>
-              <span>Inscription</span>
-            </button>
-          </div>
+          ${!isResetMode ? `
+            <!-- 2. Commutateur d'onglets (Connexion / Inscription) -->
+            <div class="auth-tabs-switcher">
+              <button class="auth-tab-btn ${this.activeTab === 'login' ? 'active' : ''}" id="tab-btn-login" data-tab="login">
+                <span>🔐</span>
+                <span>Connexion</span>
+              </button>
+              <button class="auth-tab-btn ${this.activeTab === 'register' ? 'active' : ''}" id="tab-btn-register" data-tab="register">
+                <span>✍️</span>
+                <span>Inscription</span>
+              </button>
+            </div>
+          ` : ''}
 
           <!-- 3. Formulaire de Connexion -->
           <form class="auth-form ${this.activeTab === 'login' ? '' : 'hidden'}" id="form-login" onsubmit="return false;">
@@ -204,21 +218,121 @@ export class AuthView {
             </button>
           </form>
 
-          <!-- 5. Séparateur & Connexion Sociale -->
-          <div class="auth-divider">Ou continuer avec</div>
+          <!-- 6. Formulaire Définition Nouveau Mot de Passe (Mode Reset) -->
+          ${isResetMode ? `
+            <form class="auth-form" id="form-reset-password" onsubmit="return false;">
+              <div class="form-group">
+                <label class="form-label" for="reset-email">Adresse Email associée</label>
+                <div class="auth-input-wrap">
+                  <span class="auth-input-icon">✉️</span>
+                  <input 
+                    type="email" 
+                    id="reset-email" 
+                    class="auth-input" 
+                    value="${escapeHTML(resetEmail)}" 
+                    placeholder="votre.email@domaine.com" 
+                    required 
+                  />
+                </div>
+              </div>
 
-          <div class="auth-social-row">
-            <button type="button" class="auth-social-btn" id="btn-social-google">
-              <span style="font-size: 1.1rem;">🌐</span>
-              <span>Google</span>
-            </button>
-            <button type="button" class="auth-social-btn" id="btn-social-apple">
-              <span style="font-size: 1.1rem;">🍏</span>
-              <span>Apple</span>
-            </button>
-          </div>
+              <div class="form-group">
+                <label class="form-label" for="reset-new-password">Nouveau mot de passe</label>
+                <div class="auth-input-wrap">
+                  <span class="auth-input-icon">🔒</span>
+                  <input 
+                    type="password" 
+                    id="reset-new-password" 
+                    class="auth-input" 
+                    placeholder="Au moins 6 caractères" 
+                    required 
+                    autocomplete="new-password"
+                  />
+                  <button type="button" class="auth-toggle-pwd-btn" data-target="reset-new-password" title="Afficher/Masquer">
+                    👁️
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="reset-confirm-password">Confirmer le mot de passe</label>
+                <div class="auth-input-wrap">
+                  <span class="auth-input-icon">🔒</span>
+                  <input 
+                    type="password" 
+                    id="reset-confirm-password" 
+                    class="auth-input" 
+                    placeholder="Retapez le mot de passe" 
+                    required 
+                    autocomplete="new-password"
+                  />
+                  <button type="button" class="auth-toggle-pwd-btn" data-target="reset-confirm-password" title="Afficher/Masquer">
+                    👁️
+                  </button>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-lg" id="btn-submit-reset-password" style="width: 100%; margin-top: var(--space-2);">
+                Enregistrer mon nouveau mot de passe 🚀
+              </button>
+
+              <div style="text-align: center; margin-top: var(--space-4);">
+                <a href="#/auth?mode=login" class="auth-forgot-link" style="font-size: 0.9rem;">
+                  ← Retour à la connexion
+                </a>
+              </div>
+            </form>
+          ` : ''}
+
+          ${!isResetMode ? `
+            <!-- 5. Séparateur & Connexion Sociale -->
+            <div class="auth-divider">Ou continuer avec</div>
+
+            <div class="auth-social-row">
+              <button type="button" class="auth-social-btn" id="btn-social-google">
+                <span style="font-size: 1.1rem;">🌐</span>
+                <span>Google</span>
+              </button>
+              <button type="button" class="auth-social-btn" id="btn-social-apple">
+                <span style="font-size: 1.1rem;">🍏</span>
+                <span>Apple</span>
+              </button>
+            </div>
+          ` : ''}
 
         </div>
+
+        <!-- Modal Réinitialisation de Mot de Passe -->
+        <div class="modal-overlay" id="modal-forgot-password">
+          <div class="modal-card" style="max-width: 440px; padding: var(--space-6); background: rgba(18, 14, 28, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--radius-2xl); backdrop-filter: blur(20px);">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
+              <h2 style="font-size: 1.25rem; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+                <span>🔑</span> Mot de passe oublié
+              </h2>
+              <button class="btn btn-ghost btn-sm" id="btn-close-forgot-modal" style="font-size: 1.1rem; padding: 4px 8px;">✕</button>
+            </div>
+            <p style="color: var(--color-text-secondary); font-size: 0.9rem; margin-bottom: var(--space-4); line-height: 1.5;">
+              Entrez l'adresse email associée à votre compte LIVA. Supabase vous transmettra un lien sécurisé pour définir un nouveau mot de passe.
+            </p>
+            <div class="form-group" style="margin-bottom: var(--space-4);">
+              <label class="form-label" for="forgot-email-input">Votre adresse email</label>
+              <div class="auth-input-wrap">
+                <span class="auth-input-icon">✉️</span>
+                <input 
+                  type="email" 
+                  id="forgot-email-input" 
+                  class="auth-input" 
+                  placeholder="Ex: nom@exemple.com" 
+                  required 
+                />
+              </div>
+            </div>
+            <button class="btn btn-primary btn-lg" id="btn-submit-forgot-email" style="width: 100%; justify-content: center; gap: 8px;">
+              <span>Envoyer le lien de réinitialisation</span> <span>✉️</span>
+            </button>
+          </div>
+        </div>
+
       </div>
     `;
   }
@@ -340,12 +454,29 @@ export class AuthView {
     const submitRegisterBtn = container.querySelector('#btn-submit-register');
     submitRegisterBtn?.addEventListener('click', () => this.handleRegister());
 
-    // Forgot Password
+    // Forgot Password Trigger & Modal
     const forgotBtn = container.querySelector('#btn-forgot-password');
+    const forgotModalCloseBtn = container.querySelector('#btn-close-forgot-modal');
+    const submitForgotEmailBtn = container.querySelector('#btn-submit-forgot-email');
+
     forgotBtn?.addEventListener('click', () => {
-      const email = container.querySelector('#login-identifier')?.value.trim() || 'votre adresse email';
-      Toast.show(`Un lien de réinitialisation a été envoyé à ${email} ✉️`, 'info', '🔑', 3500);
+      const loginIdentifier = container.querySelector('#login-identifier')?.value.trim() || '';
+      const forgotEmailInput = container.querySelector('#forgot-email-input');
+      if (forgotEmailInput && loginIdentifier.includes('@')) {
+        forgotEmailInput.value = loginIdentifier;
+      }
+      Modal.open('modal-forgot-password');
     });
+
+    forgotModalCloseBtn?.addEventListener('click', () => {
+      Modal.close('modal-forgot-password');
+    });
+
+    submitForgotEmailBtn?.addEventListener('click', () => this.handleForgotPassword());
+
+    // Submit Reset Password (mode === 'reset')
+    const submitResetBtn = container.querySelector('#btn-submit-reset-password');
+    submitResetBtn?.addEventListener('click', () => this.handleResetPassword());
 
     // Social buttons
     container.querySelector('#btn-social-google')?.addEventListener('click', () => {
@@ -486,6 +617,82 @@ export class AuthView {
             this.container.querySelector('#login-password')?.focus();
           }
         }, 1200);
+      }
+    }
+  }
+
+  async handleForgotPassword() {
+    const emailInput = this.container.querySelector('#forgot-email-input');
+    const submitBtn = this.container.querySelector('#btn-submit-forgot-email');
+    const email = emailInput?.value.trim();
+
+    if (!email || !email.includes('@')) {
+      Toast.show('Veuillez renseigner une adresse email valide.', 'warning', '⚠️');
+      emailInput?.focus();
+      return;
+    }
+
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span>Envoi en cours...</span> <span style="animation: spin 1s linear infinite;">⏳</span>';
+    }
+
+    try {
+      await SupabaseService.resetPassword(email);
+      Modal.close('modal-forgot-password');
+      Toast.show(`Un email de réinitialisation sécurisé a été envoyé à ${email} ! Vérifiez votre boîte de réception et vos spams. ✉️`, 'success', '🔑', 7000);
+    } catch (err) {
+      Toast.show(err.message || 'Impossible d\'envoyer le mail de réinitialisation.', 'error', '⚠️', 5000);
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span>Envoyer le lien de réinitialisation</span> <span>✉️</span>';
+      }
+    }
+  }
+
+  async handleResetPassword() {
+    const emailInput = this.container.querySelector('#reset-email');
+    const newPwdInput = this.container.querySelector('#reset-new-password');
+    const confirmPwdInput = this.container.querySelector('#reset-confirm-password');
+    const submitBtn = this.container.querySelector('#btn-submit-reset-password');
+
+    const email = emailInput?.value.trim();
+    const newPassword = newPwdInput?.value.trim();
+    const confirmPassword = confirmPwdInput?.value.trim();
+
+    if (!email || !email.includes('@')) {
+      Toast.show('Adresse email invalide.', 'warning', '⚠️');
+      return;
+    }
+
+    if (!newPassword || newPassword.length < 6) {
+      Toast.show('Le nouveau mot de passe doit contenir au moins 6 caractères.', 'warning', '⚠️');
+      newPwdInput?.focus();
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      Toast.show('Les deux mots de passe ne correspondent pas.', 'error', '❌');
+      confirmPwdInput?.focus();
+      return;
+    }
+
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Mise à jour en cours...';
+    }
+
+    try {
+      await SupabaseService.updateUserPassword(email, newPassword);
+      Toast.show('Votre mot de passe a été mis à jour avec succès ! Vous pouvez maintenant vous connecter. 🎉', 'success', '✨', 6000);
+      this.router.navigate('/auth?mode=login');
+    } catch (err) {
+      Toast.show(err.message || 'Erreur lors de la mise à jour du mot de passe.', 'error', '⚠️', 5000);
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Enregistrer mon nouveau mot de passe 🚀';
       }
     }
   }

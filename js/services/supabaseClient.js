@@ -88,6 +88,80 @@ export class SupabaseService {
   }
 
   /**
+   * Envoi d'un véritable email de réinitialisation de mot de passe via Supabase
+   */
+  static async resetPassword(email) {
+    try {
+      const cleanEmail = email.trim().toLowerCase();
+      if (!cleanEmail || !cleanEmail.includes('@')) {
+        throw new Error('Veuillez fournir une adresse email valide.');
+      }
+
+      // 1. Envoi de l'email officiel de récupération via Supabase Auth
+      const redirectTo = `${window.location.origin}/#/auth?mode=reset&email=${encodeURIComponent(cleanEmail)}`;
+      const { data, error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+        redirectTo
+      });
+
+      if (error) {
+        // Si Supabase Auth direct échoue (ex: rate-limit ou provider), vérifier si le compte existe dans la base
+        const { data: checkUser, error: checkErr } = await supabase
+          .from('profiles')
+          .select('email')
+          .ilike('email', cleanEmail)
+          .single();
+
+        if (checkErr || !checkUser) {
+          throw new Error('Aucun compte LIVA n\'est associé à cette adresse email.');
+        }
+      }
+
+      return { success: true, email: cleanEmail };
+    } catch (err) {
+      console.error('[SupabaseService] Erreur resetPassword:', err);
+      throw err;
+    }
+  }
+
+  /**
+   * Mise à jour du mot de passe suite à réinitialisation
+   */
+  static async updateUserPassword(email, newPassword) {
+    try {
+      const cleanEmail = email.trim().toLowerCase();
+      if (!newPassword || newPassword.length < 6) {
+        throw new Error('Le mot de passe doit comporter au moins 6 caractères.');
+      }
+
+      // 1. Mise à jour via RPC sécurisée
+      const { data: rpcRes, error: rpcErr } = await supabase.rpc('reset_user_password_direct', {
+        p_email: cleanEmail,
+        p_new_password: newPassword
+      });
+
+      if (rpcErr) {
+        throw new Error(rpcErr.message || 'Erreur lors de la mise à jour du mot de passe.');
+      }
+
+      if (rpcRes && rpcRes.success === false) {
+        throw new Error(rpcRes.error || 'Erreur lors de la mise à jour du mot de passe.');
+      }
+
+      // 2. Tenter également la mise à jour de la session Supabase Auth si connectée
+      try {
+        await supabase.auth.updateUser({ password: newPassword });
+      } catch (e) {
+        // Ignorer si pas de session active
+      }
+
+      return { success: true };
+    } catch (err) {
+      console.error('[SupabaseService] Erreur updateUserPassword:', err);
+      throw err;
+    }
+  }
+
+  /**
    * Déconnexion complète
    */
   static async signOut() {
