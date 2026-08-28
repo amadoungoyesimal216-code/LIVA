@@ -73,8 +73,7 @@ export class AuthView {
                   type="text" 
                   id="login-identifier" 
                   class="auth-input" 
-                  placeholder="nom@exemple.com ou @pseudo" 
-                  value="alex@liva.com"
+                  placeholder="Ex: nom@exemple.com ou @pseudo" 
                   required 
                   autocomplete="username"
                 />
@@ -89,8 +88,7 @@ export class AuthView {
                   type="password" 
                   id="login-password" 
                   class="auth-input" 
-                  placeholder="••••••••••••" 
-                  value="liva2026"
+                  placeholder="Entrez votre mot de passe..." 
                   required 
                   autocomplete="current-password"
                 />
