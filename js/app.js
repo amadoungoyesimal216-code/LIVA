@@ -1,38 +1,38 @@
 // LIVA - Application Principale & Routeur SPA
-import { store } from './state/store.js?v=17';
-import { ThemeManager } from './features/themeManager.js?v=17';
-import { AudioPlayer } from './features/audioPlayer.js?v=17';
-import { Toast } from './components/Toast.js?v=17';
-import { Modal } from './components/Modal.js?v=17';
-import { GENRES_DATA } from './data/genres.js?v=17';
-import { SupabaseAdminService } from './services/supabaseAdmin.js?v=17';
+import { store, DEFAULT_AVATAR } from './state/store.js?v=18';
+import { ThemeManager } from './features/themeManager.js?v=18';
+import { AudioPlayer } from './features/audioPlayer.js?v=18';
+import { Toast } from './components/Toast.js?v=18';
+import { Modal } from './components/Modal.js?v=18';
+import { GENRES_DATA } from './data/genres.js?v=18';
+import { SupabaseAdminService } from './services/supabaseAdmin.js?v=18';
 
 // Views Liva User
-import { HomeView } from './views/HomeView.js?v=17';
-import { ExploreView } from './views/ExploreView.js?v=17';
-import { StoryView } from './views/StoryView.js?v=17';
-import { ReaderView } from './views/ReaderView.js?v=17';
-import { LibraryView } from './views/LibraryView.js?v=17';
-import { CreateView } from './views/CreateView.js?v=17';
-import { ProfileView } from './views/ProfileView.js?v=17';
-import { SwipeView } from './views/SwipeView.js?v=17';
-import { OnboardingView } from './views/OnboardingView.js?v=17';
-import { AuthView } from './views/AuthView.js?v=17';
+import { HomeView } from './views/HomeView.js?v=18';
+import { ExploreView } from './views/ExploreView.js?v=18';
+import { StoryView } from './views/StoryView.js?v=18';
+import { ReaderView } from './views/ReaderView.js?v=18';
+import { LibraryView } from './views/LibraryView.js?v=18';
+import { CreateView } from './views/CreateView.js?v=18';
+import { ProfileView } from './views/ProfileView.js?v=18';
+import { SwipeView } from './views/SwipeView.js?v=18';
+import { OnboardingView } from './views/OnboardingView.js?v=18';
+import { AuthView } from './views/AuthView.js?v=18';
 
 // Views Liva Admin
-import { AdminLayout } from './views/admin/AdminLayout.js?v=17';
-import { AdminDashboardView } from './views/admin/AdminDashboardView.js?v=17';
-import { AdminStoriesView } from './views/admin/AdminStoriesView.js?v=17';
-import { AdminChaptersView } from './views/admin/AdminChaptersView.js?v=17';
-import { AdminAuthorsView } from './views/admin/AdminAuthorsView.js?v=17';
-import { AdminUsersView } from './views/admin/AdminUsersView.js?v=17';
-import { AdminCommentsView } from './views/admin/AdminCommentsView.js?v=17';
-import { AdminModerationView } from './views/admin/AdminModerationView.js?v=17';
-import { AdminCategoriesView } from './views/admin/AdminCategoriesView.js?v=17';
-import { AdminNotificationsView } from './views/admin/AdminNotificationsView.js?v=17';
-import { AdminAnalyticsView } from './views/admin/AdminAnalyticsView.js?v=17';
-import { AdminSettingsView } from './views/admin/AdminSettingsView.js?v=17';
-import { AdminLogsView } from './views/admin/AdminLogsView.js?v=17';
+import { AdminLayout } from './views/admin/AdminLayout.js?v=18';
+import { AdminDashboardView } from './views/admin/AdminDashboardView.js?v=18';
+import { AdminStoriesView } from './views/admin/AdminStoriesView.js?v=18';
+import { AdminChaptersView } from './views/admin/AdminChaptersView.js?v=18';
+import { AdminAuthorsView } from './views/admin/AdminAuthorsView.js?v=18';
+import { AdminUsersView } from './views/admin/AdminUsersView.js?v=18';
+import { AdminCommentsView } from './views/admin/AdminCommentsView.js?v=18';
+import { AdminModerationView } from './views/admin/AdminModerationView.js?v=18';
+import { AdminCategoriesView } from './views/admin/AdminCategoriesView.js?v=18';
+import { AdminNotificationsView } from './views/admin/AdminNotificationsView.js?v=18';
+import { AdminAnalyticsView } from './views/admin/AdminAnalyticsView.js?v=18';
+import { AdminSettingsView } from './views/admin/AdminSettingsView.js?v=18';
+import { AdminLogsView } from './views/admin/AdminLogsView.js?v=18';
 
 class AppRouter {
   constructor(store) {
@@ -241,12 +241,12 @@ class AppRouter {
 
     if (sideUserName) sideUserName.textContent = isAuth ? user.name : 'Se connecter';
     if (sideUserHandle) sideUserHandle.textContent = isAuth ? user.username : 'Créer un compte';
-    if (sideUserAvatar) sideUserAvatar.src = isAuth ? user.avatar : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80';
+    if (sideUserAvatar) sideUserAvatar.src = isAuth && user.avatar ? user.avatar : DEFAULT_AVATAR;
 
     // Topbar mobile avatar
     const topbarAvatar = document.querySelector('.topbar-avatar-wrap img');
     if (topbarAvatar) {
-      topbarAvatar.src = user.avatar;
+      topbarAvatar.src = isAuth && user.avatar ? user.avatar : DEFAULT_AVATAR;
       topbarAvatar.title = isAuth ? user.name : 'Se connecter';
     }
   }

@@ -12,6 +12,8 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   }
 });
 
+export const DEFAULT_AVATAR = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiB2aWV3Qm94PSIwIDAgMTI4IDEyOCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjNzkyOENBIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjRkYwMDgwIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIHJ4PSI2NCIgZmlsbD0idXJsKCNncmFkKSIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNTAiIHI9IjIyIiBmaWxsPSIjRkZGRkZGIiBvcGFjaXR5PSIwLjkiLz48cGF0aCBkPSJNMjggMTA2IEMyOCA4NCA0NCA3NiA2NCA3NiBDODQgNzYgMTAwIDg0IDEwMCAxMDYgWiIgZmlsbD0iI0ZGRkZGRiIgb3BhY2l0eT0iMC45Ii8+PC9zdmc+';
+
 /**
  * Service de persistance et d'authentification Supabase pour LIVA
  */
@@ -419,7 +421,7 @@ export class SupabaseService {
         subtitle: story.subtitle || '',
         author_id: story.authorId || 'user-current',
         author_name: story.authorName || 'Auteur LIVA',
-        author_avatar: story.authorAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=400&q=80',
+        author_avatar: story.authorAvatar || DEFAULT_AVATAR,
         cover: story.cover,
         banner: story.banner || story.cover,
         genre: story.genre,
@@ -490,7 +492,7 @@ export class SupabaseService {
           id: r.id.replace(`${s.id}-`, ''),
           userId: r.user_id,
           userName: r.user_name,
-          userAvatar: r.user_avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=400&q=80',
+          userAvatar: r.user_avatar || DEFAULT_AVATAR,
           rating: r.rating,
           date: r.date,
           content: r.content,
