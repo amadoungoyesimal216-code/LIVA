@@ -174,7 +174,7 @@ export class StoryView {
 
           <!-- Fil des Commentaires -->
           <div class="comments-stream" id="comments-stream-list">
-            ${(story.reviews || []).map(rev => `
+            ${(story.reviews && story.reviews.length > 0) ? (story.reviews).map(rev => `
               <div class="comment-card" data-comment-id="${rev.id}">
                 <img src="${rev.userAvatar}" alt="${escapeHTML(rev.userName)}" class="avatar avatar-md" />
                 <div class="comment-body">
@@ -197,7 +197,11 @@ export class StoryView {
                   <div class="replies-sub-list" style="margin-top: var(--space-2); display: flex; flex-direction: column; gap: var(--space-2);"></div>
                 </div>
               </div>
-            `).join('')}
+            `).join('') : `
+              <div style="text-align: center; padding: var(--space-6); color: var(--text-muted); font-size: 0.9rem;">
+                💬 Soyez le premier lecteur à partager votre avis sur cette histoire !
+              </div>
+            `}
           </div>
         </section>
 

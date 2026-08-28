@@ -433,6 +433,32 @@ class AppStore {
     });
   }
 
+  /**
+   * Marque explicitement une histoire comme 100% terminée
+   */
+  markStoryAsFinished(storyId) {
+    const story = this.getStoryById(storyId);
+    const lastChapterIndex = story && story.chapters && story.chapters.length > 0 ? story.chapters.length - 1 : 0;
+    const lastChapterId = story && story.chapters && story.chapters[lastChapterIndex] ? story.chapters[lastChapterIndex].id : '';
+
+    this.updateReadingProgress(storyId, lastChapterIndex, lastChapterId, 100);
+
+    if (!this.state.library.finished.includes(storyId)) {
+      this.state.library.finished.unshift(storyId);
+      this.state.user.stats.storiesRead = this.state.library.finished.length;
+      this.saveState();
+    }
+
+    if (this.state.isAuthenticated && this.state.user?.id) {
+      SupabaseService.syncUserLibrary(this.state.user.id, storyId, {
+        progressPercent: 100,
+        currentChapterIndex: lastChapterIndex
+      });
+    }
+
+    this.notify('STORY_FINISHED', { storyId });
+  }
+
   createCollection(name, icon = '📚') {
     const newCol = {
       id: 'col-' + Date.now(),

@@ -174,6 +174,31 @@ export class ReaderView {
           </button>
         </div>
 
+        <!-- 6. Modale Félicitations Fin d'Histoire -->
+        <div class="modal-overlay" id="modal-story-completed">
+          <div class="modal-card" style="max-width: 480px; text-align: center; padding: var(--space-6);">
+            <div style="font-size: 3.5rem; margin-bottom: var(--space-3); line-height: 1;">🏆</div>
+            <h2 style="font-size: 1.5rem; font-weight: 800; font-family: var(--font-display); margin-bottom: 8px;">
+              Histoire terminée !
+            </h2>
+            <p style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: var(--space-5); line-height: 1.5;">
+              Félicitations, vous êtes venu à bout de <strong>« ${escapeHTML(this.story.title)} »</strong> ! Votre progression est enregistrée à 100%.
+            </p>
+
+            <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+              <button class="btn btn-primary" id="btn-modal-rate-story" style="justify-content: center; gap: 8px; width: 100%;">
+                ⭐ Donner mon avis & Noter
+              </button>
+              <button class="btn btn-secondary" id="btn-modal-go-library" style="justify-content: center; gap: 8px; width: 100%;">
+                📚 Voir ma bibliothèque
+              </button>
+              <button class="btn btn-ghost" id="btn-modal-explore-more" style="justify-content: center; gap: 8px; width: 100%;">
+                🔍 Découvrir une autre histoire
+              </button>
+            </div>
+          </div>
+        </div>
+
       </div>
     `;
   }
@@ -322,11 +347,40 @@ export class ReaderView {
     const finishBtn = container.querySelector('#btn-finish-story');
     if (finishBtn) {
       finishBtn.addEventListener('click', () => {
-        this.store.markStoryAsFinished(this.story.id);
-        Toast.show('Félicitations ! Histoire ajoutée à vos lectures terminées 🏆', 'success', '🎉');
-        this.router.navigate(`/library`);
+        try {
+          this.store.markStoryAsFinished(this.story.id);
+          Toast.show('Félicitations ! Histoire ajoutée à vos lectures terminées 🏆', 'success', '🎉');
+        } catch (e) {
+          console.error('[ReaderView] Erreur fin d\'histoire:', e);
+        }
+
+        const modal = container.querySelector('#modal-story-completed');
+        if (modal) {
+          modal.classList.add('active');
+        } else {
+          this.router.navigate('/library');
+        }
       });
     }
+
+    // Modal story completed buttons
+    container.querySelector('#btn-modal-rate-story')?.addEventListener('click', () => {
+      const modal = container.querySelector('#modal-story-completed');
+      if (modal) modal.classList.remove('active');
+      this.router.navigate(`/story/${this.story.id}`);
+    });
+
+    container.querySelector('#btn-modal-go-library')?.addEventListener('click', () => {
+      const modal = container.querySelector('#modal-story-completed');
+      if (modal) modal.classList.remove('active');
+      this.router.navigate('/library');
+    });
+
+    container.querySelector('#btn-modal-explore-more')?.addEventListener('click', () => {
+      const modal = container.querySelector('#modal-story-completed');
+      if (modal) modal.classList.remove('active');
+      this.router.navigate('/explore');
+    });
 
     // Text Selection Event Listener & Floating Popover
     document.addEventListener('selectionchange', () => {
