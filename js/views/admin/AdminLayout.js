@@ -49,13 +49,16 @@ export class AdminLayout {
       <div class="admin-view-root">
         
         <!-- SIDEBAR ADMIN -->
-        <aside class="admin-sidebar">
+        <aside class="admin-sidebar" id="admin-sidebar">
           <div class="admin-sidebar-header">
             <a href="#/admin" class="admin-brand">
               <span style="font-size: 1.4rem;">📖</span>
               <span class="admin-brand-logo">LIVA <span style="font-size: 0.85rem; color: var(--color-primary-light); font-weight: 500;">Admin</span></span>
             </a>
-            <span class="admin-badge-role">${escapeHTML(role)}</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="admin-badge-role">${escapeHTML(role)}</span>
+              <button class="btn btn-icon admin-sidebar-close-btn" id="btn-admin-sidebar-close" title="Fermer le menu">✕</button>
+            </div>
           </div>
 
           <div class="admin-nav-menu">
@@ -164,26 +167,32 @@ export class AdminLayout {
           </div>
         </aside>
 
+        <!-- BACKDROP MOBILE -->
+        <div class="admin-sidebar-backdrop" id="admin-sidebar-backdrop"></div>
+
         <!-- MAIN WRAPPER -->
         <div class="admin-main-wrapper">
           
           <!-- TOPBAR -->
           <header class="admin-topbar">
             <div class="admin-topbar-left">
+              <button class="btn btn-icon admin-mobile-toggle" id="btn-admin-mobile-toggle" aria-label="Menu Admin" title="Ouvrir le menu">
+                ☰
+              </button>
               <div class="admin-breadcrumbs">
-                <span>Liva Admin</span>
+                <span class="admin-bread-root">Liva Admin</span>
                 <span>/</span>
                 <span class="active">${sectionTitles[this.currentSection] || 'Administration'}</span>
               </div>
             </div>
 
             <div class="admin-topbar-right">
-              <a href="#/" class="btn btn-secondary btn-sm" style="font-size: 0.82rem;">
-                👁️ Voir Liva User
+              <a href="#/" class="btn btn-secondary btn-sm admin-topbar-btn" style="font-size: 0.82rem;">
+                👁️ <span class="hide-mobile-sm">Voir</span> Liva
               </a>
               ${!isModOnly ? `
-                <button class="btn btn-primary btn-sm" id="btn-admin-quick-story">
-                  + Nouvelle histoire
+                <button class="btn btn-primary btn-sm admin-topbar-btn" id="btn-admin-quick-story">
+                  + <span class="hide-mobile-sm">Nouvelle histoire</span><span class="show-mobile-sm">Histoire</span>
                 </button>
               ` : ''}
             </div>
@@ -201,6 +210,35 @@ export class AdminLayout {
   }
 
   attachEvents(container) {
+    const toggleBtn = container.querySelector('#btn-admin-mobile-toggle');
+    const closeBtn = container.querySelector('#btn-admin-sidebar-close');
+    const sidebar = container.querySelector('#admin-sidebar');
+    const backdrop = container.querySelector('#admin-sidebar-backdrop');
+
+    const openSidebar = () => {
+      sidebar?.classList.add('open');
+      backdrop?.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    };
+
+    const closeSidebar = () => {
+      sidebar?.classList.remove('open');
+      backdrop?.classList.remove('active');
+      document.body.style.overflow = '';
+    };
+
+    if (toggleBtn) toggleBtn.addEventListener('click', openSidebar);
+    if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+    if (backdrop) backdrop.addEventListener('click', closeSidebar);
+
+    container.querySelectorAll('.admin-nav-item').forEach(item => {
+      item.addEventListener('click', () => {
+        if (window.innerWidth <= 900) {
+          closeSidebar();
+        }
+      });
+    });
+
     container.querySelector('#btn-admin-quick-story')?.addEventListener('click', () => {
       this.router.navigate('/admin/stories?action=new');
     });
