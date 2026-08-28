@@ -109,12 +109,6 @@ export class AuthView {
             <button type="submit" class="btn btn-primary btn-lg" id="btn-submit-login" style="width: 100%; margin-top: var(--space-1);">
               Se connecter 🚀
             </button>
-
-            <!-- Bouton Démo Rapide -->
-            <button type="button" class="auth-demo-btn" id="btn-quick-demo-login">
-              <span>⚡</span>
-              <span>Connexion en 1 clic (Compte Démo Alexandre Sow)</span>
-            </button>
           </form>
 
           <!-- 4. Formulaire d'Inscription (Souscription) -->
@@ -341,14 +335,6 @@ export class AuthView {
     // Submit Login
     const submitLoginBtn = container.querySelector('#btn-submit-login');
     submitLoginBtn?.addEventListener('click', () => this.handleLogin());
-
-    // 1-Click Demo Login
-    const demoLoginBtn = container.querySelector('#btn-quick-demo-login');
-    demoLoginBtn?.addEventListener('click', () => {
-      this.store.login('alex@liva.com', 'liva2026');
-      Toast.show('Bienvenue Alexandre ! Connexion réussie.', 'success', '👋');
-      this.router.navigate('/profile');
-    });
 
     // Submit Register
     const submitRegisterBtn = container.querySelector('#btn-submit-register');
