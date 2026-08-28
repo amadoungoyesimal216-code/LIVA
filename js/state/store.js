@@ -151,6 +151,8 @@ class AppStore {
           username: profile.username || '@lecteur',
           avatar: profile.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=400&q=80',
           bio: profile.bio || '',
+          role: profile.role || (['amadoungoyesimal216@gmail.com', 'pangoyesimal@gmail.com'].includes(profile.email || email) ? 'ADMIN' : 'USER'),
+          status: profile.status || 'active',
           stats: profile.stats || {
             storiesRead: (libraryData?.reading || []).filter(r => r.progressPercent >= 100).length,
             hoursRead: 0,
@@ -171,6 +173,8 @@ class AppStore {
           username: `@${email.split('@')[0]}`,
           avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=400&q=80',
           bio: '',
+          role: (['amadoungoyesimal216@gmail.com', 'pangoyesimal@gmail.com'].includes(email) ? 'ADMIN' : 'USER'),
+          status: 'active',
           stats: { storiesRead: 0, hoursRead: 0, followingCount: 0, followersCount: 0, likesCount: 0 },
           favoriteGenres: [],
           followedAuthorIds: [],

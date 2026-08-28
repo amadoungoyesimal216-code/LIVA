@@ -1,22 +1,38 @@
 // LIVA - Application Principale & Routeur SPA
-import { store } from './state/store.js?v=13';
-import { ThemeManager } from './features/themeManager.js?v=13';
-import { AudioPlayer } from './features/audioPlayer.js?v=13';
-import { Toast } from './components/Toast.js?v=13';
-import { Modal } from './components/Modal.js?v=13';
-import { GENRES_DATA } from './data/genres.js?v=13';
+import { store } from './state/store.js?v=14';
+import { ThemeManager } from './features/themeManager.js?v=14';
+import { AudioPlayer } from './features/audioPlayer.js?v=14';
+import { Toast } from './components/Toast.js?v=14';
+import { Modal } from './components/Modal.js?v=14';
+import { GENRES_DATA } from './data/genres.js?v=14';
+import { SupabaseAdminService } from './services/supabaseAdmin.js?v=14';
 
-// Views
-import { HomeView } from './views/HomeView.js?v=13';
-import { ExploreView } from './views/ExploreView.js?v=13';
-import { StoryView } from './views/StoryView.js?v=13';
-import { ReaderView } from './views/ReaderView.js?v=13';
-import { LibraryView } from './views/LibraryView.js?v=13';
-import { CreateView } from './views/CreateView.js?v=13';
-import { ProfileView } from './views/ProfileView.js?v=13';
-import { SwipeView } from './views/SwipeView.js?v=13';
-import { OnboardingView } from './views/OnboardingView.js?v=13';
-import { AuthView } from './views/AuthView.js?v=13';
+// Views Liva User
+import { HomeView } from './views/HomeView.js?v=14';
+import { ExploreView } from './views/ExploreView.js?v=14';
+import { StoryView } from './views/StoryView.js?v=14';
+import { ReaderView } from './views/ReaderView.js?v=14';
+import { LibraryView } from './views/LibraryView.js?v=14';
+import { CreateView } from './views/CreateView.js?v=14';
+import { ProfileView } from './views/ProfileView.js?v=14';
+import { SwipeView } from './views/SwipeView.js?v=14';
+import { OnboardingView } from './views/OnboardingView.js?v=14';
+import { AuthView } from './views/AuthView.js?v=14';
+
+// Views Liva Admin
+import { AdminLayout } from './views/admin/AdminLayout.js?v=14';
+import { AdminDashboardView } from './views/admin/AdminDashboardView.js?v=14';
+import { AdminStoriesView } from './views/admin/AdminStoriesView.js?v=14';
+import { AdminChaptersView } from './views/admin/AdminChaptersView.js?v=14';
+import { AdminAuthorsView } from './views/admin/AdminAuthorsView.js?v=14';
+import { AdminUsersView } from './views/admin/AdminUsersView.js?v=14';
+import { AdminCommentsView } from './views/admin/AdminCommentsView.js?v=14';
+import { AdminModerationView } from './views/admin/AdminModerationView.js?v=14';
+import { AdminCategoriesView } from './views/admin/AdminCategoriesView.js?v=14';
+import { AdminNotificationsView } from './views/admin/AdminNotificationsView.js?v=14';
+import { AdminAnalyticsView } from './views/admin/AdminAnalyticsView.js?v=14';
+import { AdminSettingsView } from './views/admin/AdminSettingsView.js?v=14';
+import { AdminLogsView } from './views/admin/AdminLogsView.js?v=14';
 
 class AppRouter {
   constructor(store) {
@@ -38,16 +54,17 @@ class AppRouter {
     this.handleRoute();
   }
 
-  handleRoute() {
+  async handleRoute() {
     const rawHash = window.location.hash.slice(1) || '/';
     const [pathPart, queryPart] = rawHash.split('?');
     const searchParams = new URLSearchParams(queryPart || '');
     const queryObj = Object.fromEntries(searchParams.entries());
 
-    // Hide or show layout elements based on view (e.g. Reader view or Auth view)
+    // Hide or show layout elements based on view (e.g. Reader, Auth or Admin)
     const isReader = pathPart.startsWith('/reader');
     const isAuthPage = pathPart === '/auth';
-    const isStandalone = isReader || isAuthPage;
+    const isAdmin = pathPart.startsWith('/admin');
+    const isStandalone = isReader || isAuthPage || isAdmin;
 
     const desktopSidebar = document.getElementById('desktop-sidebar');
     const bottomNav = document.getElementById('bottom-nav');
@@ -92,7 +109,80 @@ class AppRouter {
       return;
     }
 
-    // Route matching
+    // ==========================================
+    // ROUTAGE SPÉCIAL LIVA ADMIN (PROTÉGÉ)
+    // ==========================================
+    if (isAdmin) {
+      if (!isAuthenticated) {
+        Toast.show('Accès réservé aux administrateurs. Connectez-vous avec un compte autorisé.', 'warning', '🔒');
+        this.navigate('/auth?mode=login');
+        return;
+      }
+
+      const userRole = (this.store.state.user.role || 'USER').toUpperCase();
+      if (userRole !== 'ADMIN' && userRole !== 'MODERATOR') {
+        Toast.show('Accès refusé : votre compte n\'a pas les autorisations d\'administration.', 'error', '⛔');
+        this.navigate('/');
+        return;
+      }
+
+      let adminSubView;
+      let section = 'dashboard';
+
+      if (pathPart === '/admin' || pathPart === '/admin/dashboard') {
+        section = 'dashboard';
+        adminSubView = new AdminDashboardView(this.store, this, SupabaseAdminService);
+      } else if (pathPart === '/admin/stories') {
+        section = 'stories';
+        adminSubView = new AdminStoriesView(this.store, this, SupabaseAdminService, queryObj);
+      } else if (pathPart === '/admin/chapters') {
+        section = 'chapters';
+        adminSubView = new AdminChaptersView(this.store, this, SupabaseAdminService, queryObj);
+      } else if (pathPart === '/admin/authors') {
+        section = 'authors';
+        adminSubView = new AdminAuthorsView(this.store, this, SupabaseAdminService, queryObj);
+      } else if (pathPart === '/admin/users') {
+        section = 'users';
+        adminSubView = new AdminUsersView(this.store, this, SupabaseAdminService, queryObj);
+      } else if (pathPart === '/admin/comments') {
+        section = 'comments';
+        adminSubView = new AdminCommentsView(this.store, this, SupabaseAdminService, queryObj);
+      } else if (pathPart === '/admin/moderation') {
+        section = 'moderation';
+        adminSubView = new AdminModerationView(this.store, this, SupabaseAdminService, queryObj);
+      } else if (pathPart === '/admin/categories') {
+        section = 'categories';
+        adminSubView = new AdminCategoriesView(this.store, this, SupabaseAdminService, queryObj);
+      } else if (pathPart === '/admin/notifications') {
+        section = 'notifications';
+        adminSubView = new AdminNotificationsView(this.store, this, SupabaseAdminService, queryObj);
+      } else if (pathPart === '/admin/analytics') {
+        section = 'analytics';
+        adminSubView = new AdminAnalyticsView(this.store, this, SupabaseAdminService, queryObj);
+      } else if (pathPart === '/admin/settings') {
+        section = 'settings';
+        adminSubView = new AdminSettingsView(this.store, this, SupabaseAdminService, queryObj);
+      } else if (pathPart === '/admin/logs') {
+        section = 'logs';
+        adminSubView = new AdminLogsView(this.store, this, SupabaseAdminService, queryObj);
+      } else {
+        section = 'dashboard';
+        adminSubView = new AdminDashboardView(this.store, this, SupabaseAdminService);
+      }
+
+      const layout = new AdminLayout(this.store, this, section, queryObj);
+      const childHtml = await adminSubView.render();
+      this.viewContainer.innerHTML = layout.render(childHtml);
+      layout.attachEvents(this.viewContainer);
+      if (typeof adminSubView.attachEvents === 'function') {
+        adminSubView.attachEvents(this.viewContainer);
+      }
+      return;
+    }
+
+    // ==========================================
+    // ROUTAGE STANDARD LIVA USER
+    // ==========================================
     if (pathPart === '/' || pathPart === '') {
       this.renderView(this.routes['/'], queryObj);
     } else if (pathPart === '/explore') {

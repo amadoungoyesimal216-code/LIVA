@@ -81,6 +81,21 @@ L'application permet aux utilisateurs :
 ### 🔔 Tiroir de Notifications
 - Menu déroulant avec compteur d'alertes non lues, filtre Toutes / Non lues et actions de purge.
 
+### 🛡️ Suite Complète Liva Admin & Back-Office (`#/admin`)
+Accessible exclusivement aux comptes autorisés (`ADMIN` et `MODERATOR`), le back-office SaaS LIVA comprend 12 sous-modules connectés en temps réel à Supabase :
+- **📊 Tableau de Bord (`AdminDashboardView`)** : KPI clés (utilisateurs, lectures, likes, avis, histoires), graphiques de performances des récits, répartition des genres littéraires, derniers utilisateurs inscrits et audit rapide.
+- **📚 Gestionnaire des Histoires (`AdminStoriesView`)** : CRUD complet, recherche textuelle en direct, filtrage par genre/statut, bascule publication/brouillon/masquage en un clic, suppression sécurisée en cascade.
+- **📑 Gestionnaire des Chapitres (`AdminChaptersView`)** : Sélection d'histoire, compteur de mots automatique en temps réel, estimation de lecture, ordonnancement et éditeur de chapitres.
+- **✍️ Gestion des Auteurs (`AdminAuthorsView`)** : Certification des profils, métriques globales de lectorat, suspension ou réactivation des comptes auteurs.
+- **👥 Gestion des Utilisateurs & Rôles (`AdminUsersView`)** : Recherche multi-critères, modale d'attribution des rôles (`USER`, `AUTHOR`, `MODERATOR`, `ADMIN`) et gestion des statuts de compte (`actif`, `suspendu`, `bloqué`).
+- **💬 Modération des Avis (`AdminCommentsView`)** : Filtrage par statut (visible, masqué, signalé), masquage instantané et suppression définitive des avis inappropriés.
+- **🚨 Centre de Signalements (`AdminModerationView`)** : Traitement des signalements sur les histoires, commentaires ou profils avec motifs et résolutions.
+- **🏷️ Catégories & Tags (`AdminCategoriesView`)** : Configuration des genres littéraires, icônes, descriptions et gestion des tags populaires.
+- **🔔 Diffusion de Notifications (`AdminNotificationsView`)** : Broadcaster multicanal vers tous les utilisateurs, les auteurs ou un membre spécifique avec aperçu instantané.
+- **📈 Analytics & Engagement (`AdminAnalyticsView`)** : Analyse de rétention, taux d'engagement, satisfaction globale (notes moyennes) et métriques approfondies par récit.
+- **⚙️ Paramètres de la Plateforme (`AdminSettingsView`)** : Configuration globale du site (nom, slogan, mode maintenance, autorisations de publication directe, anti-spam).
+- **📜 Journal d'Audit & Activités (`AdminLogsView`)** : Traçabilité immuable de toutes les actions administratives avec horodatage et auteur de l'action.
+
 ---
 
 ## 📁 3. Structure des Fichiers
@@ -109,7 +124,8 @@ LIVA/
 │   ├── profile.css                  # Hero card de profil, statistiques, badges
 │   ├── swipe-story.css              # Cartes de swipe interactives
 │   ├── audio-player.css             # Barre audio flottante persistante
-│   └── auth.css                     # Page d'authentification plein écran
+│   ├── auth.css                     # Page d'authentification plein écran
+│   └── admin.css                    # Interface pro SaaS Liva Admin
 │
 └── js/                              # Architecture JavaScript Vanilla (ES Modules)
     ├── app.js                       # Routeur SPA, gestion du cycle de vie et initialisation
@@ -128,7 +144,8 @@ LIVA/
     │   ├── Modal.js                 # Contrôleur générique des fenêtres modales
     │   └── Toast.js                 # Système de notifications Toast flottantes
     ├── services/
-    │   └── supabaseClient.js        # Client et services de persistance Supabase Cloud
+    │   ├── supabaseClient.js        # Client et services de persistance Supabase Cloud
+    │   └── supabaseAdmin.js         # Service d'administration et fonctions RPC back-office
     ├── utils/
     │   └── sanitize.js              # Utilitaires de sécurité anti-XSS (escapeHTML, sanitizeURL)
     └── views/
@@ -141,7 +158,21 @@ LIVA/
         ├── ProfileView.js           # Vue Profil utilisateur et auteur public
         ├── SwipeView.js             # Vue Découverte Swipe
         ├── OnboardingView.js        # Vue Modal de premier accueil
-        └── AuthView.js              # Vue Connexion & Inscription
+        ├── AuthView.js              # Vue Connexion & Inscription
+        └── admin/                   # Vues du Panneau d'Administration
+            ├── AdminLayout.js       # Layout et sidebar de navigation admin
+            ├── AdminDashboardView.js# Vue Dashboard & KPI
+            ├── AdminStoriesView.js  # Vue Gestion des Histoires
+            ├── AdminChaptersView.js # Vue Gestion des Chapitres
+            ├── AdminAuthorsView.js  # Vue Gestion des Auteurs
+            ├── AdminUsersView.js    # Vue Utilisateurs & Rôles
+            ├── AdminCommentsView.js # Vue Modération des Avis
+            ├── AdminModerationView.js # Vue Centre des Signalements
+            ├── AdminCategoriesView.js # Vue Catégories & Tags
+            ├── AdminNotificationsView.js # Vue Broadcaster Notifications
+            ├── AdminAnalyticsView.js# Vue Statistiques Approfondies
+            ├── AdminSettingsView.js # Vue Paramètres de la Plateforme
+            └── AdminLogsView.js     # Vue Journal d'Audit & Sécurité
 ```
 
 ---

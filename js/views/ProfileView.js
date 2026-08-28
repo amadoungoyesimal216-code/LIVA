@@ -70,6 +70,11 @@ export class ProfileView {
                 <span class="profile-handle">${escapeHTML(user.username)}</span>
               </div>
               <div class="profile-header-actions">
+                ${(user.role === 'ADMIN' || user.role === 'MODERATOR') ? `
+                  <a href="#/admin" class="btn btn-primary btn-sm" style="width: 100%; justify-content: center; padding: 7px 14px; text-decoration: none;">
+                    🛡️ Espace Administration
+                  </a>
+                ` : ''}
                 <button class="btn btn-secondary btn-sm" id="btn-edit-bio">
                   ✏️ Modifier profil
                 </button>
