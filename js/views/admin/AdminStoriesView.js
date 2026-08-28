@@ -49,10 +49,16 @@ export class AdminStoriesView {
             </p>
           </div>
 
-          <button class="btn btn-primary" id="btn-open-create-story-modal" style="gap: 8px;">
-            <span>✨</span>
-            <span>Créer une histoire complète</span>
-          </button>
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <a href="#/admin/story-engine" class="btn btn-secondary" style="gap: 8px; border-color: var(--color-primary); background: rgba(121, 40, 202, 0.1);">
+              <span>✨</span>
+              <span style="font-weight: 700; color: var(--color-primary-light);">Générer avec l'IA (Story Engine)</span>
+            </a>
+            <button class="btn btn-primary" id="btn-open-create-story-modal" style="gap: 8px;">
+              <span>✍️</span>
+              <span>Création manuelle / Manuscrit</span>
+            </button>
+          </div>
         </div>
 
         <!-- BARRE DE FILTRES ET RECHERCHE -->

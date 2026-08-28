@@ -657,6 +657,124 @@
   display: block;
 }
 
+/* 10. LIVA Story Engine Stepper & Components */
+.story-engine-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-6);
+  margin-bottom: var(--space-6);
+  overflow-x: auto;
+}
+
+.stepper-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.stepper-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg-surface-elevated);
+  border: 2px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.stepper-item.active {
+  color: var(--color-primary-light);
+}
+
+.stepper-item.active .stepper-circle {
+  background: var(--color-primary);
+  border-color: var(--color-primary-light);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(121, 40, 202, 0.4);
+}
+
+.stepper-item.completed {
+  color: var(--color-accent-emerald);
+}
+
+.stepper-item.completed .stepper-circle {
+  background: var(--color-accent-emerald);
+  border-color: var(--color-accent-emerald);
+  color: #fff;
+}
+
+.stepper-line {
+  flex: 1;
+  height: 2px;
+  background: var(--border-subtle);
+  margin: 0 var(--space-3);
+  min-width: 24px;
+}
+
+.stepper-line.active {
+  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+}
+
+.length-option-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.length-option-card:hover {
+  border-color: var(--color-primary-light);
+  transform: translateY(-2px);
+}
+
+.length-option-card.active {
+  border-color: var(--color-primary);
+  background: rgba(121, 40, 202, 0.1);
+  box-shadow: 0 0 0 2px rgba(121, 40, 202, 0.3);
+}
+
+.ai-character-card {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  transition: border-color var(--transition-fast);
+}
+
+.ai-character-card:hover {
+  border-color: var(--border-hover);
+}
+
+.quick-pitch-btn {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.quick-pitch-btn:hover {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
+
 /* 9. Responsive Mobile */
 @media (max-width: 900px) {
   .admin-sidebar {
@@ -677,4 +795,13 @@
   .admin-content-area {
     padding: var(--space-4);
   }
+  .story-engine-stepper {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+  .stepper-line {
+    display: none;
+  }
 }
+

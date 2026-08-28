@@ -73,6 +73,13 @@ export class AdminLayout {
                   <span>Histoires</span>
                 </div>
               </a>
+              <a href="#/admin/story-engine" class="admin-nav-item ${this.currentSection === 'story-engine' ? 'active' : ''}">
+                <div class="admin-nav-item-left">
+                  <span>✨</span>
+                  <span>Story Engine IA</span>
+                </div>
+                <span class="admin-nav-badge" style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); color: #fff;">IA</span>
+              </a>
               <a href="#/admin/chapters" class="admin-nav-item ${this.currentSection === 'chapters' ? 'active' : ''}">
                 <div class="admin-nav-item-left">
                   <span>📑</span>
