@@ -91,6 +91,132 @@ export class SupabaseAdminService {
     }
   }
 
+  static async upsertStoryWithChapters(story, chapters = [], adminUser) {
+    try {
+      const storyId = story.id || story.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      
+      // Calcul durée totale
+      let totalMinutes = 0;
+      chapters.forEach(ch => {
+        const words = (ch.content || '').trim().split(/\s+/).filter(Boolean).length;
+        const mins = ch.read_time_min || Math.max(1, Math.ceil(words / 200));
+        totalMinutes += mins;
+      });
+      const estimatedTime = totalMinutes > 60 
+        ? `${Math.floor(totalMinutes / 60)}h ${totalMinutes % 60} min` 
+        : `${Math.max(1, totalMinutes)} min`;
+
+      const tagsArray = Array.isArray(story.tags) 
+        ? story.tags 
+        : (story.tags || '').split(',').map(t => t.trim()).filter(Boolean);
+
+      const storyPayload = {
+        id: storyId,
+        title: story.title.trim(),
+        subtitle: story.subtitle || '',
+        author_id: story.author_id || adminUser.id,
+        author_name: story.author_name || adminUser.name,
+        author_avatar: story.author_avatar || adminUser.avatar,
+        cover: story.cover || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80',
+        banner: story.banner || story.cover,
+        genre: story.genre || 'Romance',
+        secondary_genre: story.secondary_genre || '',
+        description: story.description || '',
+        tags: tagsArray,
+        status: story.status || 'published',
+        rating: story.rating || 5.0,
+        reviews_count: story.reviews_count || 0,
+        reads_raw: story.reads_raw || 0,
+        reads_count: String(story.reads_raw || 0),
+        likes_count: story.likes_count || 0,
+        chapters_count: Math.max(1, chapters.length),
+        estimated_time: estimatedTime,
+        is_trending: Boolean(story.is_trending),
+        is_hero: Boolean(story.is_hero),
+        is_short: Boolean(story.is_short || totalMinutes <= 15),
+        created_at: story.created_at || new Date().toISOString()
+      };
+
+      const { data: savedStory, error: storyError } = await supabase.from('stories').upsert(storyPayload).select();
+      if (storyError) throw storyError;
+
+      // Enregistrement des chapitres
+      if (chapters.length > 0) {
+        const chapterPayloads = chapters.map((ch, idx) => {
+          const words = (ch.content || '').trim().split(/\s+/).filter(Boolean).length;
+          const mins = ch.read_time_min || Math.max(1, Math.ceil(words / 200));
+          return {
+            id: ch.id || `${storyId}-ch-${idx + 1}`,
+            story_id: storyId,
+            number: idx + 1,
+            title: ch.title ? ch.title.trim() : `Chapitre ${idx + 1}`,
+            duration: `${mins} min`,
+            read_time_min: mins,
+            content: ch.content || '',
+            created_at: ch.created_at || new Date().toISOString()
+          };
+        });
+
+        // Supprimer les chapitres supprimés en cas de modification
+        if (story.id) {
+          const keepIds = chapterPayloads.map(c => c.id);
+          const filterStr = `(${keepIds.map(id => `"${id}"`).join(',')})`;
+          await supabase.from('chapters').delete().eq('story_id', storyId).not('id', 'in', filterStr);
+        }
+
+        // Upsert batch
+        const { error: chError } = await supabase.from('chapters').upsert(chapterPayloads);
+        if (chError) console.warn('[SupabaseAdmin] Erreur upsert chapters batch:', chError);
+      }
+
+      await this.logAction(
+        adminUser.id,
+        adminUser.name,
+        story.id ? 'MODIFICATION_HISTOIRE' : 'CREATION_HISTOIRE',
+        'story',
+        storyId,
+        `Histoire "${story.title}" (${storyPayload.status}, ${chapters.length} chapitres) enregistrée.`
+      );
+
+      return savedStory?.[0] || storyPayload;
+    } catch (err) {
+      console.error('[SupabaseAdmin] Erreur upsertStoryWithChapters:', err);
+      throw err;
+    }
+  }
+
+  static async uploadImage(file, bucket = 'covers') {
+    try {
+      const ext = file.name.split('.').pop() || 'jpg';
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
+      const filePath = `uploads/${fileName}`;
+
+      const { data, error } = await supabase.storage.from(bucket).upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: true
+      });
+
+      if (error) {
+        // Fallback Base64 si le bucket n'est pas configuré publiquement
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target.result);
+          reader.readAsDataURL(file);
+        });
+      }
+
+      const { data: publicData } = supabase.storage.from(bucket).getPublicUrl(filePath);
+      return publicData?.publicUrl || filePath;
+    } catch (err) {
+      console.warn('[SupabaseAdmin] Storage upload fallback Base64:', err);
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.readAsDataURL(file);
+      });
+    }
+  }
+
   static async deleteStory(storyId, storyTitle, adminUser) {
     try {
       // 1. Supprimer les chapitres

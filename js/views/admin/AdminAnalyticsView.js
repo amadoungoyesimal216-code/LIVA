@@ -1,4 +1,4 @@
-// LIVA ADMIN — Vue Analytics Approfondis & Rapports d'Engagement
+// LIVA ADMIN — Vue Analytics Approfondis & Rapports d'Engagement (Données 100% Réelles)
 import { escapeHTML } from '../../utils/sanitize.js';
 
 export class AdminAnalyticsView {
@@ -13,21 +13,25 @@ export class AdminAnalyticsView {
     this.stats = await this.adminService.getDashboardStats();
     const s = this.stats || {
       totalUsers: 0,
+      totalStories: 0,
       totalReads: 0,
       totalLikes: 0,
       totalReviews: 0,
+      averageRating: 0.0,
       genreDistribution: [],
       topStories: []
     };
 
     const formatK = (n) => {
-      if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
-      if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
-      return String(n || 0);
+      const num = Number(n) || 0;
+      if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+      if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+      return String(num);
     };
 
-    const avgReadsPerStory = s.totalStories > 0 ? Math.round(s.totalReads / s.totalStories) : 0;
-    const engagementRate = s.totalReads > 0 ? ((s.totalLikes + s.totalReviews) / s.totalReads * 100).toFixed(1) : '0';
+    const avgReadsPerStory = s.totalStories > 0 ? (s.totalReads / s.totalStories).toFixed(1) : '0';
+    const engagementRate = s.totalReads > 0 ? (((s.totalLikes + s.totalReviews) / s.totalReads) * 100).toFixed(1) : '0';
+    const topStoriesList = s.topStories || [];
 
     return `
       <div class="admin-analytics-view">
@@ -39,12 +43,12 @@ export class AdminAnalyticsView {
               Statistiques & Analytics 📈
             </h1>
             <p style="font-size: 0.85rem; color: var(--text-muted);">
-              Analyses détaillées de l'audience, du comportement de lecture et des performances du catalogue.
+              Analyses détaillées de l'audience, des interactions et des performances réelles calculées depuis Supabase.
             </p>
           </div>
         </div>
 
-        <!-- 1. CARTES D'ENGAGEMENT -->
+        <!-- 1. CARTES D'ENGAGEMENT RÉELLES -->
         <div class="admin-kpi-grid">
           <div class="admin-kpi-card">
             <div class="admin-kpi-header">
@@ -62,7 +66,7 @@ export class AdminAnalyticsView {
               <span class="admin-kpi-label">Moyenne par Récit</span>
               <span class="admin-kpi-icon">📊</span>
             </div>
-            <div class="admin-kpi-value">${formatK(avgReadsPerStory)}</div>
+            <div class="admin-kpi-value">${avgReadsPerStory}</div>
             <div class="admin-kpi-footer">
               <span>Lectures moyennes par histoire</span>
             </div>
@@ -73,20 +77,22 @@ export class AdminAnalyticsView {
               <span class="admin-kpi-label">Satisfaction Globale</span>
               <span class="admin-kpi-icon">⭐</span>
             </div>
-            <div class="admin-kpi-value" style="color: var(--color-accent-gold);">4.8 / 5</div>
+            <div class="admin-kpi-value" style="color: var(--color-accent-gold);">
+              ${s.averageRating > 0 ? `${s.averageRating} / 5` : '—'}
+            </div>
             <div class="admin-kpi-footer">
-              <span>Moyenne calculée sur tous les avis</span>
+              <span>${s.totalReviews} avis déposé(s) au total</span>
             </div>
           </div>
 
           <div class="admin-kpi-card">
             <div class="admin-kpi-header">
-              <span class="admin-kpi-label">Temps Moyen de Session</span>
-              <span class="admin-kpi-icon">⏱️</span>
+              <span class="admin-kpi-label">Lectures Cumulées</span>
+              <span class="admin-kpi-icon">👁️</span>
             </div>
-            <div class="admin-kpi-value">18 min</div>
+            <div class="admin-kpi-value">${formatK(s.totalReads)}</div>
             <div class="admin-kpi-footer">
-              <span>Par session de lecture active</span>
+              <span>Sessions de lecture enregistrées</span>
             </div>
           </div>
         </div>
@@ -107,29 +113,36 @@ export class AdminAnalyticsView {
                   <th>Histoire</th>
                   <th>Genre</th>
                   <th>Lectures Réelles</th>
-                  <th>Appréciations</th>
+                  <th>Likes</th>
                   <th>Avis</th>
                   <th>Note Moyenne</th>
-                  <th>Performance</th>
+                  <th>Statut d'Activité</th>
                 </tr>
               </thead>
               <tbody>
-                ${(s.topStories || []).map(st => {
-                  const score = st.reads_raw > 150000 ? 'Excellente 🔥' : st.reads_raw > 100000 ? 'Très Bonne 🌟' : 'Standard 📈';
+                ${topStoriesList.length === 0 ? `
+                  <tr>
+                    <td colspan="7" style="text-align: center; padding: var(--space-8); color: var(--text-muted);">
+                      Aucune histoire enregistrée.
+                    </td>
+                  </tr>
+                ` : topStoriesList.map(st => {
+                  const reads = st.reads_raw || 0;
+                  const scoreBadge = reads > 10 ? '🔥 Populaire' : reads > 0 ? '📈 En cours' : '🌱 Nouvelle';
                   return `
                     <tr>
                       <td style="font-weight: 700; color: var(--text-primary);">
                         ${escapeHTML(st.title)}
                       </td>
                       <td>
-                        <span class="badge badge-blur" style="font-size: 0.72rem;">${escapeHTML(st.genre)}</span>
+                        <span class="badge badge-blur" style="font-size: 0.72rem;">${escapeHTML(st.genre || 'Général')}</span>
                       </td>
-                      <td style="font-weight: 700;">👁️ ${formatK(st.reads_raw)}</td>
-                      <td style="font-weight: 600; color: var(--color-accent-rose);">❤️ ${formatK(st.likes_count)}</td>
+                      <td style="font-weight: 700;">👁️ ${formatK(reads)}</td>
+                      <td style="font-weight: 600; color: var(--color-accent-rose);">❤️ ${formatK(st.likes_count || 0)}</td>
                       <td>💬 ${st.reviews_count || 0}</td>
-                      <td style="font-weight: 700; color: var(--color-accent-gold);">⭐ ${st.rating}</td>
+                      <td style="font-weight: 700; color: var(--color-accent-gold);">${st.rating > 0 ? `⭐ ${st.rating}` : '—'}</td>
                       <td>
-                        <span class="admin-badge badge-status-published">${score}</span>
+                        <span class="admin-badge badge-status-published">${scoreBadge}</span>
                       </td>
                     </tr>
                   `;

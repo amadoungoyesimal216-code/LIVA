@@ -560,6 +560,103 @@
   background: rgba(10, 7, 16, 0.4);
 }
 
+/* 8b. Studio Manuscrit & Chapitres */
+.admin-tabs-nav {
+  display: flex;
+  gap: var(--space-2);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0 var(--space-5);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.admin-tab-btn {
+  padding: var(--space-3) var(--space-4);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all var(--transition-fast);
+}
+
+.admin-tab-btn:hover {
+  color: var(--text-primary);
+}
+
+.admin-tab-btn.active {
+  color: var(--color-primary-light);
+  border-bottom-color: var(--color-primary);
+}
+
+.admin-autosave-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--color-accent-emerald);
+  background: rgba(16, 185, 129, 0.1);
+  padding: 2px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.admin-manuscript-editor {
+  width: 100%;
+  font-family: 'Plus Jakarta Sans', var(--font-body);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  padding: var(--space-4);
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  resize: vertical;
+  min-height: 280px;
+}
+
+.admin-manuscript-editor:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(121, 40, 202, 0.25);
+}
+
+.admin-chapter-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-3);
+  overflow: hidden;
+  transition: border-color var(--transition-fast);
+}
+
+.admin-chapter-card:hover {
+  border-color: var(--border-hover);
+}
+
+.admin-chapter-header {
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.admin-chapter-body {
+  padding: var(--space-4);
+  border-top: 1px solid var(--border-color);
+  display: none;
+}
+
+.admin-chapter-card.expanded .admin-chapter-body {
+  display: block;
+}
+
 /* 9. Responsive Mobile */
 @media (max-width: 900px) {
   .admin-sidebar {

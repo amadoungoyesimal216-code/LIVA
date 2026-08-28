@@ -1,5 +1,6 @@
 // LIVA - Mode Lecture Immersif (ReaderView)
 import { Toast } from '../components/Toast.js';
+import { escapeHTML } from '../utils/sanitize.js';
 
 export class ReaderView {
   constructor(store, router) {
@@ -16,11 +17,14 @@ export class ReaderView {
     const storyId = params.id;
     this.chapterIndex = parseInt(params.chapterIndex || '0', 10);
     this.story = this.store.getStoryById(storyId) || this.store.getAllStories()[0];
-    this.chapter = this.story.chapters[this.chapterIndex] || this.story.chapters[0];
+    this.chapter = (this.story.chapters && this.story.chapters[this.chapterIndex]) || (this.story.chapters && this.story.chapters[0]) || { title: 'Chapitre 1', content: '' };
 
     const settings = this.store.state.readerSettings;
     const progress = this.store.getReadingProgress(this.story.id);
     const initialPercent = progress ? progress.progressPercent : 0;
+
+    const rawContent = this.chapter.content || '';
+    const paragraphs = rawContent.split(/\n\s*\n/).filter(p => p.trim());
 
     return `
       <div class="reader-view reader-size-${settings.fontSize || 'normal'} reader-font-${settings.fontFamily || 'literata'}" id="reader-root" data-theme="${settings.theme || 'dark'}">
@@ -32,8 +36,8 @@ export class ReaderView {
           </button>
 
           <div class="reader-header-center">
-            <span class="reader-story-title">${this.story.title}</span>
-            <span class="reader-chapter-title">${this.chapter.title}</span>
+            <span class="reader-story-title">${escapeHTML(this.story.title)}</span>
+            <span class="reader-chapter-title">${escapeHTML(this.chapter.title)}</span>
           </div>
 
           <div class="reader-header-progress">
@@ -55,14 +59,14 @@ export class ReaderView {
             
             <div class="reader-article-header">
               <div class="reader-article-chapter-num">Chapitre ${this.chapter.number || this.chapterIndex + 1}</div>
-              <h1 class="reader-article-chapter-heading">${this.chapter.title}</h1>
+              <h1 class="reader-article-chapter-heading">${escapeHTML(this.chapter.title)}</h1>
               <div style="font-size: 0.85rem; color: var(--reader-text-muted); margin-top: 6px;">
-                Écrit par ${this.story.authorName} · ⏱️ ${this.chapter.duration || '6 min'} de lecture
+                Écrit par ${escapeHTML(this.story.authorName || 'Auteur')} · ⏱️ ${escapeHTML(this.chapter.duration || '5 min')} de lecture
               </div>
             </div>
 
             <div class="reader-text-body" id="reader-text-body">
-              ${this.chapter.content.split('\n\n').map(p => `<p>${p}</p>`).join('')}
+              ${paragraphs.length > 0 ? paragraphs.map(p => `<p>${escapeHTML(p).replace(/\n/g, '<br/>')}</p>`).join('') : '<p>Contenu du chapitre vide.</p>'}
             </div>
 
             <!-- Fin de Chapitre / Navigation -->

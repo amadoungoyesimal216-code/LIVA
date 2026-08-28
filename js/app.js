@@ -1,38 +1,38 @@
 // LIVA - Application Principale & Routeur SPA
-import { store, DEFAULT_AVATAR } from './state/store.js?v=19';
-import { ThemeManager } from './features/themeManager.js?v=19';
-import { AudioPlayer } from './features/audioPlayer.js?v=19';
-import { Toast } from './components/Toast.js?v=19';
-import { Modal } from './components/Modal.js?v=19';
-import { GENRES_DATA } from './data/genres.js?v=19';
-import { SupabaseAdminService } from './services/supabaseAdmin.js?v=19';
+import { store, DEFAULT_AVATAR } from './state/store.js?v=20';
+import { ThemeManager } from './features/themeManager.js?v=20';
+import { AudioPlayer } from './features/audioPlayer.js?v=20';
+import { Toast } from './components/Toast.js?v=20';
+import { Modal } from './components/Modal.js?v=20';
+import { GENRES_DATA } from './data/genres.js?v=20';
+import { SupabaseAdminService } from './services/supabaseAdmin.js?v=20';
 
 // Views Liva User
-import { HomeView } from './views/HomeView.js?v=19';
-import { ExploreView } from './views/ExploreView.js?v=19';
-import { StoryView } from './views/StoryView.js?v=19';
-import { ReaderView } from './views/ReaderView.js?v=19';
-import { LibraryView } from './views/LibraryView.js?v=19';
-import { CreateView } from './views/CreateView.js?v=19';
-import { ProfileView } from './views/ProfileView.js?v=19';
-import { SwipeView } from './views/SwipeView.js?v=19';
-import { OnboardingView } from './views/OnboardingView.js?v=19';
-import { AuthView } from './views/AuthView.js?v=19';
+import { HomeView } from './views/HomeView.js?v=20';
+import { ExploreView } from './views/ExploreView.js?v=20';
+import { StoryView } from './views/StoryView.js?v=20';
+import { ReaderView } from './views/ReaderView.js?v=20';
+import { LibraryView } from './views/LibraryView.js?v=20';
+import { CreateView } from './views/CreateView.js?v=20';
+import { ProfileView } from './views/ProfileView.js?v=20';
+import { SwipeView } from './views/SwipeView.js?v=20';
+import { OnboardingView } from './views/OnboardingView.js?v=20';
+import { AuthView } from './views/AuthView.js?v=20';
 
 // Views Liva Admin
-import { AdminLayout } from './views/admin/AdminLayout.js?v=19';
-import { AdminDashboardView } from './views/admin/AdminDashboardView.js?v=19';
-import { AdminStoriesView } from './views/admin/AdminStoriesView.js?v=19';
-import { AdminChaptersView } from './views/admin/AdminChaptersView.js?v=19';
-import { AdminAuthorsView } from './views/admin/AdminAuthorsView.js?v=19';
-import { AdminUsersView } from './views/admin/AdminUsersView.js?v=19';
-import { AdminCommentsView } from './views/admin/AdminCommentsView.js?v=19';
-import { AdminModerationView } from './views/admin/AdminModerationView.js?v=19';
-import { AdminCategoriesView } from './views/admin/AdminCategoriesView.js?v=19';
-import { AdminNotificationsView } from './views/admin/AdminNotificationsView.js?v=19';
-import { AdminAnalyticsView } from './views/admin/AdminAnalyticsView.js?v=19';
-import { AdminSettingsView } from './views/admin/AdminSettingsView.js?v=19';
-import { AdminLogsView } from './views/admin/AdminLogsView.js?v=19';
+import { AdminLayout } from './views/admin/AdminLayout.js?v=20';
+import { AdminDashboardView } from './views/admin/AdminDashboardView.js?v=20';
+import { AdminStoriesView } from './views/admin/AdminStoriesView.js?v=20';
+import { AdminChaptersView } from './views/admin/AdminChaptersView.js?v=20';
+import { AdminAuthorsView } from './views/admin/AdminAuthorsView.js?v=20';
+import { AdminUsersView } from './views/admin/AdminUsersView.js?v=20';
+import { AdminCommentsView } from './views/admin/AdminCommentsView.js?v=20';
+import { AdminModerationView } from './views/admin/AdminModerationView.js?v=20';
+import { AdminCategoriesView } from './views/admin/AdminCategoriesView.js?v=20';
+import { AdminNotificationsView } from './views/admin/AdminNotificationsView.js?v=20';
+import { AdminAnalyticsView } from './views/admin/AdminAnalyticsView.js?v=20';
+import { AdminSettingsView } from './views/admin/AdminSettingsView.js?v=20';
+import { AdminLogsView } from './views/admin/AdminLogsView.js?v=20';
 
 class AppRouter {
   constructor(store) {
