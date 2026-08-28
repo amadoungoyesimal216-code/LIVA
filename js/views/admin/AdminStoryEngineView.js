@@ -309,26 +309,106 @@ export class AdminStoryEngineView {
           <textarea class="form-textarea" id="plan-story-synopsis" style="min-height: 90px;">${escapeHTML(this.bible.synopsis)}</textarea>
         </div>
 
-        <!-- Fiches Personnages -->
+        <!-- Fiches Personnages Éditables -->
         <div style="margin-bottom: var(--space-5);">
-          <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: var(--space-3); display: flex; align-items: center; gap: 6px;">
-            <span>👥</span> Personnages Clés (${(this.bible.characters || []).length})
-          </h3>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-3);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-3); flex-wrap: wrap; gap: var(--space-2);">
+            <div>
+              <h3 style="font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                <span>👥</span> Personnages de l'Histoire (${(this.bible.characters || []).length})
+              </h3>
+              <p style="font-size: 0.78rem; color: var(--text-muted);">
+                Personnalisez librement les noms, rôles, objectifs et secrets. L'IA utilisera exactement vos personnages lors de l'écriture.
+              </p>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-add-character" style="gap: 6px; font-size: 0.8rem;">
+              <span>➕</span> Ajouter un personnage
+            </button>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-3);" id="engine-characters-container">
             ${(this.bible.characters || []).map((c, i) => `
-              <div class="ai-character-card">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
-                  <strong style="font-size: 1rem; color: var(--text-primary);">${escapeHTML(c.name)}</strong>
-                  <span class="admin-badge-role" style="font-size: 0.7rem;">${escapeHTML(c.role)}</span>
+              <div class="ai-character-card" style="padding: var(--space-3); position: relative;" data-char-index="${i}">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                  <span class="admin-badge-role" style="font-size: 0.7rem;">Personnage #${i + 1}</span>
+                  ${(this.bible.characters || []).length > 1 ? `
+                    <button type="button" class="btn btn-ghost btn-sm btn-remove-character" data-char-index="${i}" title="Supprimer ce personnage" style="color: var(--color-accent-rose); padding: 2px 6px; font-size: 0.75rem;">
+                      ✕ Supprimer
+                    </button>
+                  ` : ''}
                 </div>
-                <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 4px;">
-                  <strong>Traits :</strong> ${escapeHTML(c.traits)}
+
+                <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 8px; margin-bottom: 8px;">
+                  <div>
+                    <label class="form-label" style="font-size: 0.72rem; margin-bottom: 2px;">Nom & Prénom :</label>
+                    <input 
+                      type="text" 
+                      class="admin-search-input char-input-name" 
+                      data-char-index="${i}" 
+                      value="${escapeHTML(c.name || '')}" 
+                      placeholder="Ex: Aminata Traoré"
+                      style="width: 100%; font-size: 0.85rem; font-weight: 700; padding: 6px 8px;" 
+                    />
+                  </div>
+                  <div>
+                    <label class="form-label" style="font-size: 0.72rem; margin-bottom: 2px;">Rôle narratif :</label>
+                    <input 
+                      type="text" 
+                      class="admin-search-input char-input-role" 
+                      data-char-index="${i}" 
+                      value="${escapeHTML(c.role || '')}" 
+                      placeholder="Ex: Protagoniste"
+                      style="width: 100%; font-size: 0.85rem; padding: 6px 8px;" 
+                    />
+                  </div>
                 </div>
-                <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 4px;">
-                  <strong>Objectif :</strong> ${escapeHTML(c.goal)}
+
+                <div style="display: grid; grid-template-columns: 70px 1fr; gap: 8px; margin-bottom: 8px;">
+                  <div>
+                    <label class="form-label" style="font-size: 0.72rem; margin-bottom: 2px;">Âge :</label>
+                    <input 
+                      type="text" 
+                      class="admin-search-input char-input-age" 
+                      data-char-index="${i}" 
+                      value="${escapeHTML(String(c.age || ''))}" 
+                      placeholder="28"
+                      style="width: 100%; font-size: 0.85rem; padding: 6px 8px;" 
+                    />
+                  </div>
+                  <div>
+                    <label class="form-label" style="font-size: 0.72rem; margin-bottom: 2px;">Traits de caractère :</label>
+                    <input 
+                      type="text" 
+                      class="admin-search-input char-input-traits" 
+                      data-char-index="${i}" 
+                      value="${escapeHTML(c.traits || '')}" 
+                      placeholder="Ex: Intuitive, courageuse..."
+                      style="width: 100%; font-size: 0.85rem; padding: 6px 8px;" 
+                    />
+                  </div>
                 </div>
-                <div style="font-size: 0.8rem; color: var(--color-accent-gold);">
-                  🔒 <strong>Secret :</strong> ${escapeHTML(c.secret || 'Non divulgué')}
+
+                <div style="margin-bottom: 8px;">
+                  <label class="form-label" style="font-size: 0.72rem; margin-bottom: 2px;">Objectif principal :</label>
+                  <input 
+                    type="text" 
+                    class="admin-search-input char-input-goal" 
+                    data-char-index="${i}" 
+                    value="${escapeHTML(c.goal || '')}" 
+                    placeholder="Ex: Découvrir la vérité sur ses origines"
+                    style="width: 100%; font-size: 0.85rem; padding: 6px 8px;" 
+                  />
+                </div>
+
+                <div>
+                  <label class="form-label" style="font-size: 0.72rem; color: var(--color-accent-gold); margin-bottom: 2px;">🔒 Secret / Peur cachée :</label>
+                  <input 
+                    type="text" 
+                    class="admin-search-input char-input-secret" 
+                    data-char-index="${i}" 
+                    value="${escapeHTML(c.secret || '')}" 
+                    placeholder="Ex: Détient une preuve compromettante"
+                    style="width: 100%; font-size: 0.85rem; padding: 6px 8px; border-color: rgba(255, 184, 0, 0.4);" 
+                  />
                 </div>
               </div>
             `).join('')}
@@ -692,6 +772,58 @@ export class AdminStoryEngineView {
       }
     });
 
+    // Synchroniser les personnages depuis le DOM
+    const syncCharactersFromDOM = () => {
+      const charCards = container.querySelectorAll('.ai-character-card[data-char-index]');
+      if (!charCards.length) return;
+      const updated = [];
+      charCards.forEach((card, idx) => {
+        const name = card.querySelector('.char-input-name')?.value.trim() || `Personnage ${idx + 1}`;
+        const role = card.querySelector('.char-input-role')?.value.trim() || 'Personnage';
+        const age = parseInt(card.querySelector('.char-input-age')?.value.trim(), 10) || 26;
+        const traits = card.querySelector('.char-input-traits')?.value.trim() || '';
+        const goal = card.querySelector('.char-input-goal')?.value.trim() || '';
+        const secret = card.querySelector('.char-input-secret')?.value.trim() || '';
+        updated.push({
+          name, role, age, traits, goal, secret,
+          evolutionState: 'Initial',
+          relationships: ''
+        });
+      });
+      if (updated.length > 0) {
+        this.bible.characters = updated;
+      }
+    };
+
+    // Ajouter un personnage
+    container.querySelector('#btn-add-character')?.addEventListener('click', () => {
+      syncCharactersFromDOM();
+      const num = (this.bible.characters || []).length + 1;
+      this.bible.characters.push({
+        name: `Personnage ${num}`,
+        role: 'Allié(e) / Secondaire',
+        age: 26,
+        traits: 'Perspicace, loyal(e)',
+        goal: 'Accomplir sa mission et percer le mystère',
+        secret: 'Garde un secret important',
+        evolutionState: 'Initial',
+        relationships: ''
+      });
+      this._refreshStepContent(container);
+    });
+
+    // Supprimer un personnage
+    container.querySelectorAll('.btn-remove-character').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const idx = parseInt(e.currentTarget.getAttribute('data-char-index'), 10);
+        syncCharactersFromDOM();
+        if (this.bible.characters.length > 1) {
+          this.bible.characters.splice(idx, 1);
+          this._refreshStepContent(container);
+        }
+      });
+    });
+
     // --- ÉTAPE 2 : INTERACTIONS BIBLE & PLAN ---
     container.querySelector('#btn-back-to-step1')?.addEventListener('click', () => {
       this.currentStep = 1;
@@ -707,7 +839,10 @@ export class AdminStoryEngineView {
     container.querySelector('#btn-engine-start-writing')?.addEventListener('click', async (e) => {
       e.preventDefault();
       
-      // Récupérer les éventuelles modifications faites par l'admin
+      // 1. Récupérer les personnages modifiés
+      syncCharactersFromDOM();
+
+      // 2. Récupérer les éventuelles modifications faites par l'admin
       const titleInput = container.querySelector('#plan-story-title')?.value;
       const subtitleInput = container.querySelector('#plan-story-subtitle')?.value;
       const synopsisInput = container.querySelector('#plan-story-synopsis')?.value;

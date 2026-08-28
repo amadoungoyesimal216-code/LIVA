@@ -204,38 +204,124 @@ export class AIProvider {
   }
 
   _generateCharacters(idea, genre, targetAudience) {
-    return [
+    const raw = (idea || '').toLowerCase();
+
+    // 1. Détecter si l'utilisateur a mentionné des prénoms spécifiques dans son idée
+    const detectedNames = [];
+    const words = idea.split(/[\s,.'";:!?]+/);
+    const commonFrenchWords = new Set(['le', 'la', 'les', 'un', 'une', 'des', 'dans', 'pour', 'avec', 'sans', 'sur', 'sous', 'vers', 'par', 'qui', 'que', 'quoi', 'dont', 'où', 'quand', 'comment', 'pourquoi', 'mais', 'ou', 'et', 'donc', 'or', 'ni', 'car', 'ce', 'cet', 'cette', 'ces', 'son', 'sa', 'ses', 'leur', 'leurs', 'mon', 'ma', 'mes', 'ton', 'ta', 'tes', 'il', 'elle', 'ils', 'elles', 'on', 'nous', 'vous', 'je', 'tu', 'dakar', 'paris', 'abidjan', 'france', 'afrique', 'histoire', 'roman', 'chapitre']);
+    
+    for (const w of words) {
+      if (w.length >= 3 && /^[A-ZÀ-ÖØ-ß][a-zà-öø-ÿ]+$/.test(w) && !commonFrenchWords.has(w.toLowerCase())) {
+        if (!detectedNames.includes(w)) {
+          detectedNames.push(w);
+        }
+      }
+    }
+
+    // 2. Banques riches de prénoms et noms selon l'univers / genre
+    const africanFirstNames = [
+      'Aminata', 'Koffi', 'Bintou', 'Sékou', 'Fatou', 'Ousmane', 'Nafi', 'Tidiane', 
+      'Mariam', 'Lamine', 'Adama', 'Kadidja', 'Ibrahim', 'Yasmine', 'Cheikh', 'Awa', 
+      'Souleymane', 'Salif', 'Fanta', 'Bakary', 'Aïssatou', 'Mamadou', 'Zenab', 'Dramane',
+      'Assane', 'Seynabou', 'Boubacar', 'Khadija', 'Issa', 'Rokhaya', 'Modou', 'Ndeye'
+    ];
+    const africanLastNames = [
+      'Diallo', 'Traoré', 'Sow', 'Cissé', 'Touré', 'Koné', 'Diop', 'Ndiaye', 
+      'Faye', 'Ba', 'Kouassi', 'Mensah', 'Diarra', 'Keïta', 'Sylla', 'Bamba', 
+      'Ouattara', 'Fall', 'Kane', 'Camara', 'Sarr', 'Gueye', 'Sanogo', 'Coulibaly'
+    ];
+
+    const modernFirstNames = [
+      'Camille', 'Julien', 'Elena', 'Arthur', 'Chloé', 'Mathieu', 'Sophie', 'Gabriel', 
+      'Léa', 'Lucas', 'Manon', 'Alexandre', 'Inès', 'Hugo', 'Clara', 'Romain', 
+      'Sarah', 'Antoine', 'Élodie', 'Maxime', 'Victoria', 'Nathan', 'Emma', 'Théo'
+    ];
+    const modernLastNames = [
+      'Moreau', 'Vasseur', 'Delorme', 'Laurent', 'Roche', 'Mercier', 'Fontaine', 'Girard', 
+      'Lefebvre', 'Dubois', 'Lambert', 'Bertrand', 'Roux', 'Vincent', 'Fournier', 'Morel'
+    ];
+
+    const fantasyFirstNames = [
+      'Eldrin', 'Kaela', 'Thalos', 'Morvath', 'Nyxandra', 'Valen', 'Sylas', 'Lyranna', 
+      'Zephyr', 'Kaelen', 'Aurelia', 'Darius', 'Seraphina', 'Baelor', 'Isolde', 'Maelis'
+    ];
+    const fantasyTitles = [
+      'des Terres Rouges', 'le Silencieux', 'du Clan des Brumes', 'l\'Archiviste', 
+      'de l\'Ombre Éternelle', 'l\'Initié', 'le Veilleur', 'de la Cité d\'Or'
+    ];
+
+    const scifiFirstNames = [
+      'Kael', 'Lyra Chen', 'Tarek Vance', 'Nova-09', 'Dr. Aaron Ross', 'Cassian Mercer', 
+      'Juno Vega', 'Riven Cross', 'Orion Blake', 'Cipher', 'Aria Voss', 'Jaxson Reed'
+    ];
+
+    // Sélection aléatoire de banque
+    const shuffle = (arr) => [...arr].sort(() => 0.5 - Math.random());
+
+    let poolFirst = africanFirstNames;
+    let poolLast = africanLastNames;
+
+    if (genre === 'Fantasy' || genre === 'Conte' || raw.includes('magie') || raw.includes('royaume')) {
+      poolFirst = fantasyFirstNames;
+      poolLast = fantasyTitles;
+    } else if (genre === 'Science-fiction' || raw.includes('hacker') || raw.includes('futur') || raw.includes('espace')) {
+      poolFirst = scifiFirstNames;
+      poolLast = modernLastNames;
+    } else if (genre === 'Romance' || genre === 'Thriller' || genre === 'Drame') {
+      // Alterne intelligemment selon les mots clés ou mélange
+      if (raw.includes('paris') || raw.includes('france') || raw.includes('londres')) {
+        poolFirst = modernFirstNames;
+        poolLast = modernLastNames;
+      } else {
+        // Par défaut atmosphère panafricaine contemporaine variée
+        poolFirst = shuffle(africanFirstNames);
+        poolLast = shuffle(africanLastNames);
+      }
+    }
+
+    const shuffledFirst = shuffle(poolFirst);
+    const shuffledLast = shuffle(poolLast);
+
+    const name1 = detectedNames[0] || (genre === 'Fantasy' ? `${shuffledFirst[0]} ${shuffledLast[0]}` : `${shuffledFirst[0]} ${shuffledLast[0]}`);
+    const name2 = detectedNames[1] || (genre === 'Fantasy' ? `${shuffledFirst[1]} ${shuffledLast[1]}` : `${shuffledFirst[1]} ${shuffledLast[1]}`);
+    const name3 = detectedNames[2] || (genre === 'Fantasy' ? `${shuffledFirst[2]} ${shuffledLast[2]}` : `${shuffledFirst[2]} ${shuffledLast[2]}`);
+
+    // Archétypes narratifs dynamiques
+    const archetypes = [
       {
-        name: 'Aïda Diallo',
-        role: 'Protagoniste principale',
-        age: 26,
-        traits: 'Intuitive, déterminée, réservée mais courageuse',
-        goal: 'Comprendre la vérité sur ses origines et préserver son indépendance',
-        fear: 'Être trahie par ceux qu\'elle aime le plus',
-        secret: 'Détient un carnet contenant des correspondances interdites',
-        relationships: 'Méfiance initiale envers son entourage'
+        name: name1,
+        role: 'Protagoniste principal(e)',
+        age: 24 + Math.floor(Math.random() * 12),
+        traits: raw.includes('mystère') ? 'Intuitive, observatrice, réservée mais courageuse' : 'Déterminé(e), passionné(e), loyal(e) mais méfiant(e)',
+        goal: raw.includes('justice') ? 'Faire éclater la vérité et réparer une injustice passée' : 'Comprendre ses origines et préserver son indépendance',
+        fear: 'Être trahi(e) par ceux en qui réside toute sa confiance',
+        secret: 'Détient une preuve confidentielle que tout le monde recherche',
+        relationships: 'Lien complexe et chargé de tension avec son entourage'
       },
       {
-        name: 'Malik Sow',
-        role: 'Personnage clé / Allié complexe',
-        age: 29,
-        traits: 'Charismatique, observateur, loyal mais secret',
-        goal: 'Protéger son honneur et réparer une injustice du passé',
-        fear: 'Voir ses sacrifices réduits à néant',
-        secret: 'A orchestré sa venue dans la ville pour retrouver une piste',
-        relationships: 'Attirance mutuelle et tension permanente avec Aïda'
+        name: name2,
+        role: 'Allié(e) complexe / Rivale',
+        age: 26 + Math.floor(Math.random() * 14),
+        traits: 'Charismatique, perspicace, énigmatique, loyal(e) en secret',
+        goal: 'Protéger son honneur et accomplir une promesse faite il y a des années',
+        fear: 'Voir ses sacrifices réduits à néant par un choix imprévu',
+        secret: 'A orchestré sa venue dans la ville pour surveiller les événements',
+        relationships: 'Attirance mutuelle, rivalité voilée et non-dits profonds'
       },
       {
-        name: 'Coumba Kane',
-        role: 'Gardienne des secrets / Mentor',
-        age: 58,
-        traits: 'Sage, perspicace, autorité naturelle',
-        goal: 'Transmettre la vérité avant qu\'il ne soit trop tard',
-        fear: 'Le déchirement de sa communauté',
-        secret: 'Connaissait le pacte conclu il y a vingt ans',
-        relationships: 'Figure maternelle protectrice'
+        name: name3,
+        role: 'Mentor / Gardien des secrets',
+        age: 50 + Math.floor(Math.random() * 18),
+        traits: 'Sage, influent(e), respecté(e), autorité morale naturelle',
+        goal: 'Transmettre la vérité avant qu\'un désastre ne survienne',
+        fear: 'La disparition des traditions ou l\'effondrement de sa communauté',
+        secret: 'Connaissait le pacte scellé il y a vingt ans entre les familles rivales',
+        relationships: 'Figure protectrice mais gardant une part d\'ombre'
       }
     ];
+
+    return archetypes;
   }
 
   _generateLocations(idea, genre) {
