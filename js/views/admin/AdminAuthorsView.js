@@ -103,6 +103,16 @@ export class AdminAuthorsView {
     `;
   }
 
+  async refreshSelf(container) {
+    const target = container.querySelector?.('.admin-content-area') || 
+                   (container.classList?.contains('admin-content-area') ? container : (document.querySelector('.admin-content-area') || container));
+    const html = await this.render();
+    if (target) {
+      target.innerHTML = html;
+      this.attachEvents(target);
+    }
+  }
+
   attachEvents(container) {
     container.querySelectorAll('.btn-toggle-author-status').forEach(btn => {
       btn.addEventListener('click', async () => {
@@ -114,9 +124,7 @@ export class AdminAuthorsView {
           const adminUser = this.store.state.user || { id: 'admin', name: 'Admin' };
           await this.adminService.updateAuthorStatus(authorId, newStatus, adminUser);
           Toast.show(`Statut auteur passé à "${newStatus}".`, 'success', '✨');
-          const html = await this.render();
-          container.innerHTML = html;
-          this.attachEvents(container);
+          await this.refreshSelf(container);
         } catch (err) {
           Toast.show('Erreur : ' + err.message, 'error', '⚠️');
         }

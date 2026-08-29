@@ -384,6 +384,16 @@ export class AdminStoriesView {
     `;
   }
 
+  async refreshSelf(container) {
+    const target = container.querySelector?.('.admin-content-area') || 
+                   (container.classList?.contains('admin-content-area') ? container : (document.querySelector('.admin-content-area') || container));
+    const html = await this.render();
+    if (target) {
+      target.innerHTML = html;
+      this.attachEvents(target);
+    }
+  }
+
   attachEvents(container) {
     this.container = container;
 
@@ -396,10 +406,7 @@ export class AdminStoriesView {
       this.filterSearch = searchInput?.value || '';
       this.filterGenre = genreSelect?.value || 'all';
       this.filterStatus = statusSelect?.value || 'all';
-      
-      const refreshedHtml = await this.render();
-      container.innerHTML = refreshedHtml;
-      this.attachEvents(container);
+      await this.refreshSelf(container);
     };
 
     let debounceTimer;

@@ -210,8 +210,9 @@ class AppRouter {
       const childHtml = await adminSubView.render();
       this.viewContainer.innerHTML = layout.render(childHtml);
       layout.attachEvents(this.viewContainer);
+      const contentArea = this.viewContainer.querySelector('.admin-content-area') || this.viewContainer;
       if (typeof adminSubView.attachEvents === 'function') {
-        adminSubView.attachEvents(this.viewContainer);
+        adminSubView.attachEvents(contentArea);
       }
       return;
     }

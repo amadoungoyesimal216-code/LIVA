@@ -291,14 +291,22 @@ export class AdminChaptersView {
     `;
   }
 
+  async refreshSelf(container) {
+    const target = container.querySelector?.('.admin-content-area') || 
+                   (container.classList?.contains('admin-content-area') ? container : (document.querySelector('.admin-content-area') || container));
+    const html = await this.render();
+    if (target) {
+      target.innerHTML = html;
+      this.attachEvents(target);
+    }
+  }
+
   attachEvents(container) {
-    // 1. Changement d'histoire sélectionnée
+    // 1. Changement d'histoire sélectionnée (mise à jour ciblée sans écraser le menu)
     const storySelect = container.querySelector('#admin-select-story');
     storySelect?.addEventListener('change', async (e) => {
       this.selectedStoryId = e.target.value;
-      const html = await this.render();
-      container.innerHTML = html;
-      this.attachEvents(container);
+      await this.refreshSelf(container);
     });
 
     // 2. Modale & Éléments du Formulaire
@@ -479,9 +487,7 @@ export class AdminChaptersView {
         closeModal();
         Toast.show(`Chapitre "${payload.title}" enregistré avec succès dans Supabase !`, 'success', '✨');
         await this.store.initSupabaseSync();
-        const html = await this.render();
-        container.innerHTML = html;
-        this.attachEvents(container);
+        await this.refreshSelf(container);
       } catch (err) {
         Toast.show('Erreur : ' + err.message, 'error', '⚠️');
       } finally {
@@ -514,9 +520,7 @@ export class AdminChaptersView {
           await this.adminService.deleteChapter(chId, this.selectedStoryId, chTitle, adminUser);
           Toast.show('Chapitre supprimé de la base.', 'success', '🗑️');
           await this.store.initSupabaseSync();
-          const html = await this.render();
-          container.innerHTML = html;
-          this.attachEvents(container);
+          await this.refreshSelf(container);
         } catch (err) {
           Toast.show('Erreur suppression : ' + err.message, 'error', '⚠️');
         }

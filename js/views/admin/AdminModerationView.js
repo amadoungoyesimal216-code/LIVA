@@ -114,13 +114,21 @@ export class AdminModerationView {
     `;
   }
 
+  async refreshSelf(container) {
+    const target = container.querySelector?.('.admin-content-area') || 
+                   (container.classList?.contains('admin-content-area') ? container : (document.querySelector('.admin-content-area') || container));
+    const html = await this.render();
+    if (target) {
+      target.innerHTML = html;
+      this.attachEvents(target);
+    }
+  }
+
   attachEvents(container) {
     const statusSelect = container.querySelector('#admin-reports-status-filter');
     statusSelect?.addEventListener('change', async (e) => {
       this.filterStatus = e.target.value;
-      const html = await this.render();
-      container.innerHTML = html;
-      this.attachEvents(container);
+      await this.refreshSelf(container);
     });
 
     container.querySelectorAll('.btn-update-report').forEach(btn => {
@@ -132,9 +140,7 @@ export class AdminModerationView {
           const adminUser = this.store.state.user || { id: 'admin', name: 'Admin' };
           await this.adminService.updateReportStatus(repId, targetStatus, adminUser);
           Toast.show(`Signalement marqué comme "${targetStatus}".`, 'success', '🛡️');
-          const html = await this.render();
-          container.innerHTML = html;
-          this.attachEvents(container);
+          await this.refreshSelf(container);
         } catch (err) {
           Toast.show('Erreur : ' + err.message, 'error', '⚠️');
         }

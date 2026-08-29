@@ -182,6 +182,17 @@ export class AdminCategoriesView {
     `;
   }
 
+  async refreshSelf(container) {
+    const target = container.querySelector?.('.admin-content-area') || 
+                   container.closest?.('.admin-content-area') || 
+                   (document.querySelector('.admin-content-area') || container);
+    const html = await this.render();
+    if (target) {
+      target.innerHTML = html;
+      this.attachEvents(target);
+    }
+  }
+
   attachEvents(container) {
     const catModal = container.querySelector('#modal-admin-category');
     const catForm = container.querySelector('#admin-category-form');
@@ -232,9 +243,7 @@ export class AdminCategoriesView {
         await this.adminService.upsertCategory(payload, adminUser);
         catModal?.classList.remove('active');
         Toast.show('Catégorie enregistrée dans Supabase !', 'success', '✨');
-        const html = await this.render();
-        container.innerHTML = html;
-        this.attachEvents(container);
+        await this.refreshSelf(container);
       } catch (err) {
         Toast.show('Erreur : ' + err.message, 'error', '⚠️');
       }
@@ -259,9 +268,7 @@ export class AdminCategoriesView {
         tagModal?.classList.remove('active');
         tagNameInput.value = '';
         Toast.show('Tag créé avec succès !', 'success', '✨');
-        const html = await this.render();
-        container.innerHTML = html;
-        this.attachEvents(container);
+        await this.refreshSelf(container);
       } catch (err) {
         Toast.show('Erreur : ' + err.message, 'error', '⚠️');
       }

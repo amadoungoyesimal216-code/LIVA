@@ -167,6 +167,16 @@ export class AdminUsersView {
     `;
   }
 
+  async refreshSelf(container) {
+    const target = container.querySelector?.('.admin-content-area') || 
+                   (container.classList?.contains('admin-content-area') ? container : (document.querySelector('.admin-content-area') || container));
+    const html = await this.render();
+    if (target) {
+      target.innerHTML = html;
+      this.attachEvents(target);
+    }
+  }
+
   attachEvents(container) {
     // 1. Filtres
     const searchInput = container.querySelector('#admin-user-search');
@@ -177,9 +187,7 @@ export class AdminUsersView {
       this.filterSearch = searchInput?.value || '';
       this.filterRole = roleSelect?.value || 'all';
       this.filterStatus = statusSelect?.value || 'all';
-      const html = await this.render();
-      container.innerHTML = html;
-      this.attachEvents(container);
+      await this.refreshSelf(container);
     };
 
     let timer;
