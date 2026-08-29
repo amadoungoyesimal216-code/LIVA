@@ -189,40 +189,39 @@ export class SupabaseService {
   }
 
   /**
-   * Récupération et validation cryptographique de la session active
+   * Récupération et validation instantanée de la session active (0 ms)
    */
   static async getSession() {
     try {
-      // 1. Validation cryptographique du JWT auprès du serveur Supabase via getUser()
-      const { data: { user: authUser }, error: userErr } = await supabase.auth.getUser();
-      if (!userErr && authUser) {
-        const { data: sessionData } = await supabase.auth.getSession();
-        const profile = await this.fetchUserProfile(authUser.id);
-        if (profile) {
-          localStorage.setItem('liva_auth_user_id', authUser.id);
-          return { user: profile, session: sessionData?.session || { user: authUser } };
-        }
-        
-        // Profil initial issu des métadonnées Google OAuth
-        const meta = authUser.user_metadata || {};
-        const fallbackProfile = {
-          id: authUser.id,
-          email: authUser.email,
-          name: meta.full_name || meta.name || authUser.email?.split('@')[0] || 'Lecteur Liva',
-          username: '@' + (meta.preferred_username || authUser.email?.split('@')[0] || 'lecteur').toLowerCase().replace(/[^a-z0-9_]/g, ''),
-          avatar: meta.avatar_url || meta.picture || DEFAULT_AVATAR,
-          role: (['amadoungoyesimal216@gmail.com', 'pangoyesimal@gmail.com'].includes(authUser.email) ? 'ADMIN' : 'USER'),
-          status: 'active',
-          stats: { storiesRead: 0, hoursRead: 0, followingCount: 0, followersCount: 0, likesCount: 0 },
-          favoriteGenres: ['romance', 'african']
-        };
-        localStorage.setItem('liva_auth_user_id', authUser.id);
-        return { user: fallbackProfile, session: sessionData?.session || { user: authUser } };
+      // 1. Lecture instantanée de la session locale Supabase
+      const { data: sessionData, error: sessionErr } = await supabase.auth.getSession();
+      if (sessionErr || !sessionData?.session?.user) {
+        localStorage.removeItem('liva_auth_user_id');
+        return null;
       }
 
-      // Pas de session JWT valide
-      localStorage.removeItem('liva_auth_user_id');
-      return null;
+      const authUser = sessionData.session.user;
+      const profile = await this.fetchUserProfile(authUser.id);
+      if (profile) {
+        localStorage.setItem('liva_auth_user_id', authUser.id);
+        return { user: profile, session: sessionData.session };
+      }
+      
+      // Profil initial issu des métadonnées Google OAuth
+      const meta = authUser.user_metadata || {};
+      const fallbackProfile = {
+        id: authUser.id,
+        email: authUser.email,
+        name: meta.full_name || meta.name || authUser.email?.split('@')[0] || 'Lecteur Liva',
+        username: '@' + (meta.preferred_username || authUser.email?.split('@')[0] || 'lecteur').toLowerCase().replace(/[^a-z0-9_]/g, ''),
+        avatar: meta.avatar_url || meta.picture || DEFAULT_AVATAR,
+        role: (['amadoungoyesimal216@gmail.com', 'pangoyesimal@gmail.com'].includes(authUser.email) ? 'ADMIN' : 'USER'),
+        status: 'active',
+        stats: { storiesRead: 0, hoursRead: 0, followingCount: 0, followersCount: 0, likesCount: 0 },
+        favoriteGenres: ['romance', 'african']
+      };
+      localStorage.setItem('liva_auth_user_id', authUser.id);
+      return { user: fallbackProfile, session: sessionData.session };
     } catch (err) {
       console.warn('[SupabaseService] Erreur getSession:', err);
       return null;
@@ -570,14 +569,31 @@ export class SupabaseService {
   }
 
   // ==========================================
-  // 4. DONNÉES PUBLIQUES (HISTOIRES & AUTEURS)
+  // 4. DONNÉES PUBLIQUES (HISTOIRES & AUTEURS) AVEC CACHE
   // ==========================================
 
   /**
-   * Récupère toutes les histoires publiées avec chapitres et avis
+   * Récupère toutes les histoires publiées avec chapitres et avis (Cache 45s)
    */
-  static async fetchStories() {
+  static _cachedStories = null;
+  static _lastStoriesTime = 0;
+  static _cachedAuthors = null;
+  static _lastAuthorsTime = 0;
+
+  static clearPublicCache() {
+    this._cachedStories = null;
+    this._lastStoriesTime = 0;
+    this._cachedAuthors = null;
+    this._lastAuthorsTime = 0;
+  }
+
+  static async fetchStories(forceRefresh = false) {
     try {
+      const now = Date.now();
+      if (!forceRefresh && this._cachedStories && (now - this._lastStoriesTime < 45000)) {
+        return this._cachedStories;
+      }
+
       const { data: storiesData, error } = await supabase
         .from('stories')
         .select('*')
@@ -585,14 +601,14 @@ export class SupabaseService {
 
       if (error) {
         console.warn('[SupabaseService] Erreur fetchStories:', error);
-        return [];
+        return this._cachedStories || [];
       }
       if (!storiesData || storiesData.length === 0) return [];
 
-      const { data: chaptersData } = await supabase.from('chapters').select('*').order('number', { ascending: true });
+      const { data: chaptersData } = await supabase.from('chapters').select('id, story_id, number, title, duration, read_time_min, content').order('number', { ascending: true });
       const { data: reviewsData } = await supabase.from('reviews').select('*').order('created_at', { ascending: false });
 
-      return storiesData.map(s => {
+      const stories = storiesData.map(s => {
         const storyChapters = (chaptersData || []).filter(c => c.story_id === s.id).map(c => ({
           id: c.id.replace(`${s.id}-`, ''),
           number: c.number,
@@ -644,24 +660,33 @@ export class SupabaseService {
           reviews: storyReviews
         };
       });
+
+      this._cachedStories = stories;
+      this._lastStoriesTime = now;
+      return stories;
     } catch (err) {
       console.warn('[SupabaseService] fetchStories offline/fallback:', err);
-      return [];
+      return this._cachedStories || [];
     }
   }
 
   /**
-   * Récupère tous les auteurs vérifiés
+   * Récupère tous les auteurs vérifiés (Cache 45s)
    */
-  static async fetchAuthors() {
+  static async fetchAuthors(forceRefresh = false) {
     try {
+      const now = Date.now();
+      if (!forceRefresh && this._cachedAuthors && (now - this._lastAuthorsTime < 45000)) {
+        return this._cachedAuthors;
+      }
+
       const { data, error } = await supabase.from('authors').select('*').order('followers_raw', { ascending: false });
       if (error) {
         console.warn('[SupabaseService] Erreur fetchAuthors:', error);
-        return [];
+        return this._cachedAuthors || [];
       }
       if (!data || data.length === 0) return [];
-      return data.map(a => ({
+      const authors = data.map(a => ({
         id: a.id,
         name: a.name,
         username: a.username,
@@ -674,9 +699,13 @@ export class SupabaseService {
         storiesCount: a.stories_count,
         likesCount: a.likes_count
       }));
+
+      this._cachedAuthors = authors;
+      this._lastAuthorsTime = now;
+      return authors;
     } catch (err) {
       console.warn('[SupabaseService] fetchAuthors offline/fallback:', err);
-      return [];
+      return this._cachedAuthors || [];
     }
   }
 }

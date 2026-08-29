@@ -1,14 +1,54 @@
 // LIVA ADMIN — Service Supabase dédié à l'Administration & Back-Office
 import { supabase } from './supabaseClient.js';
 
+// Cache mémoire haute performance pour le panneau d'administration (TTL: 30s)
+const adminCache = new Map();
+const CACHE_TTL_MS = 30000;
+
+function getFromCache(key) {
+  const item = adminCache.get(key);
+  if (item && (Date.now() - item.time < CACHE_TTL_MS)) {
+    return item.data;
+  }
+  return null;
+}
+
+function saveToCache(key, data) {
+  adminCache.set(key, { data, time: Date.now() });
+}
+
+export function clearAdminCache(prefix = null) {
+  if (!prefix) {
+    adminCache.clear();
+  } else {
+    for (const k of adminCache.keys()) {
+      if (k.startsWith(prefix)) adminCache.delete(k);
+    }
+  }
+}
+
 export class SupabaseAdminService {
+  /**
+   * Nettoyer le cache d'administration
+   */
+  static clearCache(prefix = null) {
+    clearAdminCache(prefix);
+  }
+
   /**
    * 1. Métriques Clés & KPI du Dashboard
    */
-  static async getDashboardStats() {
+  static async getDashboardStats(forceRefresh = false) {
     try {
+      const cacheKey = 'admin_stats';
+      if (!forceRefresh) {
+        const cached = getFromCache(cacheKey);
+        if (cached) return cached;
+      }
+
       const { data, error } = await supabase.rpc('admin_get_stats');
       if (error) throw error;
+      if (data) saveToCache(cacheKey, data);
       return data;
     } catch (err) {
       console.error('[SupabaseAdmin] Erreur getDashboardStats:', err);
@@ -19,8 +59,14 @@ export class SupabaseAdminService {
   /**
    * 2. Gestion des Histoires
    */
-  static async getStories(filters = {}) {
+  static async getStories(filters = {}, forceRefresh = false) {
     try {
+      const cacheKey = `stories_${JSON.stringify(filters)}`;
+      if (!forceRefresh) {
+        const cached = getFromCache(cacheKey);
+        if (cached) return cached;
+      }
+
       let query = supabase.from('stories').select('*').order('created_at', { ascending: false });
 
       if (filters.genre && filters.genre !== 'all') {
@@ -35,7 +81,9 @@ export class SupabaseAdminService {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data || [];
+      const result = data || [];
+      saveToCache(cacheKey, result);
+      return result;
     } catch (err) {
       console.error('[SupabaseAdmin] Erreur getStories:', err);
       return [];
@@ -169,13 +217,16 @@ export class SupabaseAdminService {
         if (chError) console.warn('[SupabaseAdmin] Erreur upsert chapters batch:', chError);
       }
 
+      // Invalider le cache pour actualisation instantanée
+      clearAdminCache();
+
       await this.logAction(
         adminUser.id,
         adminUser.name,
         story.id ? 'MODIFICATION_HISTOIRE' : 'CREATION_HISTOIRE',
         'story',
         storyId,
-        `Histoire "${story.title}" (${storyPayload.status}, ${chapters.length} chapitres) enregistrée.`
+        `Histoire "${story.title}" (${storyPayload.status}) et ses ${chapters.length} chapitres enregistrés.`
       );
 
       return savedStory?.[0] || storyPayload;
@@ -219,13 +270,12 @@ export class SupabaseAdminService {
 
   static async deleteStory(storyId, storyTitle, adminUser) {
     try {
-      // 1. Supprimer les chapitres
       await supabase.from('chapters').delete().eq('story_id', storyId);
-      // 2. Supprimer les avis
       await supabase.from('reviews').delete().eq('story_id', storyId);
-      // 3. Supprimer l'histoire
       const { error } = await supabase.from('stories').delete().eq('id', storyId);
       if (error) throw error;
+
+      clearAdminCache();
 
       await this.logAction(
         adminUser.id,
@@ -246,31 +296,40 @@ export class SupabaseAdminService {
   /**
    * 3. Gestion des Chapitres
    */
-  static async getChapters(storyId) {
+  static async getChaptersByStoryId(storyId) {
     try {
+      const cacheKey = `chapters_${storyId}`;
+      const cached = getFromCache(cacheKey);
+      if (cached) return cached;
+
       const { data, error } = await supabase
         .from('chapters')
         .select('*')
         .eq('story_id', storyId)
         .order('number', { ascending: true });
+
       if (error) throw error;
-      return data || [];
+      const result = data || [];
+      saveToCache(cacheKey, result);
+      return result;
     } catch (err) {
-      console.error('[SupabaseAdmin] Erreur getChapters:', err);
+      console.error('[SupabaseAdmin] Erreur getChaptersByStoryId:', err);
       return [];
     }
   }
 
   static async upsertChapter(chapter, adminUser) {
     try {
-      const chapterId = chapter.id || `${chapter.story_id}-ch-${chapter.number || Date.now()}`;
+      const words = (chapter.content || '').trim().split(/\s+/).filter(Boolean).length;
+      const mins = chapter.read_time_min || Math.max(1, Math.ceil(words / 200));
+
       const payload = {
-        id: chapterId,
+        id: chapter.id || `${chapter.story_id}-ch-${chapter.number || Date.now()}`,
         story_id: chapter.story_id,
-        number: parseInt(chapter.number) || 1,
+        number: Number(chapter.number) || 1,
         title: chapter.title.trim(),
-        duration: chapter.duration || '5 min',
-        read_time_min: parseInt(chapter.read_time_min) || 5,
+        duration: `${mins} min`,
+        read_time_min: mins,
         content: chapter.content || '',
         created_at: chapter.created_at || new Date().toISOString()
       };
@@ -278,17 +337,18 @@ export class SupabaseAdminService {
       const { data, error } = await supabase.from('chapters').upsert(payload).select();
       if (error) throw error;
 
-      // Mettre à jour le nombre de chapitres de l'histoire
+      clearAdminCache();
+
       const { count } = await supabase.from('chapters').select('id', { count: 'exact', head: true }).eq('story_id', chapter.story_id);
-      await supabase.from('stories').update({ chapters_count: count || 1 }).eq('id', chapter.story_id);
+      await supabase.from('stories').update({ chapters_count: Math.max(1, count || 1) }).eq('id', chapter.story_id);
 
       await this.logAction(
         adminUser.id,
         adminUser.name,
-        'ENREGISTREMENT_CHAPITRE',
+        chapter.id ? 'MODIFICATION_CHAPITRE' : 'CREATION_CHAPITRE',
         'chapter',
-        chapterId,
-        `Chapitre ${payload.number} ("${payload.title}") enregistré pour l'histoire ${chapter.story_id}.`
+        payload.id,
+        `Chapitre "${chapter.title}" (n°${payload.number}) enregistré.`
       );
 
       return data?.[0] || payload;
@@ -302,6 +362,8 @@ export class SupabaseAdminService {
     try {
       const { error } = await supabase.from('chapters').delete().eq('id', chapterId);
       if (error) throw error;
+
+      clearAdminCache();
 
       const { count } = await supabase.from('chapters').select('id', { count: 'exact', head: true }).eq('story_id', storyId);
       await supabase.from('stories').update({ chapters_count: Math.max(1, count || 1) }).eq('id', storyId);
@@ -325,11 +387,19 @@ export class SupabaseAdminService {
   /**
    * 4. Gestion des Auteurs
    */
-  static async getAuthors() {
+  static async getAuthors(forceRefresh = false) {
     try {
+      const cacheKey = 'admin_authors';
+      if (!forceRefresh) {
+        const cached = getFromCache(cacheKey);
+        if (cached) return cached;
+      }
+
       const { data, error } = await supabase.from('authors').select('*').order('created_at', { ascending: false });
       if (error) throw error;
-      return data || [];
+      const result = data || [];
+      saveToCache(cacheKey, result);
+      return result;
     } catch (err) {
       console.error('[SupabaseAdmin] Erreur getAuthors:', err);
       return [];
@@ -340,6 +410,8 @@ export class SupabaseAdminService {
     try {
       const { error } = await supabase.from('authors').update({ status }).eq('id', authorId);
       if (error) throw error;
+
+      clearAdminCache('admin_authors');
 
       await this.logAction(
         adminUser.id,
@@ -359,8 +431,14 @@ export class SupabaseAdminService {
   /**
    * 5. Gestion des Utilisateurs & Rôles
    */
-  static async getUsers(search = '', role = 'all', status = 'all') {
+  static async getUsers(search = '', role = 'all', status = 'all', forceRefresh = false) {
     try {
+      const cacheKey = `users_${search}_${role}_${status}`;
+      if (!forceRefresh) {
+        const cached = getFromCache(cacheKey);
+        if (cached) return cached;
+      }
+
       let query = supabase.from('profiles').select('*').order('created_at', { ascending: false });
 
       if (role !== 'all') query = query.eq('role', role);
@@ -371,7 +449,9 @@ export class SupabaseAdminService {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data || [];
+      const result = data || [];
+      saveToCache(cacheKey, result);
+      return result;
     } catch (err) {
       console.error('[SupabaseAdmin] Erreur getUsers:', err);
       return [];
@@ -387,6 +467,8 @@ export class SupabaseAdminService {
         p_admin_name: adminUser.name
       });
       if (error) throw error;
+
+      clearAdminCache();
       return data;
     } catch (err) {
       console.error('[SupabaseAdmin] Erreur setUserRole:', err);
@@ -403,6 +485,8 @@ export class SupabaseAdminService {
         p_admin_name: adminUser.name
       });
       if (error) throw error;
+
+      clearAdminCache();
       return data;
     } catch (err) {
       console.error('[SupabaseAdmin] Erreur setUserStatus:', err);
@@ -413,8 +497,14 @@ export class SupabaseAdminService {
   /**
    * 6. Modération des Commentaires
    */
-  static async getReviews(filters = {}) {
+  static async getReviews(filters = {}, forceRefresh = false) {
     try {
+      const cacheKey = `reviews_${JSON.stringify(filters)}`;
+      if (!forceRefresh) {
+        const cached = getFromCache(cacheKey);
+        if (cached) return cached;
+      }
+
       let query = supabase.from('reviews').select('*').order('created_at', { ascending: false });
 
       if (filters.status && filters.status !== 'all') {
@@ -423,7 +513,9 @@ export class SupabaseAdminService {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data || [];
+      const result = data || [];
+      saveToCache(cacheKey, result);
+      return result;
     } catch (err) {
       console.error('[SupabaseAdmin] Erreur getReviews:', err);
       return [];
@@ -434,6 +526,8 @@ export class SupabaseAdminService {
     try {
       const { error } = await supabase.from('reviews').update({ status }).eq('id', reviewId);
       if (error) throw error;
+
+      clearAdminCache('reviews');
 
       await this.logAction(
         adminUser.id,
@@ -453,14 +547,22 @@ export class SupabaseAdminService {
   /**
    * 7. Centre des Signalements
    */
-  static async getReports(status = 'all') {
+  static async getReports(status = 'all', forceRefresh = false) {
     try {
+      const cacheKey = `reports_${status}`;
+      if (!forceRefresh) {
+        const cached = getFromCache(cacheKey);
+        if (cached) return cached;
+      }
+
       let query = supabase.from('reports').select('*').order('created_at', { ascending: false });
       if (status !== 'all') query = query.eq('status', status);
 
       const { data, error } = await query;
       if (error) throw error;
-      return data || [];
+      const result = data || [];
+      saveToCache(cacheKey, result);
+      return result;
     } catch (err) {
       console.error('[SupabaseAdmin] Erreur getReports:', err);
       return [];
@@ -471,6 +573,8 @@ export class SupabaseAdminService {
     try {
       const { error } = await supabase.from('reports').update({ status }).eq('id', reportId);
       if (error) throw error;
+
+      clearAdminCache('reports');
 
       await this.logAction(
         adminUser.id,
@@ -490,11 +594,19 @@ export class SupabaseAdminService {
   /**
    * 8. Catégories & Tags
    */
-  static async getCategories() {
+  static async getCategories(forceRefresh = false) {
     try {
+      const cacheKey = 'admin_categories';
+      if (!forceRefresh) {
+        const cached = getFromCache(cacheKey);
+        if (cached) return cached;
+      }
+
       const { data, error } = await supabase.from('categories').select('*').order('name', { ascending: true });
       if (error) throw error;
-      return data || [];
+      const result = data || [];
+      saveToCache(cacheKey, result);
+      return result;
     } catch (err) {
       console.error('[SupabaseAdmin] Erreur getCategories:', err);
       return [];
@@ -505,6 +617,8 @@ export class SupabaseAdminService {
     try {
       const { data, error } = await supabase.from('categories').upsert(cat).select();
       if (error) throw error;
+
+      clearAdminCache('admin_categories');
 
       await this.logAction(
         adminUser.id,
@@ -521,11 +635,19 @@ export class SupabaseAdminService {
     }
   }
 
-  static async getTags() {
+  static async getTags(forceRefresh = false) {
     try {
+      const cacheKey = 'admin_tags';
+      if (!forceRefresh) {
+        const cached = getFromCache(cacheKey);
+        if (cached) return cached;
+      }
+
       const { data, error } = await supabase.from('tags').select('*').order('usage_count', { ascending: false });
       if (error) throw error;
-      return data || [];
+      const result = data || [];
+      saveToCache(cacheKey, result);
+      return result;
     } catch (err) {
       console.error('[SupabaseAdmin] Erreur getTags:', err);
       return [];
@@ -538,6 +660,8 @@ export class SupabaseAdminService {
       const payload = { id: tagId, name: tagName.trim() };
       const { data, error } = await supabase.from('tags').upsert(payload).select();
       if (error) throw error;
+
+      clearAdminCache('admin_tags');
 
       await this.logAction(
         adminUser.id,
@@ -580,14 +704,21 @@ export class SupabaseAdminService {
   /**
    * 10. Paramètres & Journalisation
    */
-  static async getSettings() {
+  static async getSettings(forceRefresh = false) {
     try {
+      const cacheKey = 'admin_settings';
+      if (!forceRefresh) {
+        const cached = getFromCache(cacheKey);
+        if (cached) return cached;
+      }
+
       const { data, error } = await supabase.from('app_settings').select('*');
       if (error) throw error;
       const settingsMap = {};
       (data || []).forEach(row => {
         settingsMap[row.key] = row.value;
       });
+      saveToCache(cacheKey, settingsMap);
       return settingsMap;
     } catch (err) {
       console.error('[SupabaseAdmin] Erreur getSettings:', err);
@@ -599,6 +730,8 @@ export class SupabaseAdminService {
     try {
       const { error } = await supabase.from('app_settings').upsert({ key, value, updated_at: new Date().toISOString() });
       if (error) throw error;
+
+      clearAdminCache('admin_settings');
 
       await this.logAction(
         adminUser.id,

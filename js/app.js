@@ -1,40 +1,40 @@
 // LIVA - Application Principale & Routeur SPA
-import { store, DEFAULT_AVATAR } from './state/store.js?v=32';
-import { ThemeManager } from './features/themeManager.js?v=32';
-import { AudioPlayer } from './features/audioPlayer.js?v=32';
-import { Toast } from './components/Toast.js?v=32';
-import { Modal } from './components/Modal.js?v=32';
-import { GENRES_DATA } from './data/genres.js?v=32';
-import { SupabaseService } from './services/supabaseClient.js?v=32';
-import { SupabaseAdminService } from './services/supabaseAdmin.js?v=32';
+import { store, DEFAULT_AVATAR } from './state/store.js?v=33';
+import { ThemeManager } from './features/themeManager.js?v=33';
+import { AudioPlayer } from './features/audioPlayer.js?v=33';
+import { Toast } from './components/Toast.js?v=33';
+import { Modal } from './components/Modal.js?v=33';
+import { GENRES_DATA } from './data/genres.js?v=33';
+import { SupabaseService } from './services/supabaseClient.js?v=33';
+import { SupabaseAdminService } from './services/supabaseAdmin.js?v=33';
 
 // Views Liva User
-import { HomeView } from './views/HomeView.js?v=32';
-import { ExploreView } from './views/ExploreView.js?v=32';
-import { StoryView } from './views/StoryView.js?v=32';
-import { ReaderView } from './views/ReaderView.js?v=32';
-import { LibraryView } from './views/LibraryView.js?v=32';
-import { CreateView } from './views/CreateView.js?v=32';
-import { ProfileView } from './views/ProfileView.js?v=32';
-import { SwipeView } from './views/SwipeView.js?v=32';
-import { OnboardingView } from './views/OnboardingView.js?v=32';
-import { AuthView } from './views/AuthView.js?v=32';
+import { HomeView } from './views/HomeView.js?v=33';
+import { ExploreView } from './views/ExploreView.js?v=33';
+import { StoryView } from './views/StoryView.js?v=33';
+import { ReaderView } from './views/ReaderView.js?v=33';
+import { LibraryView } from './views/LibraryView.js?v=33';
+import { CreateView } from './views/CreateView.js?v=33';
+import { ProfileView } from './views/ProfileView.js?v=33';
+import { SwipeView } from './views/SwipeView.js?v=33';
+import { OnboardingView } from './views/OnboardingView.js?v=33';
+import { AuthView } from './views/AuthView.js?v=33';
 
 // Views Liva Admin
-import { AdminLayout } from './views/admin/AdminLayout.js?v=32';
-import { AdminDashboardView } from './views/admin/AdminDashboardView.js?v=32';
-import { AdminStoriesView } from './views/admin/AdminStoriesView.js?v=32';
-import { AdminStoryEngineView } from './views/admin/AdminStoryEngineView.js?v=32';
-import { AdminChaptersView } from './views/admin/AdminChaptersView.js?v=32';
-import { AdminAuthorsView } from './views/admin/AdminAuthorsView.js?v=32';
-import { AdminUsersView } from './views/admin/AdminUsersView.js?v=32';
-import { AdminCommentsView } from './views/admin/AdminCommentsView.js?v=32';
-import { AdminModerationView } from './views/admin/AdminModerationView.js?v=32';
-import { AdminCategoriesView } from './views/admin/AdminCategoriesView.js?v=32';
-import { AdminNotificationsView } from './views/admin/AdminNotificationsView.js?v=32';
-import { AdminAnalyticsView } from './views/admin/AdminAnalyticsView.js?v=32';
-import { AdminSettingsView } from './views/admin/AdminSettingsView.js?v=32';
-import { AdminLogsView } from './views/admin/AdminLogsView.js?v=32';
+import { AdminLayout } from './views/admin/AdminLayout.js?v=33';
+import { AdminDashboardView } from './views/admin/AdminDashboardView.js?v=33';
+import { AdminStoriesView } from './views/admin/AdminStoriesView.js?v=33';
+import { AdminStoryEngineView } from './views/admin/AdminStoryEngineView.js?v=33';
+import { AdminChaptersView } from './views/admin/AdminChaptersView.js?v=33';
+import { AdminAuthorsView } from './views/admin/AdminAuthorsView.js?v=33';
+import { AdminUsersView } from './views/admin/AdminUsersView.js?v=33';
+import { AdminCommentsView } from './views/admin/AdminCommentsView.js?v=33';
+import { AdminModerationView } from './views/admin/AdminModerationView.js?v=33';
+import { AdminCategoriesView } from './views/admin/AdminCategoriesView.js?v=33';
+import { AdminNotificationsView } from './views/admin/AdminNotificationsView.js?v=33';
+import { AdminAnalyticsView } from './views/admin/AdminAnalyticsView.js?v=33';
+import { AdminSettingsView } from './views/admin/AdminSettingsView.js?v=33';
+import { AdminLogsView } from './views/admin/AdminLogsView.js?v=33';
 
 class AppRouter {
   constructor(store) {
@@ -331,15 +331,27 @@ function initApp() {
   router.register('/swipe', new SwipeView(store, router));
   router.register('/auth', new AuthView(store, router));
 
-  // Global Navigation clicks
-  document.querySelectorAll('[data-navigate]').forEach(el => {
-    el.addEventListener('click', (e) => {
-      const route = el.getAttribute('data-navigate');
+  // Navigation globale déléguée ultra-réactive (0 ms de délai)
+  document.addEventListener('click', (e) => {
+    const navEl = e.target.closest('[data-navigate]');
+    if (navEl) {
+      e.preventDefault();
+      const route = navEl.getAttribute('data-navigate');
       if (route) {
         document.getElementById('notif-dropdown')?.classList.remove('active');
         router.navigate(route);
       }
-    });
+      return;
+    }
+
+    const navLink = e.target.closest('[data-nav-route]');
+    if (navLink && !navLink.hasAttribute('data-navigate')) {
+      const route = navLink.getAttribute('data-nav-route');
+      if (route) {
+        e.preventDefault();
+        router.navigate(route);
+      }
+    }
   });
 
   // Global Logout Action
