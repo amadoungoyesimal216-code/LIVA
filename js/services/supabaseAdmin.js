@@ -334,6 +334,28 @@ export class SupabaseAdminService {
         created_at: chapter.created_at || new Date().toISOString()
       };
 
+      // 1. Appel via la fonction RPC sécurisée
+      try {
+        const { data: rpcRes, error: rpcErr } = await supabase.rpc('admin_upsert_chapter', {
+          p_id: payload.id,
+          p_story_id: payload.story_id,
+          p_number: payload.number,
+          p_title: payload.title,
+          p_duration: payload.duration,
+          p_read_time_min: payload.read_time_min,
+          p_content: payload.content,
+          p_admin_id: adminUser?.id || null,
+          p_admin_name: adminUser?.name || 'Admin'
+        });
+        if (!rpcErr && rpcRes) {
+          clearAdminCache();
+          return { id: rpcRes.id || payload.id, ...payload };
+        }
+      } catch (e) {
+        // En cas d'indisponibilité RPC, bascule sur l'upsert direct
+      }
+
+      // 2. Fallback direct sur la table chapters
       const { data, error } = await supabase.from('chapters').upsert(payload).select();
       if (error) throw error;
 
@@ -341,15 +363,6 @@ export class SupabaseAdminService {
 
       const { count } = await supabase.from('chapters').select('id', { count: 'exact', head: true }).eq('story_id', chapter.story_id);
       await supabase.from('stories').update({ chapters_count: Math.max(1, count || 1) }).eq('id', chapter.story_id);
-
-      await this.logAction(
-        adminUser.id,
-        adminUser.name,
-        chapter.id ? 'MODIFICATION_CHAPITRE' : 'CREATION_CHAPITRE',
-        'chapter',
-        payload.id,
-        `Chapitre "${chapter.title}" (n°${payload.number}) enregistré.`
-      );
 
       return data?.[0] || payload;
     } catch (err) {
