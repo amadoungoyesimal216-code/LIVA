@@ -114,7 +114,10 @@ export class ExploreView {
           </div>
 
           <div class="search-results-grid" id="explore-grid-container">
-            ${filteredStories.map(story => StoryCard.renderVertical(story, this.store)).join('')}
+            ${filteredStories.length > 0
+              ? filteredStories.map(story => StoryCard.renderVertical(story, this.store)).join('')
+              : `<div class="empty-state" style="grid-column: 1 / -1;"><div class="empty-state-icon">📚</div><h3 class="empty-state-title">Aucune histoire disponible</h3><p class="empty-state-text">Le catalogue est prêt pour vos créations. Commencez dès maintenant à publier des récits !</p></div>`
+            }
           </div>
         </section>
 

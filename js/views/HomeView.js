@@ -11,6 +11,7 @@ export class HomeView {
   }
 
   render() {
+    const allStories = this.store.getAllStories();
     const heroStory = this.store.getHeroStory();
     const recommendedStories = this.store.getRecommendedStories(6);
     const trendingStories = this.store.getTrendingStories();
@@ -19,8 +20,8 @@ export class HomeView {
     const targetGenre = userFavGenres.length > 0 ? userFavGenres[0] : null;
     const curatedStories = targetGenre 
       ? this.store.getStoriesByGenre(targetGenre)
-      : this.store.getAllStories().slice(0, 6);
-    const isHeroSaved = this.store.isSaved(heroStory.id);
+      : allStories.slice(0, 6);
+    const isHeroSaved = heroStory ? this.store.isSaved(heroStory.id) : false;
 
     const initialGenreObj = GENRES_DATA.find(g => g.id === this.selectedGenre);
     const initialGenreStories = this.selectedGenre === 'all' 
@@ -60,11 +61,15 @@ export class HomeView {
           </div>
 
           <div class="stories-horizontal-scroll hide-scrollbar" id="home-genre-stories-container">
-            ${initialGenreStories.map(story => StoryCard.renderVertical(story, this.store)).join('')}
+            ${initialGenreStories.length > 0 
+              ? initialGenreStories.map(story => StoryCard.renderVertical(story, this.store)).join('')
+              : `<div class="empty-state" style="padding: var(--space-4); width: 100%;"><p style="font-size: 0.85rem; color: var(--text-muted);">Aucune histoire disponible dans cette catégorie.</p></div>`
+            }
           </div>
         </section>
 
-        <!-- 2. Hero : Tendances sur Liva -->
+        <!-- 2. Hero : Tendance ou Bienvenue -->
+        ${heroStory ? `
         <section>
           <div class="hero-trending-banner" data-story-id="${heroStory.id}">
             <img src="${heroStory.banner || heroStory.cover}" alt="${heroStory.title}" class="hero-backdrop-img" />
@@ -73,20 +78,20 @@ export class HomeView {
             <div class="hero-content">
               <div class="hero-badge-row">
                 <span class="badge badge-rose">🔥 TENDANCE SUR LIVA</span>
-                <span class="badge badge-blur">${heroStory.genre} · ${heroStory.secondaryGenre}</span>
+                <span class="badge badge-blur">${heroStory.genre} · ${heroStory.secondaryGenre || ''}</span>
               </div>
               
               <h2 class="hero-title">${heroStory.title}</h2>
               
               <div class="hero-meta-row">
-                <span style="font-weight: 700; color: var(--color-accent-gold);">⭐ ${heroStory.rating}</span>
+                <span style="font-weight: 700; color: var(--color-accent-gold);">⭐ ${heroStory.rating || '5.0'}</span>
                 <span>·</span>
-                <span>👁️ ${heroStory.readsCount} lectures</span>
+                <span>👁️ ${heroStory.readsCount || '0'} lectures</span>
                 <span>·</span>
                 <span>✍️ ${heroStory.authorName}</span>
               </div>
               
-              <p class="hero-desc">${heroStory.description.split('\n')[0]}</p>
+              <p class="hero-desc">${(heroStory.description || '').split('\n')[0]}</p>
               
               <div class="hero-actions">
                 <button class="btn btn-primary btn-lg btn-read-story" data-story-id="${heroStory.id}">
@@ -102,6 +107,23 @@ export class HomeView {
             </div>
           </div>
         </section>
+        ` : `
+        <section style="margin-bottom: var(--space-6);">
+          <div class="hero-trending-banner" style="background: linear-gradient(135deg, rgba(121, 40, 202, 0.25), rgba(236, 72, 153, 0.15)); border: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: center; min-height: 220px; text-align: center; padding: var(--space-8) var(--space-4);">
+            <div>
+              <span style="font-size: 2.5rem; display: block; margin-bottom: 8px;">📖✨</span>
+              <h2 style="font-size: 1.5rem; font-weight: 800; font-family: var(--font-display); margin-bottom: 8px;">Bienvenue sur LIVA</h2>
+              <p style="font-size: 0.92rem; color: var(--text-secondary); max-width: 520px; margin: 0 auto 16px;">
+                La plateforme est prête ! Créez de nouvelles œuvres captivantes depuis le Studio Auteur ou générez des histoires complètes avec le LIVA Story Engine.
+              </p>
+              <a href="#/admin/story-engine" class="btn btn-primary btn-sm" style="gap: 6px;">
+                <span>✨</span>
+                <span>Générer avec Liva Story Engine</span>
+              </a>
+            </div>
+          </div>
+        </section>
+        `}
 
         <!-- 3. Raccourcis Rapides (Swipe & IA) -->
         <section class="features-promo-grid">
@@ -141,7 +163,10 @@ export class HomeView {
           </div>
 
           <div class="stories-horizontal-scroll hide-scrollbar">
-            ${recommendedStories.map(story => StoryCard.renderVertical(story, this.store)).join('')}
+            ${recommendedStories.length > 0 
+              ? recommendedStories.map(story => StoryCard.renderVertical(story, this.store)).join('')
+              : `<div class="empty-state" style="padding: var(--space-4); width: 100%;"><p style="font-size: 0.85rem; color: var(--text-muted);">Aucune histoire disponible pour le moment.</p></div>`
+            }
           </div>
         </section>
 
@@ -162,7 +187,10 @@ export class HomeView {
           </div>
 
           <div class="shorts-grid" id="home-shorts-container">
-            ${shortsStories.map(story => StoryCard.renderShort(story, this.store)).join('')}
+            ${shortsStories.length > 0
+              ? shortsStories.map(story => StoryCard.renderShort(story, this.store)).join('')
+              : `<div class="empty-state" style="grid-column: 1 / -1; padding: var(--space-4);"><p style="font-size: 0.85rem; color: var(--text-muted);">Aucun Liva Short disponible pour le moment.</p></div>`
+            }
           </div>
         </section>
 
@@ -177,7 +205,10 @@ export class HomeView {
           </div>
 
           <div class="stories-horizontal-scroll hide-scrollbar">
-            ${curatedStories.map(story => StoryCard.renderVertical(story, this.store)).join('')}
+            ${curatedStories.length > 0
+              ? curatedStories.map(story => StoryCard.renderVertical(story, this.store)).join('')
+              : `<div class="empty-state" style="padding: var(--space-4); width: 100%;"><p style="font-size: 0.85rem; color: var(--text-muted);">Aucune histoire disponible pour le moment.</p></div>`
+            }
           </div>
         </section>
 

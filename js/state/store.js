@@ -87,12 +87,8 @@ class AppStore {
         SupabaseService.fetchAuthors()
       ]);
 
-      if (remoteStories && remoteStories.length > 0) {
-        this.stories = remoteStories;
-      }
-      if (remoteAuthors && remoteAuthors.length > 0) {
-        this.authors = remoteAuthors;
-      }
+      this.stories = remoteStories || [];
+      this.authors = remoteAuthors || [];
 
       // 2. Vérifier si une session Supabase active existe
       const session = await SupabaseService.getSession();
@@ -270,7 +266,7 @@ class AppStore {
   }
 
   getHeroStory() {
-    return this.stories.find(s => s.isHero) || this.stories[0];
+    return this.stories.find(s => s.isHero) || this.stories[0] || null;
   }
 
   getTrendingStories() {

@@ -547,7 +547,11 @@ export class SupabaseService {
         .select('*')
         .order('rating', { ascending: false });
 
-      if (error || !storiesData || storiesData.length === 0) return null;
+      if (error) {
+        console.warn('[SupabaseService] Erreur fetchStories:', error);
+        return [];
+      }
+      if (!storiesData || storiesData.length === 0) return [];
 
       const { data: chaptersData } = await supabase.from('chapters').select('*').order('number', { ascending: true });
       const { data: reviewsData } = await supabase.from('reviews').select('*').order('created_at', { ascending: false });
@@ -606,7 +610,7 @@ export class SupabaseService {
       });
     } catch (err) {
       console.warn('[SupabaseService] fetchStories offline/fallback:', err);
-      return null;
+      return [];
     }
   }
 
@@ -616,7 +620,11 @@ export class SupabaseService {
   static async fetchAuthors() {
     try {
       const { data, error } = await supabase.from('authors').select('*').order('followers_raw', { ascending: false });
-      if (error || !data || data.length === 0) return null;
+      if (error) {
+        console.warn('[SupabaseService] Erreur fetchAuthors:', error);
+        return [];
+      }
+      if (!data || data.length === 0) return [];
       return data.map(a => ({
         id: a.id,
         name: a.name,
@@ -632,7 +640,7 @@ export class SupabaseService {
       }));
     } catch (err) {
       console.warn('[SupabaseService] fetchAuthors offline/fallback:', err);
-      return null;
+      return [];
     }
   }
 }
