@@ -537,65 +537,73 @@ class AppStore {
   }
 
   // --- Espace Créateur / Studio ---
-  saveAuthoredStory(storyData) {
+  async saveAuthoredStory(storyData) {
     const isEdit = !!storyData.id;
     const storyId = storyData.id || `story-${Date.now()}`;
+    const currentUser = this.state.user || {};
+    const authorName = storyData.authorName || currentUser.name || currentUser.username || 'Auteur LIVA';
+    const authorAvatar = storyData.authorAvatar || currentUser.avatar || DEFAULT_AVATAR;
+    const authorId = storyData.authorId || currentUser.id || 'user-author';
 
     const newStory = {
       id: storyId,
-      title: storyData.title || 'Sans titre',
-      subtitle: storyData.subtitle || '',
+      title: (storyData.title || 'Sans titre').trim(),
+      subtitle: storyData.subtitle || storyData.secondaryGenre || '',
       genre: storyData.genre || 'Romance',
       secondaryGenre: storyData.secondaryGenre || '',
+      authorId: authorId,
+      authorName: authorName,
+      authorAvatar: authorAvatar,
       cover: storyData.cover || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80',
-      description: storyData.description || '',
-      tags: storyData.tags || [storyData.genre || 'Romance'],
+      banner: storyData.banner || storyData.cover || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80',
+      description: (storyData.description || '').trim(),
+      tags: Array.isArray(storyData.tags) ? storyData.tags : [storyData.genre || 'Romance'],
       status: storyData.status || 'draft',
       chapters: storyData.chapters || [
-        { id: 'chap-1', number: 1, title: 'Chapitre 1', duration: '5 min', readTimeMin: 5, content: 'Commencez à écrire...' }
+        { id: `${storyId}-chap-1`, number: 1, title: 'Chapitre 1', duration: '5 min', readTimeMin: 5, content: 'Écrivez votre récit...' }
       ],
-      createdAt: new Date().toISOString(),
+      chaptersCount: (storyData.chapters || []).length || 1,
+      estimatedTime: storyData.estimatedTime || '5 min',
+      rating: 5.0,
+      reviewsCount: 0,
+      readsCount: storyData.status === 'published' ? '1' : '0',
+      readsRaw: storyData.status === 'published' ? 1 : 0,
+      likesCount: 0,
+      isTrending: false,
+      isHero: false,
+      isShort: storyData.isShort !== undefined ? storyData.isShort : false,
+      featuredBadge: storyData.status === 'published' ? '● Publiée' : '⚡ Brouillon',
+      createdAt: storyData.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      stats: { reads: 0, likes: 0, comments: 0 }
+      stats: storyData.stats || { reads: 0, likes: 0, comments: 0 }
     };
 
-    if (isEdit) {
-      const idx = this.state.authoredStories.findIndex(s => s.id === storyId);
-      if (idx > -1) {
-        this.state.authoredStories[idx] = { ...this.state.authoredStories[idx], ...newStory };
-      }
+    // 1. Mise à jour des histoires créées par l'utilisateur
+    if (!this.state.authoredStories) this.state.authoredStories = [];
+    const idx = this.state.authoredStories.findIndex(s => s.id === storyId);
+    if (idx > -1) {
+      this.state.authoredStories[idx] = { ...this.state.authoredStories[idx], ...newStory };
     } else {
       this.state.authoredStories.unshift(newStory);
     }
 
+    // 2. Si publiée, mise à jour dans le catalogue global public
+    const existingGlobalIdx = this.stories.findIndex(s => s.id === storyId);
     if (newStory.status === 'published') {
-      const existingGlobalIdx = this.stories.findIndex(s => s.id === storyId);
-      const storyCardObj = {
-        ...newStory,
-        authorId: this.state.user.id,
-        authorName: this.state.user.name,
-        authorAvatar: this.state.user.avatar,
-        rating: 5.0,
-        reviewsCount: 0,
-        readsCount: '1',
-        readsRaw: 1,
-        likesCount: 0,
-        chaptersCount: newStory.chapters.length,
-        estimatedTime: '5 min',
-        isTrending: false,
-        isHero: false,
-        isShort: false,
-        reviews: []
-      };
       if (existingGlobalIdx > -1) {
-        this.stories[existingGlobalIdx] = storyCardObj;
+        this.stories[existingGlobalIdx] = newStory;
       } else {
-        this.stories.unshift(storyCardObj);
+        this.stories.unshift(newStory);
       }
+    } else if (existingGlobalIdx > -1) {
+      this.stories.splice(existingGlobalIdx, 1);
     }
 
     this.saveState();
-    SupabaseService.saveAuthoredStory(newStory);
+    this.notify('AUTHORED_STORY_SAVED', { story: newStory });
+
+    // 3. Sauvegarde dans Supabase Cloud
+    await SupabaseService.saveAuthoredStory(newStory);
     return newStory;
   }
 

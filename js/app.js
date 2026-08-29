@@ -507,39 +507,8 @@ function setupGlobalModals(store, router) {
     router.refresh();
   });
 
-  // 2. Create Story Modal
-  const modalStory = document.getElementById('modal-create-story');
-  const btnSubmitStory = document.getElementById('btn-submit-create-story');
+  // 2. Create Story Modal (Délégué à CreateView et synchronisé avec store)
 
-  btnSubmitStory?.addEventListener('click', () => {
-    const title = document.getElementById('create-story-title')?.value.trim();
-    const genre = document.getElementById('create-story-genre')?.value;
-    const desc = document.getElementById('create-story-desc')?.value.trim();
-    const tagsRaw = document.getElementById('create-story-tags')?.value.trim();
-    const coverUrl = document.getElementById('create-story-cover')?.value.trim();
-    const initialText = document.getElementById('create-story-chapter-1')?.value.trim();
-
-    if (!title) {
-      Toast.show('Veuillez renseigner un titre pour votre histoire.', 'warning', '⚠️');
-      return;
-    }
-
-    const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [genre];
-
-    const newStory = store.createAuthoredStory({
-      title,
-      genre,
-      description: desc,
-      tags,
-      cover: coverUrl || 'https://images.unsplash.com/photo-1518895949257-7621c3c786d7?auto=format&fit=crop&w=600&q=80',
-      status: 'draft',
-      initialChapterText: initialText || 'Il était une fois...'
-    });
-
-    Modal.close('modal-create-story');
-    Toast.show(`Histoire "${title}" créée avec succès !`, 'success', '🎉');
-    router.navigate('/create');
-  });
 
   // 3. Chapter Editor Modal
   const modalEditor = document.getElementById('modal-chapter-editor');

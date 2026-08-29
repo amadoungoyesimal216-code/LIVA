@@ -13,21 +13,21 @@
   <link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;0,7..72,700;1,7..72,400&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Outfit:wght@500;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
   <!-- LIVA Stylesheets (Cache-Busted) -->
-  <link rel="stylesheet" href="./css/design-system.css?v=27" />
-  <link rel="stylesheet" href="./css/base.css?v=27" />
-  <link rel="stylesheet" href="./css/components.css?v=27" />
-  <link rel="stylesheet" href="./css/navigation.css?v=27" />
-  <link rel="stylesheet" href="./css/home.css?v=27" />
-  <link rel="stylesheet" href="./css/explore.css?v=27" />
-  <link rel="stylesheet" href="./css/story-detail.css?v=27" />
-  <link rel="stylesheet" href="./css/reader.css?v=27" />
-  <link rel="stylesheet" href="./css/library.css?v=27" />
-  <link rel="stylesheet" href="./css/author-studio.css?v=27" />
-  <link rel="stylesheet" href="./css/profile.css?v=27" />
-  <link rel="stylesheet" href="./css/swipe-story.css?v=27" />
-  <link rel="stylesheet" href="./css/audio-player.css?v=27" />
-  <link rel="stylesheet" href="./css/auth.css?v=27" />
-  <link rel="stylesheet" href="./css/admin.css?v=27" />
+  <link rel="stylesheet" href="./css/design-system.css?v=28" />
+  <link rel="stylesheet" href="./css/base.css?v=28" />
+  <link rel="stylesheet" href="./css/components.css?v=28" />
+  <link rel="stylesheet" href="./css/navigation.css?v=28" />
+  <link rel="stylesheet" href="./css/home.css?v=28" />
+  <link rel="stylesheet" href="./css/explore.css?v=28" />
+  <link rel="stylesheet" href="./css/story-detail.css?v=28" />
+  <link rel="stylesheet" href="./css/reader.css?v=28" />
+  <link rel="stylesheet" href="./css/library.css?v=28" />
+  <link rel="stylesheet" href="./css/author-studio.css?v=28" />
+  <link rel="stylesheet" href="./css/profile.css?v=28" />
+  <link rel="stylesheet" href="./css/swipe-story.css?v=28" />
+  <link rel="stylesheet" href="./css/audio-player.css?v=28" />
+  <link rel="stylesheet" href="./css/auth.css?v=28" />
+  <link rel="stylesheet" href="./css/admin.css?v=28" />
 </head>
 <body>
 
@@ -234,59 +234,174 @@
          5. MODALES GLOBALES
          ==================================================================== -->
 
-    <!-- Modale Création d'Histoire -->
+    <!-- Modale Studio de Création d'Histoire (Étape 1 & Étape 2 Manuelle) -->
     <div class="modal-overlay" id="modal-create-story">
-      <div class="modal-dialog">
-        <div class="modal-header">
-          <h3 class="modal-title">✨ Nouvelle Histoire</h3>
-          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-create-story').classList.remove('active')">✕</button>
-        </div>
-        <div class="modal-body">
-          <div class="form-group">
-            <label class="form-label">Titre de l'histoire *</label>
-            <input type="text" id="create-story-title" class="form-input" placeholder="Ex: Les Secrets du Baobab" />
+      <div class="modal-dialog author-wizard-modal">
+        
+        <!-- En-tête avec Indicateur d'Étapes -->
+        <div class="modal-header" style="flex-direction: column; align-items: stretch; gap: var(--space-3); padding-bottom: var(--space-3);">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 1.3rem;">✍️</span>
+              <h3 class="modal-title" id="create-story-modal-heading">Créer une Histoire</h3>
+            </div>
+            <button class="btn btn-ghost btn-sm" id="btn-close-create-story-modal">✕</button>
           </div>
 
-          <div class="form-group">
-            <label class="form-label">Genre principal *</label>
-            <select id="create-story-genre" class="form-select">
-              <option value="Romance">❤️ Romance</option>
-              <option value="Thriller">🔥 Thriller</option>
-              <option value="Histoires africaines">🇸🇳 Histoires africaines</option>
-              <option value="Fantasy">🧙 Fantasy</option>
-              <option value="Science-fiction">🚀 Science-fiction</option>
-              <option value="Horreur">👻 Horreur</option>
-              <option value="Contes">🌍 Contes & Légendes</option>
-              <option value="Mystère">🔍 Mystère</option>
-              <option value="Drame">🎭 Drame</option>
-              <option value="Humour">😂 Humour</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Synopsis accrocheur *</label>
-            <textarea id="create-story-desc" class="form-textarea" placeholder="De quoi parle votre histoire ? Donnez envie aux lecteurs dès les premières lignes..."></textarea>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Tags (séparés par des virgules)</label>
-            <input type="text" id="create-story-tags" class="form-input" placeholder="Ex: Amour interdit, Dakar, Slow burn, Suspense" />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">URL de couverture (Optionnel)</label>
-            <input type="url" id="create-story-cover" class="form-input" placeholder="https://images.unsplash.com/..." />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Texte du Chapitre 1 (Brouillon)</label>
-            <textarea id="create-story-chapter-1" class="form-textarea" style="min-height: 140px;" placeholder="Commencez à écrire votre premier chapitre..."></textarea>
+          <!-- Stepper 2 Étapes -->
+          <div class="story-create-stepper">
+            <div class="step-badge active" id="step-badge-1">
+              <span class="step-num">1</span>
+              <span class="step-label">Détails & Couverture</span>
+            </div>
+            <div class="step-divider"></div>
+            <div class="step-badge" id="step-badge-2">
+              <span class="step-num">2</span>
+              <span class="step-label">Écriture Manuelle</span>
+            </div>
           </div>
         </div>
-        <div class="modal-footer">
-          <button class="btn btn-ghost" onclick="document.getElementById('modal-create-story').classList.remove('active')">Annuler</button>
-          <button class="btn btn-primary" id="btn-submit-create-story">Créer l'histoire 🚀</button>
+
+        <div class="modal-body" style="padding-top: var(--space-2);">
+          
+          <!-- ==================== ÉTAPE 1 : DÉTAILS DE L'HISTOIRE ==================== -->
+          <div id="create-story-step-1" class="create-step-pane active">
+            <div class="form-group">
+              <label class="form-label">Titre de l'histoire *</label>
+              <input type="text" id="create-story-title" class="form-input" placeholder="Ex: Les Secrets du Fleuve Sénégal" />
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
+              <div class="form-group">
+                <label class="form-label">Genre principal *</label>
+                <select id="create-story-genre" class="form-select">
+                  <option value="Romance">❤️ Romance</option>
+                  <option value="Thriller">🔥 Thriller</option>
+                  <option value="Histoires africaines">🇸🇳 Histoires africaines</option>
+                  <option value="Fantasy">🧙 Fantasy</option>
+                  <option value="Science-fiction">🚀 Science-fiction</option>
+                  <option value="Horreur">👻 Horreur</option>
+                  <option value="Contes & Légendes">🌍 Contes & Légendes</option>
+                  <option value="Mystère">🔍 Mystère</option>
+                  <option value="Drame">🎭 Drame</option>
+                  <option value="Humour">😂 Humour</option>
+                  <option value="Inspiré de faits réels">📰 Inspiré de faits réels</option>
+                  <option value="Développement personnel">✨ Développement personnel</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Sous-genre / Thème (Optionnel)</label>
+                <input type="text" id="create-story-secondary-genre" class="form-input" placeholder="Ex: Drame familial, Mystère" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Synopsis accrocheur *</label>
+              <textarea id="create-story-desc" class="form-textarea" style="min-height: 85px;" placeholder="De quoi parle votre histoire ? Donnez envie aux lecteurs dès les premières lignes..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Tags (séparés par des virgules)</label>
+              <input type="text" id="create-story-tags" class="form-input" placeholder="Ex: Dakar, Amour secret, Suspense, Rédemption" />
+            </div>
+
+            <!-- Image de Couverture (URL ou Upload ou Presets) -->
+            <div class="form-group">
+              <label class="form-label">Image de couverture</label>
+              <div style="display: flex; gap: var(--space-3); align-items: flex-start; flex-wrap: wrap;">
+                <div style="width: 74px; height: 104px; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border-subtle); flex-shrink: 0; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center;">
+                  <img id="create-story-cover-preview" src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80" alt="Aperçu" style="width: 100%; height: 100%; object-fit: cover;" />
+                </div>
+                
+                <div style="flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 8px;">
+                  <input type="url" id="create-story-cover-url" class="form-input" placeholder="https://images.unsplash.com/..." value="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80" />
+                  
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <label class="btn btn-secondary btn-sm" style="cursor: pointer; font-size: 0.78rem;">
+                      📁 Importer une image
+                      <input type="file" id="create-story-cover-file" accept="image/*" style="display: none;" />
+                    </label>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">ou choisissez une couverture suggérée :</span>
+                  </div>
+
+                  <!-- Presets visuels rapides -->
+                  <div class="cover-presets-row">
+                    <img class="cover-preset-thumb active" data-src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80" src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=150&q=60" alt="Preset 1" />
+                    <img class="cover-preset-thumb" data-src="https://images.unsplash.com/photo-1518895949257-7621c3c786d7?auto=format&fit=crop&w=800&q=80" src="https://images.unsplash.com/photo-1518895949257-7621c3c786d7?auto=format&fit=crop&w=150&q=60" alt="Preset 2" />
+                    <img class="cover-preset-thumb" data-src="https://images.unsplash.com/photo-1516541196182-6bdb0516ed27?auto=format&fit=crop&w=800&q=80" src="https://images.unsplash.com/photo-1516541196182-6bdb0516ed27?auto=format&fit=crop&w=150&q=60" alt="Preset 3" />
+                    <img class="cover-preset-thumb" data-src="https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=800&q=80" src="https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=150&q=60" alt="Preset 4" />
+                    <img class="cover-preset-thumb" data-src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80" src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=150&q=60" alt="Preset 5" />
+                    <img class="cover-preset-thumb" data-src="https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=800&q=80" src="https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=150&q=60" alt="Preset 6" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== ÉTAPE 2 : ÉCRITURE MANUELLE PURE ==================== -->
+          <div id="create-story-step-2" class="create-step-pane" style="display: none;">
+            
+            <!-- Bandeau de rappel de l'histoire -->
+            <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); padding: 8px 14px; border-radius: var(--radius-md); margin-bottom: var(--space-4);">
+              <div>
+                <span id="step2-story-title-preview" style="font-weight: 800; color: var(--text-primary); font-size: 0.95rem;">Titre de l'histoire</span>
+                <span id="step2-story-genre-preview" class="badge badge-blur" style="font-size: 0.72rem; margin-left: 8px;">Romance</span>
+              </div>
+              <span style="font-size: 0.75rem; color: var(--color-accent-emerald); font-weight: 600;">✍️ Atelier d'Écriture Manuelle</span>
+            </div>
+
+            <!-- Barre de Chapitres (Multi-chapitres) -->
+            <div class="chapters-tabs-bar" id="create-chapters-tabs-bar">
+              <button class="chapter-tab-pill active" data-chapter-idx="0">Chapitre 1</button>
+              <button class="btn btn-ghost btn-sm" id="btn-add-new-chapter-tab" style="font-size: 0.8rem; padding: 4px 10px;">+ Ajouter un chapitre</button>
+            </div>
+
+            <div class="form-group" style="margin-top: var(--space-3);">
+              <label class="form-label">Titre du chapitre *</label>
+              <input type="text" id="create-chapter-title" class="form-input" placeholder="Ex: Chapitre 1 — La Rencontre Inattendue" value="Chapitre 1 : Les Premières Lueurs" />
+            </div>
+
+            <div class="form-group">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label class="form-label" style="margin-bottom: 0;">Texte du chapitre (Rédaction manuelle) *</label>
+                <div style="display: flex; gap: 12px; font-size: 0.8rem; color: var(--text-muted);">
+                  <span id="manual-word-count">0 mots</span>
+                  <span>·</span>
+                  <span id="manual-read-time">⏱️ ~1 min</span>
+                </div>
+              </div>
+              <textarea id="create-chapter-content" class="editor-textarea-main" style="min-height: 280px;" placeholder="Écrivez votre histoire ici avec vos propres mots..."></textarea>
+            </div>
+          </div>
+
         </div>
+
+        <!-- Pied de page avec Navigation d'Étapes -->
+        <div class="modal-footer" style="justify-content: space-between;">
+          <div id="footer-step1-left">
+            <button class="btn btn-ghost" id="btn-cancel-create-story">Annuler</button>
+          </div>
+          <div id="footer-step2-left" style="display: none;">
+            <button class="btn btn-secondary" id="btn-back-to-step1">← Retour aux détails</button>
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-primary" id="btn-goto-step2">
+              <span>Suivant : Écrire l'histoire</span>
+              <span>➔</span>
+            </button>
+
+            <button class="btn btn-secondary" id="btn-save-as-draft" style="display: none;">
+              <span>💾 Enregistrer Brouillon</span>
+            </button>
+
+            <button class="btn btn-primary" id="btn-publish-story" style="display: none;">
+              <span>🚀 Publier l'Histoire</span>
+            </button>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -427,6 +542,6 @@
   </div>
 
   <!-- Entry Script (Cache-Busted) -->
-  <script type="module" src="./js/app.js?v=27"></script>
+  <script type="module" src="./js/app.js?v=28"></script>
 </body>
 </html>
