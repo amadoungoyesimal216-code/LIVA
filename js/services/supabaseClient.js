@@ -88,6 +88,34 @@ export class SupabaseService {
   }
 
   /**
+   * Connexion sécurisée avec Google OAuth via Supabase
+   */
+  static async signInWithGoogle() {
+    try {
+      const redirectUrl = window.location.origin + window.location.pathname;
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: redirectUrl,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'select_account'
+          }
+        }
+      });
+
+      if (error) {
+        throw new Error(error.message || 'Erreur lors de la connexion Google.');
+      }
+
+      return data;
+    } catch (err) {
+      console.error('[SupabaseService] Erreur signInWithGoogle:', err);
+      throw err;
+    }
+  }
+
+  /**
    * Envoi d'un véritable email de réinitialisation de mot de passe via Supabase
    */
   static async resetPassword(email) {
@@ -178,6 +206,34 @@ export class SupabaseService {
    */
   static async getSession() {
     try {
+      // 1. Session Supabase Auth directe (prioritaire pour OAuth Google)
+      const { data, error } = await supabase.auth.getSession();
+      if (!error && data?.session?.user) {
+        const authUser = data.session.user;
+        const profile = await this.fetchUserProfile(authUser.id);
+        if (profile) {
+          localStorage.setItem('liva_auth_user_id', authUser.id);
+          return { user: profile, session: data.session };
+        }
+        
+        // Profil initial issu des métadonnées Google OAuth
+        const meta = authUser.user_metadata || {};
+        const fallbackProfile = {
+          id: authUser.id,
+          email: authUser.email,
+          name: meta.full_name || meta.name || authUser.email?.split('@')[0] || 'Lecteur Liva',
+          username: '@' + (meta.preferred_username || authUser.email?.split('@')[0] || 'lecteur').toLowerCase().replace(/[^a-z0-9_]/g, ''),
+          avatar: meta.avatar_url || meta.picture || DEFAULT_AVATAR,
+          role: (['amadoungoyesimal216@gmail.com', 'pangoyesimal@gmail.com'].includes(authUser.email) ? 'ADMIN' : 'USER'),
+          status: 'active',
+          stats: { storiesRead: 0, hoursRead: 0, followingCount: 0, followersCount: 0, likesCount: 0 },
+          favoriteGenres: ['romance', 'african']
+        };
+        localStorage.setItem('liva_auth_user_id', authUser.id);
+        return { user: fallbackProfile, session: data.session };
+      }
+
+      // 2. Vérifier si un ID d'utilisateur est stocké localement (connexion classique directe)
       const savedUserId = localStorage.getItem('liva_auth_user_id');
       if (savedUserId) {
         const profile = await this.fetchUserProfile(savedUserId);
@@ -185,9 +241,7 @@ export class SupabaseService {
           return { user: profile };
         }
       }
-      const { data, error } = await supabase.auth.getSession();
-      if (error || !data.session) return null;
-      return data.session;
+      return null;
     } catch (err) {
       return null;
     }

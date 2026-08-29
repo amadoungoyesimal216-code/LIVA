@@ -73,7 +73,8 @@ L'application permet aux utilisateurs :
 - Bascule fluide entre Connexion et Inscription.
 - Sélection des genres favoris dès la création de compte.
 - **Protection Anti-Bruteforce** : Verrouillage temporaire de 30 secondes après 5 tentatives échouées.
-- Simulation d'authentification sociale (Google & Apple).
+- **Authentification Sociale Réelle** : Connexion directe via Google OAuth avec Supabase Auth.
+
 
 ### 🎧 Lecteur Audio Flottant (`AudioPlayer`)
 - Barre rétractable en bas d'écran avec contrôle lecture/pause, volume et indicateur de piste.

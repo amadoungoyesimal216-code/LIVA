@@ -1,28 +1,29 @@
 // LIVA - Application Principale & Routeur SPA
-import { store, DEFAULT_AVATAR } from './state/store.js?v=27';
-import { ThemeManager } from './features/themeManager.js?v=27';
-import { AudioPlayer } from './features/audioPlayer.js?v=27';
-import { Toast } from './components/Toast.js?v=27';
-import { Modal } from './components/Modal.js?v=27';
-import { GENRES_DATA } from './data/genres.js?v=27';
-import { SupabaseAdminService } from './services/supabaseAdmin.js?v=27';
+import { store, DEFAULT_AVATAR } from './state/store.js?v=28';
+import { ThemeManager } from './features/themeManager.js?v=28';
+import { AudioPlayer } from './features/audioPlayer.js?v=28';
+import { Toast } from './components/Toast.js?v=28';
+import { Modal } from './components/Modal.js?v=28';
+import { GENRES_DATA } from './data/genres.js?v=28';
+import { SupabaseService } from './services/supabaseClient.js?v=28';
+import { SupabaseAdminService } from './services/supabaseAdmin.js?v=28';
 
 // Views Liva User
-import { HomeView } from './views/HomeView.js?v=27';
-import { ExploreView } from './views/ExploreView.js?v=27';
-import { StoryView } from './views/StoryView.js?v=27';
-import { ReaderView } from './views/ReaderView.js?v=27';
-import { LibraryView } from './views/LibraryView.js?v=27';
-import { CreateView } from './views/CreateView.js?v=27';
-import { ProfileView } from './views/ProfileView.js?v=27';
-import { SwipeView } from './views/SwipeView.js?v=27';
-import { OnboardingView } from './views/OnboardingView.js?v=27';
-import { AuthView } from './views/AuthView.js?v=27';
+import { HomeView } from './views/HomeView.js?v=28';
+import { ExploreView } from './views/ExploreView.js?v=28';
+import { StoryView } from './views/StoryView.js?v=28';
+import { ReaderView } from './views/ReaderView.js?v=28';
+import { LibraryView } from './views/LibraryView.js?v=28';
+import { CreateView } from './views/CreateView.js?v=28';
+import { ProfileView } from './views/ProfileView.js?v=28';
+import { SwipeView } from './views/SwipeView.js?v=28';
+import { OnboardingView } from './views/OnboardingView.js?v=28';
+import { AuthView } from './views/AuthView.js?v=28';
 
 // Views Liva Admin
-import { AdminLayout } from './views/admin/AdminLayout.js?v=27';
-import { AdminDashboardView } from './views/admin/AdminDashboardView.js?v=27';
-import { AdminStoriesView } from './views/admin/AdminStoriesView.js?v=27';
+import { AdminLayout } from './views/admin/AdminLayout.js?v=28';
+import { AdminDashboardView } from './views/admin/AdminDashboardView.js?v=28';
+import { AdminStoriesView } from './views/admin/AdminStoriesView.js?v=28';
 import { AdminStoryEngineView } from './views/admin/AdminStoryEngineView.js?v=27';
 import { AdminChaptersView } from './views/admin/AdminChaptersView.js?v=27';
 import { AdminAuthorsView } from './views/admin/AdminAuthorsView.js?v=27';
@@ -56,6 +57,21 @@ class AppRouter {
   }
 
   async handleRoute() {
+    // 1. Détection et traitement du retour OAuth Google (tokens dans le Hash ou Code)
+    if (window.location.hash.includes('access_token=') || window.location.hash.includes('type=recovery')) {
+      setTimeout(async () => {
+        const session = await SupabaseService.getSession();
+        if (session?.user) {
+          await this.store.loadUserData(session.user.id, session.user.email);
+          Toast.show(`Bienvenue sur LIVA, ${this.store.state.user.name} ! 🌐`, 'success', '✨');
+          this.navigate('/profile');
+        } else {
+          this.navigate('/');
+        }
+      }, 300);
+      return;
+    }
+
     const rawHash = window.location.hash.slice(1) || '/';
     const [pathPart, queryPart] = rawHash.split('?');
     const searchParams = new URLSearchParams(queryPart || '');
