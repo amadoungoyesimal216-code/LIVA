@@ -152,34 +152,18 @@ export class SupabaseService {
   }
 
   /**
-   * Mise à jour du mot de passe suite à réinitialisation
+   * Mise à jour sécurisée du mot de passe (suite à réinitialisation par email ou modification de session)
    */
   static async updateUserPassword(email, newPassword) {
     try {
-      const cleanEmail = email.trim().toLowerCase();
       if (!newPassword || newPassword.length < 6) {
         throw new Error('Le mot de passe doit comporter au moins 6 caractères.');
       }
 
-      // 1. Mise à jour via RPC sécurisée
-      const { data: rpcRes, error: rpcErr } = await supabase.rpc('reset_user_password_direct', {
-        p_email: cleanEmail,
-        p_new_password: newPassword
-      });
-
-      if (rpcErr) {
-        throw new Error(rpcErr.message || 'Erreur lors de la mise à jour du mot de passe.');
-      }
-
-      if (rpcRes && rpcRes.success === false) {
-        throw new Error(rpcRes.error || 'Erreur lors de la mise à jour du mot de passe.');
-      }
-
-      // 2. Tenter également la mise à jour de la session Supabase Auth si connectée
-      try {
-        await supabase.auth.updateUser({ password: newPassword });
-      } catch (e) {
-        // Ignorer si pas de session active
+      // 1. Mise à jour via la session de récupération officielle Supabase Auth
+      const { data, error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) {
+        throw new Error(error.message || 'Erreur lors de la mise à jour du mot de passe.');
       }
 
       return { success: true };
@@ -202,18 +186,18 @@ export class SupabaseService {
   }
 
   /**
-   * Récupération de la session active actuelle
+   * Récupération et validation cryptographique de la session active
    */
   static async getSession() {
     try {
-      // 1. Session Supabase Auth directe (prioritaire pour OAuth Google)
-      const { data, error } = await supabase.auth.getSession();
-      if (!error && data?.session?.user) {
-        const authUser = data.session.user;
+      // 1. Validation cryptographique du JWT auprès du serveur Supabase via getUser()
+      const { data: { user: authUser }, error: userErr } = await supabase.auth.getUser();
+      if (!userErr && authUser) {
+        const { data: sessionData } = await supabase.auth.getSession();
         const profile = await this.fetchUserProfile(authUser.id);
         if (profile) {
           localStorage.setItem('liva_auth_user_id', authUser.id);
-          return { user: profile, session: data.session };
+          return { user: profile, session: sessionData?.session || { user: authUser } };
         }
         
         // Profil initial issu des métadonnées Google OAuth
@@ -230,19 +214,14 @@ export class SupabaseService {
           favoriteGenres: ['romance', 'african']
         };
         localStorage.setItem('liva_auth_user_id', authUser.id);
-        return { user: fallbackProfile, session: data.session };
+        return { user: fallbackProfile, session: sessionData?.session || { user: authUser } };
       }
 
-      // 2. Vérifier si un ID d'utilisateur est stocké localement (connexion classique directe)
-      const savedUserId = localStorage.getItem('liva_auth_user_id');
-      if (savedUserId) {
-        const profile = await this.fetchUserProfile(savedUserId);
-        if (profile) {
-          return { user: profile };
-        }
-      }
+      // Pas de session JWT valide
+      localStorage.removeItem('liva_auth_user_id');
       return null;
     } catch (err) {
+      console.warn('[SupabaseService] Erreur getSession:', err);
       return null;
     }
   }

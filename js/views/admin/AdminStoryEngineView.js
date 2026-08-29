@@ -1007,7 +1007,7 @@ export class AdminStoryEngineView {
           this.generatedChapters.push(progress.chapter);
         }
         if (textPreview) {
-          textPreview.innerHTML = `<strong>Chapitre ${progress.chapter.number} : ${escapeHTML(progress.chapter.title)}</strong><br/><br/>` + progress.chapter.content.replace(/\n/g, '<br/>');
+          textPreview.innerHTML = `<strong>Chapitre ${progress.chapter.number} : ${escapeHTML(progress.chapter.title)}</strong><br/><br/>` + escapeHTML(progress.chapter.content || '').replace(/\n/g, '<br/>');
         }
       }
 
