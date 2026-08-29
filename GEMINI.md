@@ -182,14 +182,17 @@ LIVA/
 
 | Domaine | Technologie | Justification |
 | :--- | :--- | :--- |
+| **Hébergement & Production** | **Vercel** (`https://liva-nine.vercel.app`) | Déploiement CDN mondial continu synchronisé avec la branche `main` GitHub. |
 | **Structure** | **HTML5 Sémantique** | Balisage accessible, léger et SEO-friendly. |
 | **Styles** | **Vanilla CSS3** | Custom Properties CSS, Grid & Flexbox, Glassmorphism, animations fluides `@keyframes`. Zéro dépendance CSS lourde. |
 | **Logique & SPA** | **JavaScript ES6+ (Modules Natifs)** | Architecture modulaire propre avec `import/export`, aucun bundler obligatoire, 0 ms de temps de compilation. |
 | **Base de Données Cloud** | **Supabase (PostgreSQL & REST)** | Base de données relationnelle temps réel avec RLS, sauvegarde des histoires, chapitres, commentaires et progrès. |
+| **Authentification** | **Supabase Auth + Google OAuth (PKCE)** | Authentification sociale universelle compatible mobile et desktop. |
 | **Stockage Local** | **LocalStorage & Store Réactif** | Cache offline, persistance instantanée des préférences et de l'état de session. |
+| **Partage Social** | **Web Share API & Clipboard Fallback** | Partage natif mobile (WhatsApp, SMS, Telegram) depuis les fiches d'histoires et le lecteur. |
 | **Audio & Voix** | **Web Audio & Web Speech API** | Lecture d'ambiance et synthèse vocale sans dépendances cloud payantes. |
 | **Serveur de Dev** | **Python 3 (`http.server`)** | Serveur léger avec en-têtes HTTP de sécurité (`nosniff`, `SAMEORIGIN`, `strict-origin`). |
-| **Contrôle de Version** | **Git & GitHub** | Dépôt distant synchronisé en SSH sur la branche `main`. |
+| **Contrôle de Version** | **Git & GitHub** | Dépôt distant synchronisé en SSH sur la branche `main` (`amadoungoyesimal216-code/LIVA`). |
 
 ---
 
