@@ -88,6 +88,10 @@ export class StoryView {
                 🎧 Écouter
               </button>
 
+              <button class="btn btn-secondary btn-lg" id="btn-share-story" title="Partager cette histoire">
+                📤 Partager
+              </button>
+
               <button class="btn btn-icon ${isLiked ? 'btn-primary' : ''}" id="btn-like-story" title="Aimer l'histoire">
                 ❤️
               </button>
@@ -255,6 +259,38 @@ export class StoryView {
         const liked = this.store.toggleLikeStory(story.id);
         likeBtn.classList.toggle('btn-primary', liked);
         Toast.show(liked ? 'Ajouté à vos coups de cœur ❤️' : 'Retiré de vos favoris', 'info', '❤️');
+      });
+    }
+
+    // Share Story
+    const shareBtn = container.querySelector('#btn-share-story');
+    if (shareBtn) {
+      shareBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const shareData = {
+          title: `LIVA — ${story.title}`,
+          text: `Découvrez « ${story.title} » écrit par ${story.authorName || 'un auteur'} sur LIVA !`,
+          url: window.location.href
+        };
+
+        if (navigator.share) {
+          try {
+            await navigator.share(shareData);
+            Toast.show('Merci pour le partage ! ✨', 'success', '📤');
+          } catch (err) {
+            if (err.name !== 'AbortError') {
+              if (navigator.clipboard) {
+                await navigator.clipboard.writeText(window.location.href);
+                Toast.show('Lien copié dans le presse-papier !', 'info', '📋');
+              }
+            }
+          }
+        } else if (navigator.clipboard) {
+          await navigator.clipboard.writeText(window.location.href);
+          Toast.show('Lien de l\'histoire copié dans le presse-papier !', 'info', '📋');
+        } else {
+          Toast.show(`Lien : ${window.location.href}`, 'info', '🔗');
+        }
       });
     }
 

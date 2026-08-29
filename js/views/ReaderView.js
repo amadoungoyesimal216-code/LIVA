@@ -321,11 +321,29 @@ export class ReaderView {
     // Share button
     const shareBtn = container.querySelector('#btn-reader-share');
     if (shareBtn) {
-      shareBtn.addEventListener('click', () => {
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText(window.location.href);
+      shareBtn.addEventListener('click', async () => {
+        const shareData = {
+          title: `LIVA — ${this.story.title}`,
+          text: `Je lis « ${this.story.title} » (Chapitre ${this.chapterIndex + 1}) sur LIVA !`,
+          url: window.location.href
+        };
+
+        if (navigator.share) {
+          try {
+            await navigator.share(shareData);
+            Toast.show('Merci pour le partage ! ✨', 'success', '📤');
+          } catch (err) {
+            if (err.name !== 'AbortError') {
+              if (navigator.clipboard) {
+                await navigator.clipboard.writeText(window.location.href);
+                Toast.show('Lien du chapitre copié dans le presse-papier !', 'info', '📋');
+              }
+            }
+          }
+        } else if (navigator.clipboard) {
+          await navigator.clipboard.writeText(window.location.href);
+          Toast.show('Lien du chapitre copié dans le presse-papier !', 'info', '📋');
         }
-        Toast.show('Lien de l\'histoire copié dans le presse-papier !', 'info', '📋');
       });
     }
 
