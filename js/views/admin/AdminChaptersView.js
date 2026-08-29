@@ -1,4 +1,4 @@
-// LIVA ADMIN — Vue Gestion des Chapitres & Éditeur Confortable
+// LIVA ADMIN — Vue Gestion des Chapitres & Éditeur Confortable (Responsive & Auto-Save)
 import { escapeHTML } from '../../utils/sanitize.js';
 import { Toast } from '../../components/Toast.js';
 
@@ -12,6 +12,33 @@ export class AdminChaptersView {
     this.selectedStoryId = params.storyId || null;
     this.chapters = [];
     this.editingChapter = null;
+    this.draftKey = 'liva_admin_chapter_draft_';
+  }
+
+  getDraft(storyId) {
+    try {
+      const raw = localStorage.getItem(this.draftKey + storyId);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  saveDraft(storyId, draftData) {
+    try {
+      localStorage.setItem(this.draftKey + storyId, JSON.stringify({
+        ...draftData,
+        updatedAt: Date.now()
+      }));
+    } catch (e) {
+      console.warn('[AdminChaptersView] Erreur sauvegarde brouillon local:', e);
+    }
+  }
+
+  clearDraft(storyId) {
+    try {
+      localStorage.removeItem(this.draftKey + storyId);
+    } catch (e) {}
   }
 
   async render() {
@@ -27,55 +54,58 @@ export class AdminChaptersView {
     const currentStory = this.stories.find(s => s.id === this.selectedStoryId);
 
     return `
-      <div class="admin-chapters-view">
+      <div class="admin-chapters-view animate-fade-in">
         
-        <!-- EN-TÊTE -->
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-5); flex-wrap: wrap; gap: var(--space-3);">
+        <!-- 1. EN-TÊTE RESPONSIVE DU MODULE CHAPITRES -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); flex-wrap: wrap; gap: var(--space-3);">
           <div>
-            <h1 style="font-size: 1.5rem; font-weight: 800; font-family: var(--font-display); letter-spacing: -0.5px; margin-bottom: 4px;">
+            <h1 style="font-size: clamp(1.3rem, 2.5vw, 1.65rem); font-weight: 800; font-family: var(--font-display); letter-spacing: -0.5px; margin-bottom: 2px;">
               Gestion des Chapitres 📑
             </h1>
-            <p style="font-size: 0.85rem; color: var(--text-muted);">
+            <p style="font-size: 0.82rem; color: var(--text-muted);">
               Rédigez, ordonnez, modifiez et publiez les chapitres de chaque histoire.
             </p>
           </div>
 
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <select class="admin-select" id="admin-select-story" style="font-weight: 600; min-width: 250px;">
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; width: 100%; max-width: 600px; justify-content: flex-end;">
+            <select class="admin-select" id="admin-select-story" style="font-weight: 600; flex: 1; min-width: 220px;">
               ${this.stories.map(st => `
                 <option value="${st.id}" ${st.id === this.selectedStoryId ? 'selected' : ''}>
-                  ${escapeHTML(st.title)} (${st.author_name})
+                  ${escapeHTML(st.title)} (${escapeHTML(st.author_name || 'Auteur')})
                 </option>
               `).join('')}
             </select>
 
-            <button class="btn btn-primary" id="btn-open-create-chapter">
+            <button class="btn btn-primary" id="btn-open-create-chapter" style="white-space: nowrap; padding: 10px 16px;">
               + Nouveau chapitre
             </button>
           </div>
         </div>
 
-        <!-- RÉSUMÉ HISTOIRE SÉLECTIONNÉE -->
+        <!-- 2. RÉSUMÉ DE L'HISTOIRE SÉLECTIONNÉE -->
         ${currentStory ? `
-          <div class="admin-card" style="margin-bottom: var(--space-5); padding: var(--space-4) var(--space-5); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3); background: rgba(121, 40, 202, 0.08); border-color: rgba(121, 40, 202, 0.25);">
-            <div style="display: flex; align-items: center; gap: var(--space-4);">
-              <img src="${currentStory.cover}" style="width: 40px; height: 55px; border-radius: 4px; object-fit: cover;" />
-              <div>
-                <div style="font-weight: 700; font-size: 1.05rem;">${escapeHTML(currentStory.title)}</div>
-                <div style="font-size: 0.8rem; color: var(--text-muted);">
-                  Auteur : <strong>${escapeHTML(currentStory.author_name)}</strong> · Genre : ${escapeHTML(currentStory.genre)} · Statut : ${currentStory.status}
+          <div class="admin-card" style="margin-bottom: var(--space-4); padding: var(--space-3) var(--space-4); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3); background: rgba(121, 40, 202, 0.08); border-color: rgba(121, 40, 202, 0.25);">
+            <div style="display: flex; align-items: center; gap: var(--space-3); min-width: 0;">
+              <img src="${currentStory.cover || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=400&q=80'}" style="width: 42px; height: 58px; border-radius: 4px; object-fit: cover; flex-shrink: 0;" alt="Couverture" />
+              <div style="min-width: 0;">
+                <div style="font-weight: 800; font-size: 1rem; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  ${escapeHTML(currentStory.title)}
+                </div>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">
+                  Auteur : <strong style="color: var(--text-primary);">${escapeHTML(currentStory.author_name || 'Auteur')}</strong> · Genre : ${escapeHTML(currentStory.genre)} · <span class="badge ${currentStory.status === 'published' ? 'badge-primary' : 'badge-gold'}" style="font-size: 0.7rem; padding: 1px 6px;">${currentStory.status === 'published' ? 'Publiée' : 'Brouillon'}</span>
                 </div>
               </div>
             </div>
-            <div style="font-size: 0.85rem; font-weight: 600; color: var(--color-primary-light);">
-              ${this.chapters.length} chapitre(s) au total
+            <div style="font-size: 0.85rem; font-weight: 700; color: var(--color-primary-light); white-space: nowrap;">
+              📖 ${this.chapters.length} chapitre(s) enregistrés
             </div>
           </div>
         ` : ''}
 
-        <!-- TABLEAU DES CHAPITRES -->
+        <!-- 3. LISTE DES CHAPITRES (TABLE DESKTOP + CARTES MOBILES) -->
         <div class="admin-card">
-          <div class="admin-table-container">
+          <!-- Vue Tableau pour Écrans Moyens et Grands -->
+          <div class="admin-table-container hide-on-mobile">
             <table class="admin-table">
               <thead>
                 <tr>
@@ -102,24 +132,24 @@ export class AdminChaptersView {
                         Ch. ${ch.number}
                       </td>
                       <td>
-                        <div style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem;">${escapeHTML(ch.title)}</div>
+                        <div style="font-weight: 700; color: var(--text-primary); font-size: 0.92rem;">${escapeHTML(ch.title)}</div>
                         <div style="font-size: 0.72rem; color: var(--text-muted);">${escapeHTML(ch.id)}</div>
                       </td>
                       <td>
                         <span class="badge badge-blur" style="font-size: 0.75rem;">⏱️ ${escapeHTML(ch.duration || '5 min')}</span>
                       </td>
                       <td style="color: var(--text-secondary); font-size: 0.82rem;">
-                        ${wordCount} mots (~${Math.round(wordCount / 200)} min)
+                        ${wordCount} mots (~${Math.max(1, Math.round(wordCount / 200))} min)
                       </td>
                       <td style="color: var(--text-muted); font-size: 0.8rem;">
                         ${ch.created_at ? new Date(ch.created_at).toLocaleDateString('fr-FR') : 'Récent'}
                       </td>
                       <td style="text-align: right;">
                         <div style="display: inline-flex; align-items: center; gap: 6px;">
-                          <button class="btn btn-secondary btn-sm btn-edit-chapter" data-chapter-id="${ch.id}" style="padding: 5px 10px; font-size: 0.8rem;">
+                          <button class="btn btn-secondary btn-sm btn-edit-chapter" data-chapter-id="${ch.id}" style="padding: 6px 12px; font-size: 0.8rem;">
                             ✏️ Éditer
                           </button>
-                          <button class="btn btn-ghost btn-sm btn-delete-chapter" data-chapter-id="${ch.id}" data-title="${escapeHTML(ch.title)}" style="padding: 5px 10px; font-size: 0.8rem; color: #F87171;">
+                          <button class="btn btn-ghost btn-sm btn-delete-chapter" data-chapter-id="${ch.id}" data-title="${escapeHTML(ch.title)}" style="padding: 6px 10px; font-size: 0.8rem; color: #F87171;">
                             🗑️
                           </button>
                         </div>
@@ -130,46 +160,117 @@ export class AdminChaptersView {
               </tbody>
             </table>
           </div>
+
+          <!-- Vue Cartes Responsive pour Smartphones & Petits Écrans -->
+          <div class="admin-chapters-mobile-list">
+            ${this.chapters.length === 0 ? `
+              <div style="text-align: center; padding: var(--space-6); color: var(--text-muted); font-size: 0.88rem;">
+                Aucun chapitre pour cette histoire. Cliquez sur « + Nouveau chapitre » ci-dessus pour rédiger le premier !
+              </div>
+            ` : this.chapters.map(ch => {
+              const wordCount = (ch.content || '').split(/\s+/).filter(Boolean).length;
+              return `
+                <div class="admin-chapter-mobile-card" data-chapter-id="${ch.id}">
+                  <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;">
+                    <div>
+                      <span style="font-weight: 800; font-size: 0.8rem; color: var(--color-primary-light); text-transform: uppercase;">
+                        Chapitre ${ch.number}
+                      </span>
+                      <h4 style="font-size: 0.95rem; font-weight: 700; margin: 2px 0 4px; color: var(--text-primary);">
+                        ${escapeHTML(ch.title)}
+                      </h4>
+                    </div>
+                    <span class="badge badge-blur" style="font-size: 0.72rem; flex-shrink: 0;">
+                      ⏱️ ${escapeHTML(ch.duration || '5 min')}
+                    </span>
+                  </div>
+
+                  <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.78rem; color: var(--text-muted); padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.06);">
+                    <span>📊 ${wordCount} mots</span>
+                    <span>📅 ${ch.created_at ? new Date(ch.created_at).toLocaleDateString('fr-FR') : 'Récent'}</span>
+                  </div>
+
+                  <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                    <button class="btn btn-secondary btn-sm btn-edit-chapter" data-chapter-id="${ch.id}" style="flex: 1; justify-content: center; font-size: 0.82rem; padding: 7px 12px;">
+                      ✏️ Éditer le chapitre
+                    </button>
+                    <button class="btn btn-ghost btn-sm btn-delete-chapter" data-chapter-id="${ch.id}" data-title="${escapeHTML(ch.title)}" style="color: #F87171; padding: 7px 10px;">
+                      🗑️
+                    </button>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
         </div>
 
-        <!-- MODALE ÉDITEUR DE CHAPITRE -->
+        <!-- 4. MODALE ÉDITEUR DE CHAPITRE (RESPONSIVE & AUTO-SAVE SÉCURISÉ) -->
         <div class="admin-modal-backdrop" id="modal-admin-chapter-editor">
-          <div class="admin-modal-box" style="max-width: 800px;">
+          <div class="admin-modal-box" style="max-width: 840px;">
             <div class="admin-modal-header">
               <h3 class="admin-card-title" id="admin-chapter-modal-title">✍️ Rédacteur de Chapitre</h3>
-              <button class="btn btn-ghost btn-sm" id="btn-close-chapter-modal">✕</button>
+              <button class="btn btn-ghost btn-sm" id="btn-close-chapter-modal" style="font-size: 1.1rem; padding: 4px 8px;">✕</button>
             </div>
 
-            <form id="admin-chapter-form">
+            <form id="admin-chapter-form" style="display: flex; flex-direction: column; flex: 1; min-height: 0;">
               <input type="hidden" id="form-chapter-id" value="" />
+              
               <div class="admin-modal-body">
                 
-                <div style="display: grid; grid-template-columns: 120px 1fr 140px; gap: var(--space-3);">
+                <!-- Alerte Brouillon Détecté -->
+                <div class="admin-chapter-draft-alert" id="admin-chapter-draft-alert" style="display: none;">
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <span>💾</span>
+                    <span id="draft-alert-text">Brouillon automatique retrouvé</span>
+                  </div>
+                  <div style="display: flex; gap: 6px;">
+                    <button type="button" class="btn btn-primary btn-sm" id="btn-restore-draft" style="padding: 3px 10px; font-size: 0.75rem;">
+                      Restaurer ↺
+                    </button>
+                    <button type="button" class="btn btn-ghost btn-sm" id="btn-dismiss-draft" style="padding: 3px 8px; font-size: 0.75rem;">
+                      Effacer ✕
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Grille Responsive : Numéro / Titre / Durée -->
+                <div class="admin-chapter-form-grid">
                   <div class="form-group">
                     <label class="form-label">Numéro *</label>
                     <input type="number" id="form-chapter-number" class="form-input" min="1" value="1" required />
                   </div>
                   <div class="form-group">
                     <label class="form-label">Titre du chapitre *</label>
-                    <input type="text" id="form-chapter-title" class="form-input" placeholder="Ex: Le commencement" required />
+                    <input type="text" id="form-chapter-title" class="form-input" placeholder="Ex: Chapitre 1 — La Révélation" required />
                   </div>
                   <div class="form-group">
                     <label class="form-label">Durée estimée</label>
-                    <input type="text" id="form-chapter-duration" class="form-input" placeholder="Ex: 8 min" />
+                    <input type="text" id="form-chapter-duration" class="form-input" placeholder="Ex: 5 min" />
                   </div>
                 </div>
 
-                <div class="form-group">
-                  <label class="form-label" style="display: flex; justify-content: space-between;">
-                    <span>Texte & Contenu du Chapitre *</span>
-                    <span id="form-chapter-wordcount" style="color: var(--text-muted); font-size: 0.75rem;">0 mots</span>
-                  </label>
+                <!-- Zone d'Écriture Manuelle & Bouton Coller -->
+                <div class="form-group" style="flex: 1; display: flex; flex-direction: column;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <label class="form-label" style="margin-bottom: 0;">Texte & Contenu du Chapitre *</label>
+                      <button type="button" class="admin-paste-btn" id="btn-paste-chapter-content" title="Coller le texte copié depuis votre presse-papier">
+                        <span>📋</span> Coller le texte
+                      </button>
+                    </div>
+                    <div style="font-size: 0.78rem; color: var(--text-muted); display: flex; gap: 8px;">
+                      <span id="form-chapter-wordcount">0 mots</span>
+                      <span>·</span>
+                      <span id="form-chapter-readtime">⏱️ ~1 min</span>
+                    </div>
+                  </div>
+
                   <textarea 
                     id="form-chapter-content" 
                     class="form-textarea" 
                     rows="14" 
-                    placeholder="Écrivez ou collez ici le texte complet du chapitre..." 
-                    style="font-family: 'Literata', serif; font-size: 0.95rem; line-height: 1.7;" 
+                    placeholder="Écrivez ou collez ici le texte complet de votre chapitre..." 
+                    style="font-family: 'Literata', Georgia, serif; font-size: 1.02rem; line-height: 1.8; min-height: 280px; flex: 1;" 
                     required
                   ></textarea>
                 </div>
@@ -178,7 +279,9 @@ export class AdminChaptersView {
 
               <div class="admin-modal-footer">
                 <button type="button" class="btn btn-ghost" id="btn-cancel-chapter-modal">Annuler</button>
-                <button type="submit" class="btn btn-primary" id="btn-save-chapter">Enregistrer le chapitre ✨</button>
+                <button type="submit" class="btn btn-primary" id="btn-save-chapter" style="padding: 10px 20px;">
+                  Enregistrer le chapitre ✨
+                </button>
               </div>
             </form>
           </div>
@@ -198,7 +301,7 @@ export class AdminChaptersView {
       this.attachEvents(container);
     });
 
-    // 2. Modale Chapitre
+    // 2. Modale & Éléments du Formulaire
     const modal = container.querySelector('#modal-admin-chapter-editor');
     const modalTitle = container.querySelector('#admin-chapter-modal-title');
     const form = container.querySelector('#admin-chapter-form');
@@ -208,23 +311,82 @@ export class AdminChaptersView {
     const durationInput = container.querySelector('#form-chapter-duration');
     const contentInput = container.querySelector('#form-chapter-content');
     const wordcountSpan = container.querySelector('#form-chapter-wordcount');
+    const readtimeSpan = container.querySelector('#form-chapter-readtime');
+    const draftAlert = container.querySelector('#admin-chapter-draft-alert');
+    const draftTextSpan = container.querySelector('#draft-alert-text');
+    const btnRestoreDraft = container.querySelector('#btn-restore-draft');
+    const btnDismissDraft = container.querySelector('#btn-dismiss-draft');
+    const btnPasteContent = container.querySelector('#btn-paste-chapter-content');
+
+    let isEditingExisting = false;
 
     const updateWordCount = () => {
-      const words = (contentInput.value || '').split(/\s+/).filter(Boolean).length;
-      if (wordcountSpan) wordcountSpan.textContent = `${words} mots (~${Math.max(1, Math.round(words / 200))} min)`;
+      const words = (contentInput?.value || '').trim().split(/\s+/).filter(Boolean).length;
+      const readMins = Math.max(1, Math.ceil(words / 200));
+      if (wordcountSpan) wordcountSpan.textContent = `${words} mots (${contentInput?.value.length || 0} car.)`;
+      if (readtimeSpan) readtimeSpan.textContent = `⏱️ ~${readMins} min de lecture`;
+      if (durationInput && (!durationInput.value || durationInput.value.endsWith('min'))) {
+        durationInput.value = `${readMins} min`;
+      }
     };
 
-    contentInput?.addEventListener('input', updateWordCount);
+    const triggerAutoSave = () => {
+      if (!this.selectedStoryId) return;
+      this.saveDraft(this.selectedStoryId, {
+        isEditing: isEditingExisting,
+        chapterId: idInput?.value || '',
+        number: numInput?.value || '1',
+        title: titleInput?.value || '',
+        duration: durationInput?.value || '5 min',
+        content: contentInput?.value || ''
+      });
+    };
+
+    contentInput?.addEventListener('input', () => {
+      updateWordCount();
+      triggerAutoSave();
+    });
+
+    titleInput?.addEventListener('input', triggerAutoSave);
+    numInput?.addEventListener('input', triggerAutoSave);
+    durationInput?.addEventListener('input', triggerAutoSave);
+
+    // Bouton Coller Rapide depuis le Presse-Papier
+    btnPasteContent?.addEventListener('click', async () => {
+      try {
+        if (navigator.clipboard && navigator.clipboard.readText) {
+          const text = await navigator.clipboard.readText();
+          if (text) {
+            if (contentInput.value && contentInput.value.trim().length > 0) {
+              const confirmReplace = confirm('Voulez-vous remplacer le texte actuel par le contenu du presse-papier ?');
+              if (!confirmReplace) return;
+            }
+            contentInput.value = text;
+            updateWordCount();
+            triggerAutoSave();
+            Toast.show('Texte collé avec succès depuis le presse-papier !', 'success', '📋');
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('Clipboard read failed:', err);
+      }
+      contentInput?.focus();
+      Toast.show('Faites un appui long ou Ctrl+V / Cmd+V pour coller votre texte.', 'info', '✍️');
+    });
 
     const openModal = (chapter = null) => {
       if (chapter) {
+        isEditingExisting = true;
         modalTitle.textContent = `✏️ Modifier Chapitre ${chapter.number} — ${chapter.title}`;
         idInput.value = chapter.id;
         numInput.value = chapter.number;
         titleInput.value = chapter.title;
         durationInput.value = chapter.duration || '5 min';
         contentInput.value = chapter.content || '';
+        if (draftAlert) draftAlert.style.display = 'none';
       } else {
+        isEditingExisting = false;
         const nextNum = (this.chapters.length > 0 ? Math.max(...this.chapters.map(c => c.number || 0)) : 0) + 1;
         modalTitle.textContent = `✨ Nouveau Chapitre ${nextNum}`;
         idInput.value = '';
@@ -232,12 +394,46 @@ export class AdminChaptersView {
         titleInput.value = `Chapitre ${nextNum}`;
         durationInput.value = '5 min';
         contentInput.value = '';
+
+        // Vérifier si un brouillon sauvegardé existe pour cette histoire
+        const savedDraft = this.getDraft(this.selectedStoryId);
+        if (savedDraft && savedDraft.content && savedDraft.content.trim().length > 0) {
+          if (draftAlert) {
+            const timeStr = savedDraft.updatedAt ? new Date(savedDraft.updatedAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '';
+            if (draftTextSpan) draftTextSpan.textContent = `Brouillon non sauvegardé retrouvé (${savedDraft.content.split(/\s+/).filter(Boolean).length} mots - ${timeStr})`;
+            draftAlert.style.display = 'flex';
+          }
+        } else if (draftAlert) {
+          draftAlert.style.display = 'none';
+        }
       }
+
       updateWordCount();
       modal?.classList.add('active');
     };
 
-    const closeModal = () => modal?.classList.remove('active');
+    btnRestoreDraft?.addEventListener('click', () => {
+      const savedDraft = this.getDraft(this.selectedStoryId);
+      if (savedDraft) {
+        if (savedDraft.number) numInput.value = savedDraft.number;
+        if (savedDraft.title) titleInput.value = savedDraft.title;
+        if (savedDraft.duration) durationInput.value = savedDraft.duration;
+        if (savedDraft.content) contentInput.value = savedDraft.content;
+        updateWordCount();
+        if (draftAlert) draftAlert.style.display = 'none';
+        Toast.show('Brouillon restauré avec succès !', 'success', '✨');
+      }
+    });
+
+    btnDismissDraft?.addEventListener('click', () => {
+      this.clearDraft(this.selectedStoryId);
+      if (draftAlert) draftAlert.style.display = 'none';
+      Toast.show('Brouillon effacé.', 'info', '🗑️');
+    });
+
+    const closeModal = () => {
+      modal?.classList.remove('active');
+    };
 
     container.querySelector('#btn-open-create-chapter')?.addEventListener('click', () => openModal());
     container.querySelector('#btn-close-chapter-modal')?.addEventListener('click', closeModal);
@@ -251,9 +447,21 @@ export class AdminChaptersView {
         return;
       }
 
+      const words = (contentInput.value || '').trim().split(/\s+/).filter(Boolean).length;
+      if (words === 0) {
+        Toast.show('Veuillez écrire ou coller le texte de votre chapitre.', 'warning', '✍️');
+        contentInput?.focus();
+        return;
+      }
+
+      const saveBtn = form.querySelector('#btn-save-chapter');
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Enregistrement en cours... ⏳';
+      }
+
       const adminUser = this.store.state.user || { id: 'admin', name: 'Admin' };
-      const words = (contentInput.value || '').split(/\s+/).filter(Boolean).length;
-      const readMins = Math.max(1, Math.round(words / 200));
+      const readMins = Math.max(1, Math.ceil(words / 200));
 
       const payload = {
         id: idInput.value || undefined,
@@ -267,18 +475,24 @@ export class AdminChaptersView {
 
       try {
         await this.adminService.upsertChapter(payload, adminUser);
+        this.clearDraft(this.selectedStoryId);
         closeModal();
-        Toast.show('Chapitre enregistré avec succès dans Supabase !', 'success', '✨');
+        Toast.show(`Chapitre "${payload.title}" enregistré avec succès dans Supabase !`, 'success', '✨');
         await this.store.initSupabaseSync();
         const html = await this.render();
         container.innerHTML = html;
         this.attachEvents(container);
       } catch (err) {
         Toast.show('Erreur : ' + err.message, 'error', '⚠️');
+      } finally {
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.textContent = 'Enregistrer le chapitre ✨';
+        }
       }
     });
 
-    // 3. Modifier chapitre
+    // 3. Modifier chapitre (sur Desktop et Mobile)
     container.querySelectorAll('.btn-edit-chapter').forEach(btn => {
       btn.addEventListener('click', () => {
         const chId = btn.getAttribute('data-chapter-id');
@@ -287,7 +501,7 @@ export class AdminChaptersView {
       });
     });
 
-    // 4. Supprimer chapitre
+    // 4. Supprimer chapitre (sur Desktop et Mobile)
     container.querySelectorAll('.btn-delete-chapter').forEach(btn => {
       btn.addEventListener('click', async () => {
         const chId = btn.getAttribute('data-chapter-id');
