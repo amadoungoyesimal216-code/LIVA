@@ -1,7 +1,9 @@
 import http.server
 import socketserver
+import threading
+import sys
 
-PORT = 8000
+PORTS = [8000, 3000]
 
 class NoCacheHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     def end_headers(self):
@@ -13,8 +15,27 @@ class NoCacheHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.send_header('Referrer-Policy', 'strict-origin-when-cross-origin')
         super().end_headers()
 
+def start_server_on_port(port):
+    try:
+        socketserver.TCPServer.allow_reuse_address = True
+        with socketserver.TCPServer(("", port), NoCacheHTTPRequestHandler) as httpd:
+            print(f"LIVA Dev Server running at http://localhost:{port}")
+            httpd.serve_forever()
+    except Exception as e:
+        print(f"Port {port} not available: {e}")
+
 if __name__ == '__main__':
-    socketserver.TCPServer.allow_reuse_address = True
-    with socketserver.TCPServer(("", PORT), NoCacheHTTPRequestHandler) as httpd:
-        print(f"LIVA No-Cache Dev Server running at http://localhost:{PORT}")
-        httpd.serve_forever()
+    threads = []
+    for p in PORTS:
+        t = threading.Thread(target=start_server_on_port, args=(p,), daemon=True)
+        t.start()
+        threads.append(t)
+    
+    print(f"LIVA Dev Servers running on {PORTS} - Press Ctrl+C to stop.")
+    try:
+        for t in threads:
+            t.join()
+    except KeyboardInterrupt:
+        print("\nStopping LIVA dev servers...")
+        sys.exit(0)
+
