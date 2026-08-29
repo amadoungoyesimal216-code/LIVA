@@ -57,6 +57,16 @@ class AppRouter {
   }
 
   async handleRoute() {
+    // 0. Nettoyage automatique des erreurs OAuth résiduelles dans l'URL (si l'utilisateur a été redirigé avec ?error=)
+    if (window.location.search.includes('error=')) {
+      const sp = new URLSearchParams(window.location.search);
+      const errDesc = sp.get('error_description') || sp.get('error');
+      if (errDesc) {
+        console.warn('[OAuth Error]', errDesc);
+        window.history.replaceState({}, document.title, window.location.pathname + (window.location.hash || '#/'));
+      }
+    }
+
     // 1. Détection et traitement du retour OAuth Google (tokens dans le Hash ou Code)
     if (window.location.hash.includes('access_token=') || window.location.hash.includes('type=recovery')) {
       setTimeout(async () => {
