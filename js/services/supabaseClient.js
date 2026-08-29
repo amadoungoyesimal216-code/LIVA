@@ -92,7 +92,10 @@ export class SupabaseService {
    */
   static async signInWithGoogle() {
     try {
-      const redirectUrl = window.location.origin + window.location.pathname;
+      const redirectUrl = window.location.origin.includes('localhost')
+        ? `${window.location.origin}/`
+        : 'https://liva-nine.vercel.app/';
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
