@@ -201,15 +201,19 @@ export class AuthView {
               </div>
             </div>
 
-            <!-- Case à cocher CGU -->
-            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px;">
-              <label class="auth-checkbox-label">
-                <input type="checkbox" id="reg-terms" checked required />
-                <span style="font-size: 0.8rem;">J'accepte les <a href="javascript:void(0)" class="auth-forgot-link">Conditions d'Utilisation</a> et la <a href="javascript:void(0)" class="auth-forgot-link">Confidentialité</a> de LIVA</span>
+            <!-- Case à cocher CGU et Marketing Inscription -->
+            <div class="auth-terms-container" id="reg-terms-box">
+              <label class="auth-terms-item">
+                <input type="checkbox" id="reg-terms" class="auth-terms-checkbox" checked required />
+                <span class="auth-terms-text">
+                  J'accepte les <span class="auth-terms-link btn-open-cgu">Conditions Générales d'Utilisation</span> et la <span class="auth-terms-link btn-open-privacy">Politique de Confidentialité</span> de LIVA *
+                </span>
               </label>
-              <label class="auth-checkbox-label">
-                <input type="checkbox" id="reg-newsletter" checked />
-                <span style="font-size: 0.8rem;">Recevoir la sélection des meilleures histoires de la semaine 📖</span>
+              <label class="auth-terms-item">
+                <input type="checkbox" id="reg-newsletter" class="auth-terms-checkbox" checked />
+                <span class="auth-terms-text">
+                  J'accepte de recevoir par e-mail les sélections littéraires, nouveautés et notifications personnalisées 💌
+                </span>
               </label>
             </div>
 
@@ -288,6 +292,22 @@ export class AuthView {
             <!-- 5. Séparateur & Connexion Sociale (Google OAuth Réel) -->
             <div class="auth-divider">Ou continuer avec</div>
 
+            <!-- Case à cocher CGU et Marketing pour Connexion Google -->
+            <div class="auth-terms-container" id="social-terms-box">
+              <label class="auth-terms-item">
+                <input type="checkbox" id="social-terms-agree" class="auth-terms-checkbox" checked />
+                <span class="auth-terms-text">
+                  J'accepte les <span class="auth-terms-link btn-open-cgu">Conditions d'Utilisation</span> et la <span class="auth-terms-link btn-open-privacy">Politique de Confidentialité</span> de LIVA *
+                </span>
+              </label>
+              <label class="auth-terms-item">
+                <input type="checkbox" id="social-marketing-agree" class="auth-terms-checkbox" checked />
+                <span class="auth-terms-text">
+                  J'accepte de recevoir par e-mail les sélections littéraires, nouveautés et notifications personnalisées 💌
+                </span>
+              </label>
+            </div>
+
             <div class="auth-social-row">
               <button type="button" class="auth-social-btn auth-google-btn" id="btn-social-google">
                 <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
@@ -303,7 +323,7 @@ export class AuthView {
 
         </div>
 
-        <!-- Modal Réinitialisation de Mot de Passe -->
+        <!-- 7. Modale Réinitialisation de Mot de Passe -->
         <div class="modal-overlay" id="modal-forgot-password">
           <div class="modal-card" style="max-width: 440px; padding: var(--space-6); background: rgba(18, 14, 28, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--radius-2xl); backdrop-filter: blur(20px);">
             <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
@@ -331,6 +351,72 @@ export class AuthView {
             <button class="btn btn-primary btn-lg" id="btn-submit-forgot-email" style="width: 100%; justify-content: center; gap: 8px;">
               <span>Envoyer le lien de réinitialisation</span> <span>✉️</span>
             </button>
+          </div>
+        </div>
+
+        <!-- 8. Modale Conditions Générales d'Utilisation (CGU) -->
+        <div class="modal-overlay" id="modal-cgu">
+          <div class="modal-card legal-modal-card">
+            <div class="modal-header" style="padding: var(--space-5); border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center;">
+              <h2 style="font-size: 1.25rem; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+                <span>📜</span> Conditions Générales d'Utilisation
+              </h2>
+              <button class="btn btn-ghost btn-sm" id="btn-close-cgu-modal" style="font-size: 1.1rem; padding: 4px 8px;">✕</button>
+            </div>
+            <div class="legal-modal-body">
+              <div>
+                <div class="legal-section-title"><span>🌟</span> 1. Présentation de la Plateforme LIVA</div>
+                <p>LIVA est une plateforme de lecture et d'écriture immersive dédiée aux histoires littéraires, web-novels et créations artistiques. L'accès aux services implique l'acceptation pleine et entière des présentes conditions.</p>
+              </div>
+              <div>
+                <div class="legal-section-title"><span>✍️</span> 2. Propriété Intellectuelle & Droits d'Auteur</div>
+                <p>Chaque auteur conserve l'intégralité de ses droits moraux et patrimoniaux sur les œuvres, récits et chapitres qu'il publie sur LIVA. Tout plagiat, extraction massive ou copie non autorisée est strictement interdit.</p>
+              </div>
+              <div>
+                <div class="legal-section-title"><span>🛡️</span> 3. Modération & Respect Communautaire</div>
+                <p>Les commentaires, avis et interactions entre membres doivent demeurer courtois et constructifs. Tout contenu haineux, diffamatoire ou illicite entraîne la suppression immédiate du compte.</p>
+              </div>
+              <div>
+                <div class="legal-section-title"><span>🔐</span> 4. Sécurité des Comptes</div>
+                <p>L'utilisateur est responsable de la confidentialité de ses identifiants. LIVA s'appuie sur une infrastructure chiffrée de pointe pour sécuriser vos sessions.</p>
+              </div>
+            </div>
+            <div class="legal-modal-footer">
+              <button class="btn btn-primary" id="btn-accept-cgu-modal">J'ai compris & J'accepte ✨</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 9. Modale Politique de Confidentialité -->
+        <div class="modal-overlay" id="modal-privacy">
+          <div class="modal-card legal-modal-card">
+            <div class="modal-header" style="padding: var(--space-5); border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center;">
+              <h2 style="font-size: 1.25rem; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+                <span>🔒</span> Politique de Confidentialité
+              </h2>
+              <button class="btn btn-ghost btn-sm" id="btn-close-privacy-modal" style="font-size: 1.1rem; padding: 4px 8px;">✕</button>
+            </div>
+            <div class="legal-modal-body">
+              <div>
+                <div class="legal-section-title"><span>📊</span> 1. Données Collectées</div>
+                <p>Nous collectons uniquement les informations nécessaires au bon fonctionnement de votre expérience de lecture (nom de plume, adresse email, progression de lecture, bibliothèque et favoris).</p>
+              </div>
+              <div>
+                <div class="legal-section-title"><span>🛡️</span> 2. Non-Revente des Données Personnelles</div>
+                <p>Vos données personnelles ne sont jamais vendues, cédées ni louées à des tiers. Elles sont stockées de manière sécurisée et chiffrée sur notre infrastructure Supabase.</p>
+              </div>
+              <div>
+                <div class="legal-section-title"><span>💌</span> 3. Communications & Plan Marketing</div>
+                <p>Vous pouvez à tout moment accepter ou refuser de recevoir nos suggestions d'histoires et e-mails informatifs directement depuis vos préférences de profil.</p>
+              </div>
+              <div>
+                <div class="legal-section-title"><span>🗑️</span> 4. Vos Droits (Accès & Suppression)</div>
+                <p>Conformément aux normes RGPD, vous disposez d'un droit d'accès, de rectification et d'effacement complet de votre compte et de toutes vos données personnelles.</p>
+              </div>
+            </div>
+            <div class="legal-modal-footer">
+              <button class="btn btn-primary" id="btn-accept-privacy-modal">J'ai compris ✨</button>
+            </div>
           </div>
         </div>
 
@@ -479,9 +565,60 @@ export class AuthView {
     const submitResetBtn = container.querySelector('#btn-submit-reset-password');
     submitResetBtn?.addEventListener('click', () => this.handleResetPassword());
 
-    // Social login (Google OAuth Supabase)
+    // Modales Légales (CGU & Confidentialité)
+    container.querySelectorAll('.btn-open-cgu').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        Modal.open('modal-cgu');
+      });
+    });
+
+    container.querySelectorAll('.btn-open-privacy').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        Modal.open('modal-privacy');
+      });
+    });
+
+    container.querySelector('#btn-close-cgu-modal')?.addEventListener('click', () => Modal.close('modal-cgu'));
+    container.querySelector('#btn-accept-cgu-modal')?.addEventListener('click', () => {
+      const regTerms = container.querySelector('#reg-terms');
+      const socialTerms = container.querySelector('#social-terms-agree');
+      if (regTerms) regTerms.checked = true;
+      if (socialTerms) socialTerms.checked = true;
+      Modal.close('modal-cgu');
+      Toast.show('Conditions d\'utilisation acceptées ✨', 'success', '📜');
+    });
+
+    container.querySelector('#btn-close-privacy-modal')?.addEventListener('click', () => Modal.close('modal-privacy'));
+    container.querySelector('#btn-accept-privacy-modal')?.addEventListener('click', () => Modal.close('modal-privacy'));
+
+    // Social login (Google OAuth Supabase) avec vérification obligatoire des CGU
     container.querySelector('#btn-social-google')?.addEventListener('click', async (e) => {
       e.preventDefault();
+
+      const socialTerms = container.querySelector('#social-terms-agree');
+      const socialTermsBox = container.querySelector('#social-terms-box');
+      const socialMarketing = container.querySelector('#social-marketing-agree');
+
+      // 1. Vérification obligatoire de l'acceptation des CGU
+      if (!socialTerms || !socialTerms.checked) {
+        if (socialTermsBox) {
+          socialTermsBox.classList.add('has-error');
+          setTimeout(() => socialTermsBox.classList.remove('has-error'), 1500);
+        }
+        Toast.show('Veuillez accepter les Conditions d\'Utilisation de LIVA pour continuer avec Google.', 'warning', '📜');
+        return;
+      }
+
+      // 2. Sauvegarde des préférences de consentement (CGU & Marketing)
+      try {
+        localStorage.setItem('liva_terms_accepted', 'true');
+        localStorage.setItem('liva_marketing_consent', socialMarketing?.checked ? 'true' : 'false');
+      } catch (err) {}
+
       const btn = container.querySelector('#btn-social-google');
       if (btn) {
         btn.disabled = true;
@@ -596,10 +733,22 @@ export class AuthView {
       return;
     }
 
+    const termsBox = this.container.querySelector('#reg-terms-box');
+    const newsletterCheck = this.container.querySelector('#reg-newsletter');
+
     if (!termsCheck?.checked) {
-      Toast.show('Veuillez accepter les conditions d\'utilisation pour continuer.', 'warning', '⚠️');
+      if (termsBox) {
+        termsBox.classList.add('has-error');
+        setTimeout(() => termsBox.classList.remove('has-error'), 1500);
+      }
+      Toast.show('Veuillez accepter les Conditions Générales d\'Utilisation pour créer votre compte.', 'warning', '📜');
       return;
     }
+
+    try {
+      localStorage.setItem('liva_terms_accepted', 'true');
+      localStorage.setItem('liva_marketing_consent', newsletterCheck?.checked ? 'true' : 'false');
+    } catch (err) {}
 
     const submitBtn = this.container.querySelector('#btn-submit-register');
     if (submitBtn) {

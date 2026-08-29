@@ -437,3 +437,133 @@
   border-color: var(--color-primary);
   transform: translateY(-1px);
 }
+
+/* 6. Boîte de Consentement & Conditions (CGU + Marketing) */
+.auth-terms-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 14px 0 16px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  text-align: left;
+  transition: all var(--transition-fast);
+}
+
+.auth-terms-container.has-error {
+  border-color: #F87171;
+  background: rgba(239, 68, 68, 0.08);
+  animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes shake {
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-4px); }
+  40%, 60% { transform: translateX(4px); }
+}
+
+.auth-terms-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.auth-terms-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+  position: relative;
+  margin-top: 2px;
+  transition: all var(--transition-fast);
+}
+
+.auth-terms-checkbox:checked {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  border-color: var(--color-primary-light);
+}
+
+.auth-terms-checkbox:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.auth-terms-text {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.auth-terms-link {
+  color: var(--color-primary-light);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.auth-terms-link:hover {
+  color: #fff;
+}
+
+/* Modale Légale Immersive (CGU & Confidentialité) */
+.legal-modal-card {
+  max-width: 640px !important;
+  max-height: 85vh !important;
+  display: flex;
+  flex-direction: column;
+  background: #130E1F !important;
+  border: 1px solid rgba(121, 40, 202, 0.3) !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8) !important;
+  overflow: hidden;
+}
+
+.legal-modal-body {
+  padding: var(--space-5);
+  overflow-y: auto;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.65;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.legal-section-title {
+  font-size: 1.02rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.legal-modal-footer {
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  background: rgba(10, 7, 16, 0.6);
+}
+
