@@ -674,7 +674,7 @@ export class AIProvider {
       );
     } else if (isMiddle) {
       paragraphs.push(
-        `La porte de la pièce claqua, étouffant les bruits de la rue. ${p1.name} se tenait droite, le regard fiévreux, brandissant les feuillets qu'elle venait d'extraire de la boîte à gants.\n\n— Explique-moi ce que c'est, Malik, exigea-t-elle, la voix brisée par un mélange d'incrédulité et de fureur contenue. Pourquoi le nom de mon père figure-t-il sur ces titres de propriété ? Pourquoi es-tu venu vers moi ?\n\n${p2.name} ferma les yeux une seconde, comme si le coup porté l'atteignait en plein cœur. Quand il les rouvrit, il n'y avait plus d'artifices, seulement la vérité nue et dévastatrice.\n\n— Au début... oui, c'était pour comprendre, avoua-t-il d'une voix rauque. Mais tout a changé la seconde où j'ai appris à te connaître, Aïcha. Je te le jure sur ce qui me reste d'honneur.\n\n— Ne prononce plus mon nom, coupa-t-elle dans un souffle glacial.`
+        `La porte de la pièce claqua, étouffant les bruits de la rue. ${p1.name} se tenait droite, le regard fiévreux, brandissant les feuillets qu'elle venait d'extraire de la boîte à gants.\n\n— Explique-moi ce que c'est, ${p2.name}, exigea-t-elle, la voix brisée par un mélange d'incrédulité et de fureur contenue. Pourquoi le nom de ma famille figure-t-il sur ces titres de propriété ? Pourquoi es-tu venu vers moi ?\n\n${p2.name} ferma les yeux une seconde, comme si le coup porté l'atteignait en plein cœur. Quand il les rouvrit, il n'y avait plus d'artifices, seulement la vérité nue et dévastatrice.\n\n— Au début... oui, c'était pour comprendre la dette du passé, avoua-t-il d'une voix rauque. Mais tout a changé la seconde où j'ai appris à te connaître, ${p1.name}. Je te le jure sur ce qui me reste d'honneur.\n\n— Ne prononce plus mon nom, coupa-t-elle dans un souffle glacial.`
       );
 
       paragraphs.push(
@@ -682,7 +682,7 @@ export class AIProvider {
       );
     } else if (isClimax) {
       paragraphs.push(
-        `La tension dans la grande salle était palpable, prête à exploser à la moindre étincelle. ${p3.name} se tenait au bout de la table de marbre, le visage figé dans un masque de marbre aristocratique.\n\n— Tu oses introduire cet individu sous mon toit ? siffla le patriarche en toisant ${p2.name} avec un mépris souverain. Tu oublies qui tu es, Aïcha.\n\n— Non, père, répliqua-t-elle en avançant d'un pas ferme, posant les dossiers authentifiés au centre de la table. C'est vous qui avez passé votre vie à nous faire oublier sur quoi reposait votre fortune. Mais ce soir, le silence est terminé.`
+        `La tension dans la grande salle était palpable, prête à exploser à la moindre étincelle. ${p3.name} se tenait au bout de la table de marbre, le visage figé dans un masque de marbre aristocratique.\n\n— Tu oses introduire cet individu sous mon toit ? siffla le patriarche en toisant ${p2.name} avec un mépris souverain. Tu oublies qui tu es, ${p1.name}.\n\n— Non, père, répliqua-t-elle en avançant d'un pas ferme, posant les dossiers authentifiés au centre de la table. C'est vous qui avez passé votre vie à nous faire oublier sur quoi reposait votre fortune. Mais ce soir, le silence est terminé.`
       );
 
       paragraphs.push(

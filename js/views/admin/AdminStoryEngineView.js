@@ -155,6 +155,12 @@ export class AdminStoryEngineView {
       'Romantique & Passionnée', 'Épique & Aventureuse', 'Réaliste & Urbaine'
     ];
 
+    const styles = [
+      { id: 'page_turner', label: '⚡ Page-Turner & Suspense Captivant', desc: 'Rythme soutenu, tension continue et cliffhangers irrésistibles' },
+      { id: 'immersif', label: '🎭 Immersif & Réaliste (Show Don\'t Tell)', desc: 'Dialogues naturels, atmosphère sensorielle et profondeur psychologique' },
+      { id: 'emotionnel', label: '❤️ Émotionnel & Bouleversant', desc: 'Dilemmes intimes puissants, vulnérabilité et intensité des sentiments' }
+    ];
+
     const lengths = [
       { id: 'court', label: 'Courte (5 chapitres)', desc: '~30 min de lecture · Idéal pour démarrer' },
       { id: 'moyen', label: 'Moyenne (10 chapitres)', desc: '~1h de lecture · Arc narratif complet' },
@@ -164,43 +170,62 @@ export class AdminStoryEngineView {
 
     return `
       <div class="admin-card">
-        <h2 style="font-size: 1.25rem; font-weight: 800; font-family: var(--font-display); margin-bottom: 8px;">
-          1. Décrivez votre idée d'histoire 💡
-        </h2>
-        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: var(--space-5);">
-          Écrivez quelques phrases ou collez un pitch détaillé. L'IA s'occupe de bâtir l'univers, les personnages et la structure.
-        </p>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); flex-wrap: wrap; gap: var(--space-2);">
+          <div>
+            <h2 style="font-size: 1.35rem; font-weight: 800; font-family: var(--font-display); margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+              <span>📝</span> 1. Résumé complet & Fil conducteur de l'histoire
+            </h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">
+              Décrivez librement votre histoire. L'IA s'appuie fidèlement sur votre résumé pour construire un récit original, cohérent et captivant qui donne envie de lire jusqu'à la fin.
+            </p>
+          </div>
+          <span class="admin-badge-role" style="font-size: 0.75rem; background: rgba(121, 40, 202, 0.15); color: var(--color-primary-light); border: 1px solid rgba(121, 40, 202, 0.3);">
+            ✨ Compréhension IA Intelligente
+          </span>
+        </div>
 
-        <!-- Champ Idée libre -->
-        <div style="margin-bottom: var(--space-4);">
-          <label class="form-label" style="font-weight: 700;">Votre idée / Pitch narratif :</label>
+        <!-- Champ Résumé / Description libre -->
+        <div style="margin-bottom: var(--space-5);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+            <label class="form-label" style="font-weight: 700; font-size: 0.9rem; margin-bottom: 0;">
+              Votre résumé détaillé / Trame de l'histoire :
+            </label>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">
+              Noms, âges, métiers, lieux, conflits, trahisons, fin souhaitée
+            </span>
+          </div>
+
           <textarea 
             id="engine-idea-input" 
             class="form-textarea" 
-            placeholder="Ex : Une restauratrice d'art revient à Dakar après sept ans d'exil et retrouve son premier amour devenu procureur, tout en découvrant que son départ cachait un secret de famille explosif..."
-            style="min-height: 110px;"
+            placeholder="Ex : Je veux une histoire qui se déroule à Dakar. L'histoire parle d'une jeune femme appelée Aïcha, 27 ans, architecte, issue d'une famille aisée. Elle rencontre Malik, 30 ans, chauffeur VTC, qui cache un lourd secret concernant sa famille. Ils tombent amoureux. Le père d'Aïcha refuse leur relation. Conflits familiaux, trahison vers le milieu et révélation finale à la fin qui change toute la perception du lecteur..."
+            style="min-height: 140px; font-size: 0.9rem; line-height: 1.6;"
           >${escapeHTML(this.formState.idea)}</textarea>
           
-          <!-- Suggestions d'idées rapides -->
-          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
-            <span style="font-size: 0.75rem; color: var(--text-muted);">Exemples rapides :</span>
-            <button class="btn btn-ghost btn-sm quick-pitch-btn" data-pitch="Un jeune hacker à Abidjan intercepte par erreur les correspondances secrètes d'une société minière et doit fuir avec une mystérieuse pianiste.">
-              📱 Thriller Abidjan
+          <!-- Suggestions de résumés structurés -->
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Modèles rapides :</span>
+            <button type="button" class="btn btn-ghost btn-sm quick-pitch-btn" data-pitch="Histoire à Dakar : Aïcha (27 ans, architecte, famille aisée) rencontre Malik (30 ans, chauffeur VTC discret cachant un lourd secret familial). Coup de foudre, veto catégorique du père d'Aïcha, conflits familiaux, trahison au milieu de l'intrigue et révélation explosive à la fin qui bouleverse tout.">
+              🏙️ Romance & Secret Dakar
             </button>
-            <button class="btn btn-ghost btn-sm quick-pitch-btn" data-pitch="Dans un village du Sine-Saloum, le vieux baobab ancestral saigne une sève rouge. Un jeune griot doit retrouver la kora sacrée avant la lune de sang.">
-              🌳 Réalisme Magique
+            <button type="button" class="btn btn-ghost btn-sm quick-pitch-btn" data-pitch="Thriller à Abidjan : Tarek, jeune analyste en cybersécurité, intercepte un transfert financier suspect impliquant une société d'État. Traqué avec une pianiste témoin, il découvre que son propre mentor est au cœur du complot.">
+              📱 Thriller & Cyber Abidjan
             </button>
-            <button class="btn btn-ghost btn-sm quick-pitch-btn" data-pitch="Deux rivaux de la haute gastronomie parisienne sont contraints de concevoir ensemble le banquet du gala de l'année.">
-              🥐 Romance Paris
+            <button type="button" class="btn btn-ghost btn-sm quick-pitch-btn" data-pitch="Drame d'héritage : Deux demi-sœurs aux personnalités opposées héritent d'une agence de design à Paris à condition de travailler ensemble pendant 1 an. Rivalités, secrets de succession et rédemption mutuelle.">
+              🏛️ Drame Familial & Héritage
+            </button>
+            <button type="button" class="btn btn-ghost btn-sm quick-pitch-btn" data-pitch="Réalisme magique au Sine-Saloum : Le vieux baobab sacré commence à pleurer des larmes d'ambre. Un jeune griot et une herboriste doivent élucider un pacte ancestral oublié pour sauver leur terre.">
+              🌳 Conte & Réalisme Magique
             </button>
           </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-5);">
+        <!-- Paramètres narratifs clés -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-5);">
           
           <!-- Genre Principal -->
           <div>
-            <label class="form-label">Genre Principal :</label>
+            <label class="form-label">Genre littéraire :</label>
             <select class="admin-select" id="engine-genre-select" style="width: 100%;">
               ${genres.map(g => `<option value="${g}" ${this.formState.genre === g ? 'selected' : ''}>${g}</option>`).join('')}
             </select>
@@ -208,7 +233,7 @@ export class AdminStoryEngineView {
 
           <!-- Ambiance -->
           <div>
-            <label class="form-label">Ambiance dominante :</label>
+            <label class="form-label">Tonalité émotionnelle :</label>
             <select class="admin-select" id="engine-mood-select" style="width: 100%;">
               ${moods.map(m => `<option value="${m}" ${this.formState.mood === m ? 'selected' : ''}>${m}</option>`).join('')}
             </select>
@@ -216,7 +241,7 @@ export class AdminStoryEngineView {
 
           <!-- Auteur assigné -->
           <div>
-            <label class="form-label">Nom de l'Auteur / Alias :</label>
+            <label class="form-label">Nom de plume / Auteur :</label>
             <input 
               type="text" 
               class="admin-search-input" 
@@ -228,20 +253,39 @@ export class AdminStoryEngineView {
 
           <!-- Type de Fin -->
           <div>
-            <label class="form-label">Dénouement souhaité :</label>
+            <label class="form-label">Type de dénouement :</label>
             <select class="admin-select" id="engine-ending-select" style="width: 100%;">
-              <option value="surprenante" ${this.formState.endingType === 'surprenante' ? 'selected' : ''}>✨ Fin surprenante (Rebondissement)</option>
-              <option value="heureuse" ${this.formState.endingType === 'heureuse' ? 'selected' : ''}>❤️ Fin heureuse / Rédemption</option>
-              <option value="dramatique" ${this.formState.endingType === 'dramatique' ? 'selected' : ''}>🌧️ Fin dramatique / Émouvante</option>
-              <option value="ouverte" ${this.formState.endingType === 'ouverte' ? 'selected' : ''}>🚪 Fin ouverte / Réflexion</option>
+              <option value="surprenante" ${this.formState.endingType === 'surprenante' ? 'selected' : ''}>✨ Révélation majeure & Fin surprenante</option>
+              <option value="heureuse" ${this.formState.endingType === 'heureuse' ? 'selected' : ''}>❤️ Dénouement lumineux & Rédemption</option>
+              <option value="dramatique" ${this.formState.endingType === 'dramatique' ? 'selected' : ''}>🌧️ Fin dramatique & Poignante</option>
+              <option value="ouverte" ${this.formState.endingType === 'ouverte' ? 'selected' : ''}>🚪 Fin ouverte & Réflexion</option>
             </select>
           </div>
 
         </div>
 
+        <!-- Style d'Écriture & Accroche Lecteur -->
+        <div style="margin-bottom: var(--space-5);">
+          <label class="form-label" style="font-weight: 700; margin-bottom: 8px; display: block;">
+            Style d'écriture & Rétention des lecteurs :
+          </label>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-3);">
+            ${styles.map((st, idx) => `
+              <div 
+                class="length-option-card style-option-card ${(this.formState.writingStyle === st.id || (!this.formState.writingStyle && idx === 0)) ? 'active' : ''}" 
+                data-style="${st.id}"
+                style="cursor: pointer;"
+              >
+                <div style="font-weight: 700; font-size: 0.9rem; margin-bottom: 2px;">${st.label}</div>
+                <div style="font-size: 0.74rem; color: var(--text-muted);">${st.desc}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
         <!-- Choix de la Longueur -->
         <div style="margin-bottom: var(--space-6);">
-          <label class="form-label" style="font-weight: 700; margin-bottom: 8px; display: block;">Longueur de l'histoire :</label>
+          <label class="form-label" style="font-weight: 700; margin-bottom: 8px; display: block;">Découpage en chapitres :</label>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-3);">
             ${lengths.map(len => `
               <div class="length-option-card ${this.formState.lengthType === len.id ? 'active' : ''}" data-length="${len.id}">
@@ -253,9 +297,12 @@ export class AdminStoryEngineView {
         </div>
 
         <!-- Bouton Générer Plan -->
-        <div style="display: flex; justify-content: flex-end;">
+        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <span style="font-size: 0.8rem; color: var(--text-muted);">
+            L'IA va structurer la bible, les personnages et chaque chapitre à partir de votre résumé.
+          </span>
           <button class="btn btn-primary btn-lg" id="btn-engine-generate-plan" style="gap: 8px;">
-            ⚡ 1. Générer la Bible Narrative & le Plan
+            ⚡ Générer la Bible Narrative à partir du Résumé
           </button>
         </div>
       </div>
@@ -743,11 +790,19 @@ export class AdminStoryEngineView {
       });
     });
 
-    container.querySelectorAll('.length-option-card').forEach(card => {
+    container.querySelectorAll('.length-option-card:not(.style-option-card)').forEach(card => {
       card.addEventListener('click', (e) => {
-        container.querySelectorAll('.length-option-card').forEach(c => c.classList.remove('active'));
+        container.querySelectorAll('.length-option-card:not(.style-option-card)').forEach(c => c.classList.remove('active'));
         card.classList.add('active');
         this.formState.lengthType = card.getAttribute('data-length');
+      });
+    });
+
+    container.querySelectorAll('.style-option-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        container.querySelectorAll('.style-option-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        this.formState.writingStyle = card.getAttribute('data-style');
       });
     });
 
