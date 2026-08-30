@@ -191,3 +191,29 @@
   color: var(--color-primary-light);
   border-color: var(--color-primary);
 }
+
+/* ==========================================================================
+   VOICE STUDIO MODAL & PERSONAS VOCAUX
+   ========================================================================== */
+.voice-studio-modal-box {
+  background: #151022 !important;
+  border: 1px solid rgba(121, 40, 202, 0.4) !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(121, 40, 202, 0.25) !important;
+}
+
+.voice-persona-card:hover {
+  border-color: var(--color-primary-light) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 15px rgba(121, 40, 202, 0.2);
+}
+
+.voice-persona-card.active {
+  box-shadow: 0 0 20px rgba(121, 40, 202, 0.35) !important;
+}
+
+.btn-test-voice:hover {
+  background: var(--color-primary) !important;
+  color: #FFFFFF !important;
+}
+
