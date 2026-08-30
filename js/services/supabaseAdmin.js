@@ -1,9 +1,9 @@
 // LIVA ADMIN — Service Supabase dédié à l'Administration & Back-Office
 import { supabase } from './supabaseClient.js';
 
-// Cache mémoire haute performance pour le panneau d'administration (TTL: 30s)
+// Cache mémoire haute performance pour le panneau d'administration (TTL: 60s)
 const adminCache = new Map();
-const CACHE_TTL_MS = 30000;
+const CACHE_TTL_MS = 60000;
 
 function getFromCache(key) {
   const item = adminCache.get(key);
@@ -27,6 +27,21 @@ export function clearAdminCache(prefix = null) {
   }
 }
 
+/**
+ * Helper de protection contre les timeouts réseaux Supabase
+ */
+async function withTimeout(promise, ms = 7000) {
+  let timer;
+  const timeoutPromise = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error('Délai d\'attente dépassé (timeout Supabase)')), ms);
+  });
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export class SupabaseAdminService {
   /**
    * Nettoyer le cache d'administration
@@ -39,20 +54,84 @@ export class SupabaseAdminService {
    * 1. Métriques Clés & KPI du Dashboard
    */
   static async getDashboardStats(forceRefresh = false) {
+    const cacheKey = 'admin_stats';
+    if (!forceRefresh) {
+      const cached = getFromCache(cacheKey);
+      if (cached) return cached;
+    }
+
     try {
-      const cacheKey = 'admin_stats';
-      if (!forceRefresh) {
-        const cached = getFromCache(cacheKey);
-        if (cached) return cached;
+      // 1. Tenter l'appel RPC sécurisé avec timeout
+      try {
+        const { data, error } = await withTimeout(supabase.rpc('admin_get_stats'), 4500);
+        if (!error && data) {
+          saveToCache(cacheKey, data);
+          return data;
+        }
+      } catch (rpcErr) {
+        console.warn('[SupabaseAdmin] RPC admin_get_stats indisponible/lent, calcul direct...');
       }
 
-      const { data, error } = await supabase.rpc('admin_get_stats');
-      if (error) throw error;
-      if (data) saveToCache(cacheKey, data);
-      return data;
+      // 2. Fallback direct par requêtes légères en parallèle
+      const [
+        resUsers,
+        resStories,
+        resPublished,
+        resAuthors,
+        resReviews,
+        resReports,
+        resTopStories
+      ] = await Promise.allSettled([
+        supabase.from('profiles').select('id', { count: 'exact', head: true }),
+        supabase.from('stories').select('id', { count: 'exact', head: true }),
+        supabase.from('stories').select('id', { count: 'exact', head: true }).eq('status', 'published'),
+        supabase.from('authors').select('id', { count: 'exact', head: true }),
+        supabase.from('reviews').select('id', { count: 'exact', head: true }),
+        supabase.from('reports').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+        supabase.from('stories').select('id, title, author_name, genre, cover, reads_raw, likes_count, rating').order('reads_raw', { ascending: false }).limit(6)
+      ]);
+
+      const totalUsers = resUsers.status === 'fulfilled' ? resUsers.value?.count || 0 : 0;
+      const totalStories = resStories.status === 'fulfilled' ? resStories.value?.count || 0 : 0;
+      const publishedStories = resPublished.status === 'fulfilled' ? resPublished.value?.count || 0 : 0;
+      const totalAuthors = resAuthors.status === 'fulfilled' ? resAuthors.value?.count || 0 : 0;
+      const totalReviews = resReviews.status === 'fulfilled' ? resReviews.value?.count || 0 : 0;
+      const pendingReports = resReports.status === 'fulfilled' ? resReports.value?.count || 0 : 0;
+      const topStories = resTopStories.status === 'fulfilled' ? resTopStories.value?.data || [] : [];
+
+      let totalReads = 0;
+      let totalLikes = 0;
+      let sumRating = 0;
+      topStories.forEach(st => {
+        totalReads += Number(st.reads_raw) || 0;
+        totalLikes += Number(st.likes_count) || 0;
+        sumRating += Number(st.rating) || 5;
+      });
+
+      const calculatedStats = {
+        totalUsers,
+        newUsers: Math.min(totalUsers, 5),
+        totalStories,
+        publishedStories,
+        draftStories: Math.max(0, totalStories - publishedStories),
+        totalReads,
+        totalLikes,
+        totalAuthors,
+        totalReviews,
+        pendingReports,
+        averageRating: topStories.length > 0 ? Number((sumRating / topStories.length).toFixed(1)) : 5.0,
+        genreDistribution: [],
+        topStories,
+        recentUsers: [],
+        recentLogs: []
+      };
+
+      saveToCache(cacheKey, calculatedStats);
+      return calculatedStats;
     } catch (err) {
       console.error('[SupabaseAdmin] Erreur getDashboardStats:', err);
-      return null;
+      const fallback = adminCache.get(cacheKey)?.data;
+      return fallback || null;
     }
   }
 
@@ -60,13 +139,13 @@ export class SupabaseAdminService {
    * 2. Gestion des Histoires
    */
   static async getStories(filters = {}, forceRefresh = false) {
-    try {
-      const cacheKey = `stories_${JSON.stringify(filters)}`;
-      if (!forceRefresh) {
-        const cached = getFromCache(cacheKey);
-        if (cached) return cached;
-      }
+    const cacheKey = `stories_${JSON.stringify(filters)}`;
+    if (!forceRefresh) {
+      const cached = getFromCache(cacheKey);
+      if (cached) return cached;
+    }
 
+    try {
       let query = supabase.from('stories').select('*').order('created_at', { ascending: false });
 
       if (filters.genre && filters.genre !== 'all') {
@@ -79,14 +158,15 @@ export class SupabaseAdminService {
         query = query.ilike('title', `%${filters.search.trim()}%`);
       }
 
-      const { data, error } = await query;
+      const { data, error } = await withTimeout(query, 6000);
       if (error) throw error;
       const result = data || [];
       saveToCache(cacheKey, result);
       return result;
     } catch (err) {
       console.error('[SupabaseAdmin] Erreur getStories:', err);
-      return [];
+      const fallback = adminCache.get(cacheKey)?.data;
+      return fallback || [];
     }
   }
 
@@ -296,25 +376,36 @@ export class SupabaseAdminService {
   /**
    * 3. Gestion des Chapitres
    */
-  static async getChaptersByStoryId(storyId) {
-    try {
-      const cacheKey = `chapters_${storyId}`;
+  static async getChapters(storyId, forceRefresh = false) {
+    return this.getChaptersByStoryId(storyId, forceRefresh);
+  }
+
+  static async getChaptersByStoryId(storyId, forceRefresh = false) {
+    if (!storyId) return [];
+    const cacheKey = `chapters_${storyId}`;
+    if (!forceRefresh) {
       const cached = getFromCache(cacheKey);
       if (cached) return cached;
+    }
 
-      const { data, error } = await supabase
-        .from('chapters')
-        .select('*')
-        .eq('story_id', storyId)
-        .order('number', { ascending: true });
+    try {
+      const { data, error } = await withTimeout(
+        supabase
+          .from('chapters')
+          .select('*')
+          .eq('story_id', storyId)
+          .order('number', { ascending: true }),
+        6000
+      );
 
       if (error) throw error;
       const result = data || [];
       saveToCache(cacheKey, result);
       return result;
     } catch (err) {
-      console.error('[SupabaseAdmin] Erreur getChaptersByStoryId:', err);
-      return [];
+      console.warn('[SupabaseAdmin] Erreur getChaptersByStoryId:', err);
+      const fallback = adminCache.get(cacheKey)?.data;
+      return fallback || [];
     }
   }
 
@@ -401,21 +492,25 @@ export class SupabaseAdminService {
    * 4. Gestion des Auteurs
    */
   static async getAuthors(forceRefresh = false) {
-    try {
-      const cacheKey = 'admin_authors';
-      if (!forceRefresh) {
-        const cached = getFromCache(cacheKey);
-        if (cached) return cached;
-      }
+    const cacheKey = 'admin_authors';
+    if (!forceRefresh) {
+      const cached = getFromCache(cacheKey);
+      if (cached) return cached;
+    }
 
-      const { data, error } = await supabase.from('authors').select('*').order('created_at', { ascending: false });
+    try {
+      const { data, error } = await withTimeout(
+        supabase.from('authors').select('*').order('created_at', { ascending: false }),
+        6000
+      );
       if (error) throw error;
       const result = data || [];
       saveToCache(cacheKey, result);
       return result;
     } catch (err) {
-      console.error('[SupabaseAdmin] Erreur getAuthors:', err);
-      return [];
+      console.warn('[SupabaseAdmin] Erreur getAuthors:', err);
+      const fallback = adminCache.get(cacheKey)?.data;
+      return fallback || [];
     }
   }
 
@@ -445,13 +540,13 @@ export class SupabaseAdminService {
    * 5. Gestion des Utilisateurs & Rôles
    */
   static async getUsers(search = '', role = 'all', status = 'all', forceRefresh = false) {
-    try {
-      const cacheKey = `users_${search}_${role}_${status}`;
-      if (!forceRefresh) {
-        const cached = getFromCache(cacheKey);
-        if (cached) return cached;
-      }
+    const cacheKey = `users_${search}_${role}_${status}`;
+    if (!forceRefresh) {
+      const cached = getFromCache(cacheKey);
+      if (cached) return cached;
+    }
 
+    try {
       let query = supabase.from('profiles').select('*').order('created_at', { ascending: false });
 
       if (role !== 'all') query = query.eq('role', role);
@@ -460,14 +555,15 @@ export class SupabaseAdminService {
         query = query.or(`name.ilike.%${search.trim()}%,username.ilike.%${search.trim()}%,email.ilike.%${search.trim()}%`);
       }
 
-      const { data, error } = await query;
+      const { data, error } = await withTimeout(query, 6000);
       if (error) throw error;
       const result = data || [];
       saveToCache(cacheKey, result);
       return result;
     } catch (err) {
-      console.error('[SupabaseAdmin] Erreur getUsers:', err);
-      return [];
+      console.warn('[SupabaseAdmin] Erreur getUsers:', err);
+      const fallback = adminCache.get(cacheKey)?.data;
+      return fallback || [];
     }
   }
 
@@ -481,7 +577,7 @@ export class SupabaseAdminService {
       });
       if (error) throw error;
 
-      clearAdminCache();
+      clearAdminCache('users_');
       return data;
     } catch (err) {
       console.error('[SupabaseAdmin] Erreur setUserRole:', err);
@@ -499,7 +595,7 @@ export class SupabaseAdminService {
       });
       if (error) throw error;
 
-      clearAdminCache();
+      clearAdminCache('users_');
       return data;
     } catch (err) {
       console.error('[SupabaseAdmin] Erreur setUserStatus:', err);
@@ -511,27 +607,28 @@ export class SupabaseAdminService {
    * 6. Modération des Commentaires
    */
   static async getReviews(filters = {}, forceRefresh = false) {
-    try {
-      const cacheKey = `reviews_${JSON.stringify(filters)}`;
-      if (!forceRefresh) {
-        const cached = getFromCache(cacheKey);
-        if (cached) return cached;
-      }
+    const cacheKey = `reviews_${JSON.stringify(filters)}`;
+    if (!forceRefresh) {
+      const cached = getFromCache(cacheKey);
+      if (cached) return cached;
+    }
 
+    try {
       let query = supabase.from('reviews').select('*').order('created_at', { ascending: false });
 
       if (filters.status && filters.status !== 'all') {
         query = query.eq('status', filters.status);
       }
 
-      const { data, error } = await query;
+      const { data, error } = await withTimeout(query, 6000);
       if (error) throw error;
       const result = data || [];
       saveToCache(cacheKey, result);
       return result;
     } catch (err) {
-      console.error('[SupabaseAdmin] Erreur getReviews:', err);
-      return [];
+      console.warn('[SupabaseAdmin] Erreur getReviews:', err);
+      const fallback = adminCache.get(cacheKey)?.data;
+      return fallback || [];
     }
   }
 
@@ -561,24 +658,25 @@ export class SupabaseAdminService {
    * 7. Centre des Signalements
    */
   static async getReports(status = 'all', forceRefresh = false) {
-    try {
-      const cacheKey = `reports_${status}`;
-      if (!forceRefresh) {
-        const cached = getFromCache(cacheKey);
-        if (cached) return cached;
-      }
+    const cacheKey = `reports_${status}`;
+    if (!forceRefresh) {
+      const cached = getFromCache(cacheKey);
+      if (cached) return cached;
+    }
 
+    try {
       let query = supabase.from('reports').select('*').order('created_at', { ascending: false });
       if (status !== 'all') query = query.eq('status', status);
 
-      const { data, error } = await query;
+      const { data, error } = await withTimeout(query, 6000);
       if (error) throw error;
       const result = data || [];
       saveToCache(cacheKey, result);
       return result;
     } catch (err) {
-      console.error('[SupabaseAdmin] Erreur getReports:', err);
-      return [];
+      console.warn('[SupabaseAdmin] Erreur getReports:', err);
+      const fallback = adminCache.get(cacheKey)?.data;
+      return fallback || [];
     }
   }
 
@@ -608,21 +706,25 @@ export class SupabaseAdminService {
    * 8. Catégories & Tags
    */
   static async getCategories(forceRefresh = false) {
-    try {
-      const cacheKey = 'admin_categories';
-      if (!forceRefresh) {
-        const cached = getFromCache(cacheKey);
-        if (cached) return cached;
-      }
+    const cacheKey = 'admin_categories';
+    if (!forceRefresh) {
+      const cached = getFromCache(cacheKey);
+      if (cached) return cached;
+    }
 
-      const { data, error } = await supabase.from('categories').select('*').order('name', { ascending: true });
+    try {
+      const { data, error } = await withTimeout(
+        supabase.from('categories').select('*').order('name', { ascending: true }),
+        6000
+      );
       if (error) throw error;
       const result = data || [];
       saveToCache(cacheKey, result);
       return result;
     } catch (err) {
-      console.error('[SupabaseAdmin] Erreur getCategories:', err);
-      return [];
+      console.warn('[SupabaseAdmin] Erreur getCategories:', err);
+      const fallback = adminCache.get(cacheKey)?.data;
+      return fallback || [];
     }
   }
 
@@ -649,21 +751,25 @@ export class SupabaseAdminService {
   }
 
   static async getTags(forceRefresh = false) {
-    try {
-      const cacheKey = 'admin_tags';
-      if (!forceRefresh) {
-        const cached = getFromCache(cacheKey);
-        if (cached) return cached;
-      }
+    const cacheKey = 'admin_tags';
+    if (!forceRefresh) {
+      const cached = getFromCache(cacheKey);
+      if (cached) return cached;
+    }
 
-      const { data, error } = await supabase.from('tags').select('*').order('usage_count', { ascending: false });
+    try {
+      const { data, error } = await withTimeout(
+        supabase.from('tags').select('*').order('usage_count', { ascending: false }),
+        6000
+      );
       if (error) throw error;
       const result = data || [];
       saveToCache(cacheKey, result);
       return result;
     } catch (err) {
-      console.error('[SupabaseAdmin] Erreur getTags:', err);
-      return [];
+      console.warn('[SupabaseAdmin] Erreur getTags:', err);
+      const fallback = adminCache.get(cacheKey)?.data;
+      return fallback || [];
     }
   }
 
@@ -718,14 +824,17 @@ export class SupabaseAdminService {
    * 10. Paramètres & Journalisation
    */
   static async getSettings(forceRefresh = false) {
-    try {
-      const cacheKey = 'admin_settings';
-      if (!forceRefresh) {
-        const cached = getFromCache(cacheKey);
-        if (cached) return cached;
-      }
+    const cacheKey = 'admin_settings';
+    if (!forceRefresh) {
+      const cached = getFromCache(cacheKey);
+      if (cached) return cached;
+    }
 
-      const { data, error } = await supabase.from('app_settings').select('*');
+    try {
+      const { data, error } = await withTimeout(
+        supabase.from('app_settings').select('*'),
+        6000
+      );
       if (error) throw error;
       const settingsMap = {};
       (data || []).forEach(row => {
@@ -734,8 +843,9 @@ export class SupabaseAdminService {
       saveToCache(cacheKey, settingsMap);
       return settingsMap;
     } catch (err) {
-      console.error('[SupabaseAdmin] Erreur getSettings:', err);
-      return {};
+      console.warn('[SupabaseAdmin] Erreur getSettings:', err);
+      const fallback = adminCache.get(cacheKey)?.data;
+      return fallback || {};
     }
   }
 
@@ -763,15 +873,18 @@ export class SupabaseAdminService {
 
   static async getAdminLogs(limit = 50) {
     try {
-      const { data, error } = await supabase
-        .from('admin_logs')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(limit);
+      const { data, error } = await withTimeout(
+        supabase
+          .from('admin_logs')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(limit),
+        6000
+      );
       if (error) throw error;
       return data || [];
     } catch (err) {
-      console.error('[SupabaseAdmin] Erreur getAdminLogs:', err);
+      console.warn('[SupabaseAdmin] Erreur getAdminLogs:', err);
       return [];
     }
   }

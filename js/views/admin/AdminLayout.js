@@ -1,6 +1,22 @@
 // LIVA ADMIN — Cadre Global & Navigation Back-Office
 import { escapeHTML } from '../../utils/sanitize.js';
 
+export const ADMIN_SECTION_TITLES = {
+  dashboard: 'Tableau de Bord & Vue Globale',
+  stories: 'Gestion du Catalogue des Histoires',
+  'story-engine': 'Story Engine IA — Génération Littéraire',
+  chapters: 'Gestionnaire des Chapitres & Édition',
+  authors: 'Gestion des Auteurs Vérifiés',
+  users: 'Gestion des Utilisateurs & Rôles',
+  comments: 'Modération des Avis & Commentaires',
+  moderation: 'Centre de Traitement des Signalements',
+  categories: 'Gestion des Catégories & Tags',
+  notifications: 'Diffusion des Notifications',
+  analytics: 'Statistiques Détaillées & Engagement',
+  settings: 'Configuration Générale de la Plateforme',
+  logs: 'Journal des Actions Administratives'
+};
+
 export class AdminLayout {
   constructor(store, router, currentSection = 'dashboard', sectionParams = {}) {
     this.store = store;
@@ -28,21 +44,7 @@ export class AdminLayout {
       { id: 'logs', icon: '📜', label: 'Journal d\'Audit' }
     ];
 
-    const sectionTitles = {
-      dashboard: 'Tableau de Bord & Vue Globale',
-      stories: 'Gestion du Catalogue des Histoires',
-      chapters: 'Gestionnaire des Chapitres & Édition',
-      authors: 'Gestion des Auteurs Vérifiés',
-      users: 'Gestion des Utilisateurs & Rôles',
-      comments: 'Modération des Avis & Commentaires',
-      moderation: 'Centre de Traitement des Signalements',
-      categories: 'Gestion des Catégories & Tags',
-      notifications: 'Diffusion des Notifications',
-      analytics: 'Statistiques Détaillées & Engagement',
-      settings: 'Configuration Générale de la Plateforme',
-      logs: 'Journal des Actions Administratives'
-    };
-
+    const sectionTitles = ADMIN_SECTION_TITLES;
     const isModOnly = role === 'MODERATOR';
 
     return `
@@ -175,6 +177,7 @@ export class AdminLayout {
           
           <!-- TOPBAR -->
           <header class="admin-topbar">
+            <div class="admin-top-progress" id="admin-top-progress"></div>
             <div class="admin-topbar-left">
               <button class="btn btn-icon admin-mobile-toggle" id="btn-admin-mobile-toggle" aria-label="Menu Admin" title="Ouvrir le menu">
                 ☰

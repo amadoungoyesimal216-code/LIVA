@@ -140,16 +140,16 @@ export class AdminStoriesView {
                     <td style="font-weight: 600;">📑 ${st.chapters_count || 1}</td>
                     <td style="text-align: right;">
                       <div style="display: inline-flex; align-items: center; gap: 4px;">
-                        <a href="#/admin/chapters?storyId=${encodeURIComponent(st.id)}" class="btn btn-ghost btn-sm" title="Gérer les chapitres" style="padding: 6px 10px; font-size: 0.8rem;">
+                        <a href="#/admin/chapters?storyId=${encodeURIComponent(st.id)}" class="btn btn-ghost btn-sm btn-manage-chapters" data-story-id="${st.id}" title="Gérer les chapitres" style="padding: 6px 10px; font-size: 0.8rem;">
                           📑 Chapitres
                         </a>
-                        <button class="btn btn-secondary btn-sm btn-edit-story" data-story-id="${st.id}" title="Modifier l'histoire & le manuscrit" style="padding: 6px 10px; font-size: 0.8rem;">
+                        <button type="button" class="btn btn-secondary btn-sm btn-edit-story" data-story-id="${st.id}" title="Modifier l'histoire & le manuscrit" style="padding: 6px 10px; font-size: 0.8rem;">
                           ✏️
                         </button>
-                        <button class="btn btn-ghost btn-sm btn-toggle-publish" data-story-id="${st.id}" data-current-status="${st.status}" title="${st.status === 'published' ? 'Passer en brouillon' : 'Publier'}" style="padding: 6px 10px; font-size: 0.8rem;">
+                        <button type="button" class="btn btn-ghost btn-sm btn-toggle-publish" data-story-id="${st.id}" data-current-status="${st.status}" title="${st.status === 'published' ? 'Passer en brouillon' : 'Publier'}" style="padding: 6px 10px; font-size: 0.8rem;">
                           ${st.status === 'published' ? '🚫' : '🚀'}
                         </button>
-                        <button class="btn btn-ghost btn-sm btn-delete-story" data-story-id="${st.id}" data-title="${escapeHTML(st.title)}" title="Supprimer définitivement" style="padding: 6px 10px; font-size: 0.8rem; color: #F87171;">
+                        <button type="button" class="btn btn-ghost btn-sm btn-delete-story" data-story-id="${st.id}" data-title="${escapeHTML(st.title)}" title="Supprimer définitivement" style="padding: 6px 10px; font-size: 0.8rem; color: #F87171;">
                           🗑️
                         </button>
                       </div>
@@ -572,9 +572,11 @@ export class AdminStoriesView {
       }
     });
 
-    // Ouvrir Modale
+    // Ouvrir Modale Immédiatement (0ms)
     const openModal = async (story = null) => {
       switchTab('meta');
+      modal?.classList.add('active');
+
       if (story) {
         this.editingStoryId = story.id;
         modalTitle.textContent = `✏️ Modifier "${story.title}"`;
@@ -585,20 +587,43 @@ export class AdminStoriesView {
         genreInput.value = story.genre || 'Romance';
         secGenreInput.value = story.secondary_genre || '';
         statusInput.value = story.status || 'published';
-        descInput.value = story.description || '';
-        tagsInput.value = (story.tags || []).join(', ');
-        coverUrlInput.value = story.cover || '';
-        coverPreview.src = story.cover || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80';
+        // Gestion sécurisée des tags (string, array ou null)
+        let tagsValue = '';
+        if (Array.isArray(story.tags)) {
+          tagsValue = story.tags.join(', ');
+        } else if (typeof story.tags === 'string') {
+          tagsValue = story.tags;
+        }
+        if (tagsInput) tagsInput.value = tagsValue;
+        if (coverUrlInput) coverUrlInput.value = story.cover || '';
+        if (coverPreview) coverPreview.src = story.cover || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80';
 
-        // Charger les vrais chapitres depuis Supabase
-        const chapters = await this.adminService.getChapters(story.id);
-        this.currentChapters = chapters.map(c => ({
-          id: c.id,
-          number: c.number,
-          title: c.title,
-          content: c.content,
-          read_time_min: c.read_time_min || 5
-        }));
+        // Afficher immédiatement l'état de chargement des chapitres
+        const listEl = container.querySelector('#chapters-accordion-list');
+        if (listEl) {
+          listEl.innerHTML = `
+            <div style="padding: var(--space-6); text-align: center; color: var(--color-primary-light); font-size: 0.9rem;">
+              <span style="display: inline-block; animation: spin 1s infinite linear; margin-right: 8px;">⏳</span> Chargement des chapitres depuis Supabase...
+            </div>
+          `;
+        }
+
+        try {
+          // Charger les vrais chapitres depuis Supabase
+          const chapters = await this.adminService.getChapters(story.id);
+          this.currentChapters = (chapters || []).map(c => ({
+            id: c.id,
+            number: c.number,
+            title: c.title,
+            content: c.content,
+            read_time_min: c.read_time_min || 5
+          }));
+        } catch (err) {
+          console.warn('[AdminStoriesView] Erreur chargement chapitres:', err);
+          this.currentChapters = [];
+        } finally {
+          this.renderChaptersList(container);
+        }
       } else {
         this.editingStoryId = null;
         modalTitle.textContent = '✨ Nouvelle Histoire Complète';
@@ -627,10 +652,8 @@ export class AdminStoriesView {
         } else {
           this.currentChapters = [];
         }
+        this.renderChaptersList(container);
       }
-
-      this.renderChaptersList(container);
-      modal?.classList.add('active');
     };
 
     const closeModal = () => {
@@ -695,22 +718,52 @@ export class AdminStoriesView {
       }
     });
 
-    // 3. Modifier une histoire
-    container.querySelectorAll('.btn-edit-story').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const storyId = btn.getAttribute('data-story-id');
-        const st = this.stories.find(s => s.id === storyId);
-        if (st) openModal(st);
-      });
-    });
+    // 3. Gestionnaire d'événements délégué universel sur la table
+    const deleteModal = container.querySelector('#modal-confirm-delete-story');
+    const deleteTitleDisplay = container.querySelector('#delete-story-title-display');
+    const confirmDeleteBtn = container.querySelector('#btn-confirm-delete');
+    const cancelDeleteBtn = container.querySelector('#btn-cancel-delete');
+    let storyIdToDelete = null;
+    let storyTitleToDelete = null;
 
-    // 4. Basculer Publier / Brouillon en 1 clic
-    container.querySelectorAll('.btn-toggle-publish').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const storyId = btn.getAttribute('data-story-id');
-        const currentStatus = btn.getAttribute('data-current-status');
+    container.addEventListener('click', async (e) => {
+      // A. Bouton Modifier l'Histoire (✏️)
+      const editBtn = e.target.closest('.btn-edit-story');
+      if (editBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const storyId = editBtn.getAttribute('data-story-id');
+        let st = this.stories.find(s => String(s.id) === String(storyId));
+        if (!st) {
+          const row = editBtn.closest('tr');
+          const title = row?.querySelector('div[style*="font-weight: 700"]')?.textContent || 'Histoire';
+          st = { id: storyId, title };
+        }
+        openModal(st);
+        return;
+      }
+
+      // B. Bouton Chapitres (📑)
+      const chapterBtn = e.target.closest('.btn-manage-chapters');
+      if (chapterBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const storyId = chapterBtn.getAttribute('data-story-id');
+        if (storyId) {
+          this.router.navigate(`/admin/chapters?storyId=${encodeURIComponent(storyId)}`);
+        }
+        return;
+      }
+
+      // C. Basculer Publier / Brouillon
+      const toggleBtn = e.target.closest('.btn-toggle-publish');
+      if (toggleBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const storyId = toggleBtn.getAttribute('data-story-id');
+        const currentStatus = toggleBtn.getAttribute('data-current-status');
         const newStatus = currentStatus === 'published' ? 'draft' : 'published';
-        const st = this.stories.find(s => s.id === storyId);
+        const st = this.stories.find(s => String(s.id) === String(storyId));
         if (!st) return;
 
         try {
@@ -722,24 +775,20 @@ export class AdminStoriesView {
         } catch (err) {
           Toast.show('Erreur : ' + err.message, 'error', '⚠️');
         }
-      });
-    });
+        return;
+      }
 
-    // 5. Modale Suppression Sécurisée
-    const deleteModal = container.querySelector('#modal-confirm-delete-story');
-    const deleteTitleDisplay = container.querySelector('#delete-story-title-display');
-    const confirmDeleteBtn = container.querySelector('#btn-confirm-delete');
-    const cancelDeleteBtn = container.querySelector('#btn-cancel-delete');
-    let storyIdToDelete = null;
-    let storyTitleToDelete = null;
-
-    container.querySelectorAll('.btn-delete-story').forEach(btn => {
-      btn.addEventListener('click', () => {
-        storyIdToDelete = btn.getAttribute('data-story-id');
-        storyTitleToDelete = btn.getAttribute('data-title');
-        if (deleteTitleDisplay) deleteTitleDisplay.textContent = `"${storyTitleToDelete}"`;
+      // D. Bouton Supprimer
+      const deleteBtn = e.target.closest('.btn-delete-story');
+      if (deleteBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        storyIdToDelete = deleteBtn.getAttribute('data-story-id');
+        storyTitleToDelete = deleteBtn.getAttribute('data-title');
+        if (deleteTitleDisplay) deleteTitleDisplay.textContent = `"${storyTitleToDelete || storyIdToDelete}"`;
         deleteModal?.classList.add('active');
-      });
+        return;
+      }
     });
 
     cancelDeleteBtn?.addEventListener('click', () => {

@@ -43,6 +43,15 @@ export class AdminChaptersView {
 
   async render() {
     this.stories = await this.adminService.getStories();
+    
+    // Si une storyId a été passée en paramètre, trouver la correspondance exacte
+    if (this.selectedStoryId) {
+      const match = this.stories.find(s => String(s.id).trim() === String(this.selectedStoryId).trim());
+      if (match) {
+        this.selectedStoryId = match.id;
+      }
+    }
+    
     if (!this.selectedStoryId && this.stories.length > 0) {
       this.selectedStoryId = this.stories[0].id;
     }
@@ -51,7 +60,7 @@ export class AdminChaptersView {
       this.chapters = await this.adminService.getChapters(this.selectedStoryId);
     }
 
-    const currentStory = this.stories.find(s => s.id === this.selectedStoryId);
+    const currentStory = this.stories.find(s => String(s.id) === String(this.selectedStoryId));
 
     return `
       <div class="admin-chapters-view animate-fade-in">
@@ -70,7 +79,7 @@ export class AdminChaptersView {
           <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; width: 100%; max-width: 600px; justify-content: flex-end;">
             <select class="admin-select" id="admin-select-story" style="font-weight: 600; flex: 1; min-width: 220px;">
               ${this.stories.map(st => `
-                <option value="${st.id}" ${st.id === this.selectedStoryId ? 'selected' : ''}>
+                <option value="${st.id}" ${String(st.id) === String(this.selectedStoryId) ? 'selected' : ''}>
                   ${escapeHTML(st.title)} (${escapeHTML(st.author_name || 'Auteur')})
                 </option>
               `).join('')}
@@ -498,20 +507,24 @@ export class AdminChaptersView {
       }
     });
 
-    // 3. Modifier chapitre (sur Desktop et Mobile)
-    container.querySelectorAll('.btn-edit-chapter').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const chId = btn.getAttribute('data-chapter-id');
-        const ch = this.chapters.find(c => c.id === chId);
+    // 3. Gestionnaire délégué universel pour Modifier & Supprimer chapitre (Desktop et Mobile)
+    container.addEventListener('click', async (e) => {
+      const editBtn = e.target.closest('.btn-edit-chapter');
+      if (editBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const chId = editBtn.getAttribute('data-chapter-id');
+        const ch = this.chapters.find(c => String(c.id) === String(chId));
         if (ch) openModal(ch);
-      });
-    });
+        return;
+      }
 
-    // 4. Supprimer chapitre (sur Desktop et Mobile)
-    container.querySelectorAll('.btn-delete-chapter').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const chId = btn.getAttribute('data-chapter-id');
-        const chTitle = btn.getAttribute('data-title');
+      const deleteBtn = e.target.closest('.btn-delete-chapter');
+      if (deleteBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const chId = deleteBtn.getAttribute('data-chapter-id');
+        const chTitle = deleteBtn.getAttribute('data-title') || 'Chapitre';
         const confirmed = confirm(`Êtes-vous sûr de vouloir supprimer le chapitre "${chTitle}" ?`);
         if (!confirmed) return;
 
@@ -524,7 +537,8 @@ export class AdminChaptersView {
         } catch (err) {
           Toast.show('Erreur suppression : ' + err.message, 'error', '⚠️');
         }
-      });
+        return;
+      }
     });
   }
 }

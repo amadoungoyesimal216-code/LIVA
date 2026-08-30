@@ -1,40 +1,40 @@
 // LIVA - Application Principale & Routeur SPA
-import { store, DEFAULT_AVATAR } from './state/store.js?v=34';
-import { ThemeManager } from './features/themeManager.js?v=34';
-import { AudioPlayer } from './features/audioPlayer.js?v=34';
-import { Toast } from './components/Toast.js?v=34';
-import { Modal } from './components/Modal.js?v=34';
-import { GENRES_DATA } from './data/genres.js?v=34';
-import { SupabaseService } from './services/supabaseClient.js?v=34';
-import { SupabaseAdminService } from './services/supabaseAdmin.js?v=34';
+import { store, DEFAULT_AVATAR } from './state/store.js?v=36';
+import { ThemeManager } from './features/themeManager.js?v=36';
+import { AudioPlayer } from './features/audioPlayer.js?v=36';
+import { Toast } from './components/Toast.js?v=36';
+import { Modal } from './components/Modal.js?v=36';
+import { GENRES_DATA } from './data/genres.js?v=36';
+import { SupabaseService } from './services/supabaseClient.js?v=36';
+import { SupabaseAdminService } from './services/supabaseAdmin.js?v=36';
 
 // Views Liva User
-import { HomeView } from './views/HomeView.js?v=34';
-import { ExploreView } from './views/ExploreView.js?v=34';
-import { StoryView } from './views/StoryView.js?v=34';
-import { ReaderView } from './views/ReaderView.js?v=34';
-import { LibraryView } from './views/LibraryView.js?v=34';
-import { CreateView } from './views/CreateView.js?v=34';
-import { ProfileView } from './views/ProfileView.js?v=34';
-import { SwipeView } from './views/SwipeView.js?v=34';
-import { OnboardingView } from './views/OnboardingView.js?v=34';
-import { AuthView } from './views/AuthView.js?v=34';
+import { HomeView } from './views/HomeView.js?v=36';
+import { ExploreView } from './views/ExploreView.js?v=36';
+import { StoryView } from './views/StoryView.js?v=36';
+import { ReaderView } from './views/ReaderView.js?v=36';
+import { LibraryView } from './views/LibraryView.js?v=36';
+import { CreateView } from './views/CreateView.js?v=36';
+import { ProfileView } from './views/ProfileView.js?v=36';
+import { SwipeView } from './views/SwipeView.js?v=36';
+import { OnboardingView } from './views/OnboardingView.js?v=36';
+import { AuthView } from './views/AuthView.js?v=36';
 
 // Views Liva Admin
-import { AdminLayout } from './views/admin/AdminLayout.js?v=34';
-import { AdminDashboardView } from './views/admin/AdminDashboardView.js?v=34';
-import { AdminStoriesView } from './views/admin/AdminStoriesView.js?v=34';
-import { AdminStoryEngineView } from './views/admin/AdminStoryEngineView.js?v=34';
-import { AdminChaptersView } from './views/admin/AdminChaptersView.js?v=34';
-import { AdminAuthorsView } from './views/admin/AdminAuthorsView.js?v=34';
-import { AdminUsersView } from './views/admin/AdminUsersView.js?v=34';
-import { AdminCommentsView } from './views/admin/AdminCommentsView.js?v=34';
-import { AdminModerationView } from './views/admin/AdminModerationView.js?v=34';
-import { AdminCategoriesView } from './views/admin/AdminCategoriesView.js?v=34';
-import { AdminNotificationsView } from './views/admin/AdminNotificationsView.js?v=34';
-import { AdminAnalyticsView } from './views/admin/AdminAnalyticsView.js?v=34';
-import { AdminSettingsView } from './views/admin/AdminSettingsView.js?v=34';
-import { AdminLogsView } from './views/admin/AdminLogsView.js?v=34';
+import { AdminLayout, ADMIN_SECTION_TITLES } from './views/admin/AdminLayout.js?v=36';
+import { AdminDashboardView } from './views/admin/AdminDashboardView.js?v=36';
+import { AdminStoriesView } from './views/admin/AdminStoriesView.js?v=36';
+import { AdminStoryEngineView } from './views/admin/AdminStoryEngineView.js?v=36';
+import { AdminChaptersView } from './views/admin/AdminChaptersView.js?v=36';
+import { AdminAuthorsView } from './views/admin/AdminAuthorsView.js?v=36';
+import { AdminUsersView } from './views/admin/AdminUsersView.js?v=36';
+import { AdminCommentsView } from './views/admin/AdminCommentsView.js?v=36';
+import { AdminModerationView } from './views/admin/AdminModerationView.js?v=36';
+import { AdminCategoriesView } from './views/admin/AdminCategoriesView.js?v=36';
+import { AdminNotificationsView } from './views/admin/AdminNotificationsView.js?v=36';
+import { AdminAnalyticsView } from './views/admin/AdminAnalyticsView.js?v=36';
+import { AdminSettingsView } from './views/admin/AdminSettingsView.js?v=36';
+import { AdminLogsView } from './views/admin/AdminLogsView.js?v=36';
 
 class AppRouter {
   constructor(store) {
@@ -222,6 +222,52 @@ class AppRouter {
           : new AdminDashboardView(this.store, this, SupabaseAdminService);
       }
 
+      // Vérifier si la structure globale Liva Admin est déjà affichée dans le DOM
+      const existingAdminRoot = this.viewContainer.querySelector('.admin-view-root');
+      const progressBar = this.viewContainer.querySelector('#admin-top-progress');
+
+      if (existingAdminRoot) {
+        // 1. Réactivité visuelle instantanée (0ms) : onglet actif et fil d'ariane
+        const allNavItems = this.viewContainer.querySelectorAll('.admin-nav-item');
+        allNavItems.forEach(item => {
+          const href = item.getAttribute('href');
+          const isItemActive = (section === 'dashboard' && (href === '#/admin' || href === '#/admin/dashboard')) ||
+                               (href === `#/admin/${section}`);
+          item.classList.toggle('active', isItemActive);
+        });
+
+        const breadcrumbActive = this.viewContainer.querySelector('.admin-breadcrumbs .active');
+        if (breadcrumbActive && ADMIN_SECTION_TITLES[section]) {
+          breadcrumbActive.textContent = ADMIN_SECTION_TITLES[section];
+        }
+
+        // 2. Déclencher la barre de progression fluide
+        if (progressBar) {
+          progressBar.classList.add('loading');
+        }
+
+        // 3. Charger et injecter uniquement le contenu de la sous-vue
+        try {
+          const childHtml = await adminSubView.render();
+          const contentArea = this.viewContainer.querySelector('.admin-content-area');
+          if (contentArea) {
+            contentArea.innerHTML = childHtml;
+            contentArea.classList.remove('animate-fade-in');
+            void contentArea.offsetWidth; // Déclencher le reflow CSS
+            contentArea.classList.add('animate-fade-in');
+            if (typeof adminSubView.attachEvents === 'function') {
+              adminSubView.attachEvents(contentArea);
+            }
+          }
+        } finally {
+          if (progressBar) {
+            progressBar.classList.remove('loading');
+          }
+        }
+        return;
+      }
+
+      // Premier chargement complet ou rechargement F5
       const layout = new AdminLayout(this.store, this, section, queryObj);
       const childHtml = await adminSubView.render();
       this.viewContainer.innerHTML = layout.render(childHtml);

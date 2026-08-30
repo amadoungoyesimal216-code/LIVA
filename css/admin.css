@@ -188,6 +188,31 @@
   z-index: 90;
 }
 
+.admin-top-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-accent-rose), var(--color-accent-gold));
+  z-index: 1000;
+  opacity: 0;
+  transition: width 0.25s ease, opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.admin-top-progress.loading {
+  opacity: 1;
+  width: 65%;
+  animation: adminProgressPulse 1.2s infinite ease-in-out;
+}
+
+@keyframes adminProgressPulse {
+  0% { left: 0%; width: 15%; }
+  50% { left: 35%; width: 50%; }
+  100% { left: 100%; width: 15%; }
+}
+
 .admin-topbar-left {
   display: flex;
   align-items: center;
