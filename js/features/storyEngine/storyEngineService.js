@@ -266,18 +266,29 @@ export class StoryEngineService {
       .order('number', { ascending: true });
 
     const nextNum = (currentChapters || []).length + 1;
-    const memory = this.memories.get(storyId) || new StoryMemory();
+    let memory = this.memories.get(storyId);
+    if (!memory) {
+      memory = new StoryMemory();
+      const { data: memData } = await supabase.from('story_ai_memory').select('*').eq('story_id', storyId).single();
+      if (memData) memory.fromJSON(memData);
+      else memory.initFromBible(storyId, bible || {});
+      this.memories.set(storyId, memory);
+    }
+
+    const characters = (bible && bible.characters) || memory.characters || [];
+    const p1 = characters[0]?.name || 'Protagoniste';
+    const p2 = characters[1]?.name || 'Allié';
 
     const planItem = {
       number: nextNum,
-      title: `Chapitre ${nextNum} : Nouvel Horizon`,
-      objective: `Poursuivre les conséquences des révélations précédentes.`,
-      keyEvent: `Un nouveau défi imprévu surgit.`,
-      cliffhanger: `Une ombre se profile à l'horizon.`
+      title: `Chapitre ${nextNum} : Les Nouveaux Chemins`,
+      objective: `Développer les retombées de la confrontation et mettre ${p1} et ${p2} face à de nouveaux choix.`,
+      keyEvent: `Une opportunité inattendue s'offre à ${p1} et ${p2}, scellant leur nouvelle alliance.`,
+      cliffhanger: `Une nouvelle ère commence, mais le regard tourné vers l'horizon laisse deviner d'autres aventures.`
     };
 
     const memoryContext = memory.getContextForNextChapter(planItem);
-    const chapterData = await this.ai.generateChapter(planItem, memoryContext, bible || {});
+    const chapterData = await this.ai.generateChapter(planItem, memoryContext, bible || { characters: memory.characters, locations: memory.locations });
 
     const newChapterRecord = {
       id: `${storyId}-chap-${nextNum}`,

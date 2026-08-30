@@ -345,7 +345,7 @@ export class AdminStoryEngineView {
                       class="admin-search-input char-input-name" 
                       data-char-index="${i}" 
                       value="${escapeHTML(c.name || '')}" 
-                      placeholder="Ex: Aminata Traoré"
+                      placeholder="Ex: Aïcha Diallo"
                       style="width: 100%; font-size: 0.85rem; font-weight: 700; padding: 6px 8px;" 
                     />
                   </div>
@@ -370,21 +370,33 @@ export class AdminStoryEngineView {
                       class="admin-search-input char-input-age" 
                       data-char-index="${i}" 
                       value="${escapeHTML(String(c.age || ''))}" 
-                      placeholder="28"
+                      placeholder="27"
                       style="width: 100%; font-size: 0.85rem; padding: 6px 8px;" 
                     />
                   </div>
                   <div>
-                    <label class="form-label" style="font-size: 0.72rem; margin-bottom: 2px;">Traits de caractère :</label>
+                    <label class="form-label" style="font-size: 0.72rem; margin-bottom: 2px;">Profession / Statut :</label>
                     <input 
                       type="text" 
-                      class="admin-search-input char-input-traits" 
+                      class="admin-search-input char-input-profession" 
                       data-char-index="${i}" 
-                      value="${escapeHTML(c.traits || '')}" 
-                      placeholder="Ex: Intuitive, courageuse..."
+                      value="${escapeHTML(c.profession || '')}" 
+                      placeholder="Ex: Architecte, Chauffeur VTC..."
                       style="width: 100%; font-size: 0.85rem; padding: 6px 8px;" 
                     />
                   </div>
+                </div>
+
+                <div style="margin-bottom: 8px;">
+                  <label class="form-label" style="font-size: 0.72rem; margin-bottom: 2px;">Traits & Personnalité :</label>
+                  <input 
+                    type="text" 
+                    class="admin-search-input char-input-traits" 
+                    data-char-index="${i}" 
+                    value="${escapeHTML(c.traits || '')}" 
+                    placeholder="Ex: Intuitive, courageuse..."
+                    style="width: 100%; font-size: 0.85rem; padding: 6px 8px;" 
+                  />
                 </div>
 
                 <div style="margin-bottom: 8px;">
@@ -781,11 +793,12 @@ export class AdminStoryEngineView {
         const name = card.querySelector('.char-input-name')?.value.trim() || `Personnage ${idx + 1}`;
         const role = card.querySelector('.char-input-role')?.value.trim() || 'Personnage';
         const age = parseInt(card.querySelector('.char-input-age')?.value.trim(), 10) || 26;
+        const profession = card.querySelector('.char-input-profession')?.value.trim() || '';
         const traits = card.querySelector('.char-input-traits')?.value.trim() || '';
         const goal = card.querySelector('.char-input-goal')?.value.trim() || '';
         const secret = card.querySelector('.char-input-secret')?.value.trim() || '';
         updated.push({
-          name, role, age, traits, goal, secret,
+          name, role, age, profession, traits, goal, secret,
           evolutionState: 'Initial',
           relationships: ''
         });
@@ -985,6 +998,33 @@ export class AdminStoryEngineView {
         btn.disabled = false;
         btn.textContent = '✨ Réécrire le chapitre';
       }
+    });
+
+    // Sauvegarde automatique des modifications manuelles sur les chapitres
+    container.querySelectorAll('.chapter-content-editable').forEach(textarea => {
+      textarea.addEventListener('input', (e) => {
+        const chapId = e.currentTarget.getAttribute('data-chapter-id');
+        const newText = e.currentTarget.value;
+        const chap = this.generatedChapters.find(c => c.id === chapId);
+        if (chap) {
+          chap.content = newText;
+          const words = newText.split(/\s+/).filter(Boolean).length;
+          chap.duration = `${Math.max(3, Math.ceil(words / 190))} min`;
+          chap.read_time_min = Math.max(3, Math.ceil(words / 190));
+        }
+      });
+
+      textarea.addEventListener('blur', async (e) => {
+        const chapId = e.currentTarget.getAttribute('data-chapter-id');
+        const chap = this.generatedChapters.find(c => c.id === chapId);
+        if (chap) {
+          try {
+            await this.engine.rewriteChapter(this.storyId, chap.number, 'Conserver le texte manuel');
+          } catch (err) {
+            // Ignorer ou loguer
+          }
+        }
+      });
     });
   }
 

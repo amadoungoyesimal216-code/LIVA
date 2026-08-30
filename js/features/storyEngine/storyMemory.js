@@ -1,4 +1,4 @@
-// LIVA STORY ENGINE — Gestionnaire de Mémoire Narrative Réactive
+// LIVA STORY ENGINE — Gestionnaire de Mémoire Narrative Réactive & Continuité Littéraire
 export class StoryMemory {
   constructor(initialData = {}) {
     this.storyId = initialData.storyId || '';
@@ -7,8 +7,11 @@ export class StoryMemory {
     this.locations = initialData.locations || [];
     this.timeline = initialData.timeline || [];
     this.secrets = initialData.secrets || [];
+    this.establishedFacts = initialData.establishedFacts || [];
     this.unresolvedQuestions = initialData.unresolvedQuestions || [];
     this.completedChapters = initialData.completedChapters || [];
+    this.keyItems = initialData.keyItems || [];
+    this.relationshipStates = initialData.relationshipStates || {};
     this.currentState = initialData.currentState || 'initial';
   }
 
@@ -17,15 +20,17 @@ export class StoryMemory {
    */
   initFromBible(storyId, bible) {
     this.storyId = storyId;
+    
     this.characters = (bible.characters || []).map(c => ({
       name: c.name,
-      role: c.role || 'Principal',
+      role: c.role || 'Protagoniste',
       age: c.age || '',
+      profession: c.profession || '',
       traits: c.traits || '',
       goal: c.goal || '',
       fear: c.fear || '',
       secret: c.secret || '',
-      evolutionState: 'Initial',
+      evolutionState: 'Situation initiale',
       relationships: c.relationships || ''
     }));
 
@@ -36,28 +41,40 @@ export class StoryMemory {
     }));
 
     this.secrets = (bible.secrets || []).map(s => ({
-      description: s.description || s,
+      description: typeof s === 'string' ? s : (s.description || ''),
       knownBy: s.knownBy || [],
       hiddenFrom: s.hiddenFrom || [],
       isRevealed: false,
       revealedInChapter: null
     }));
 
+    this.establishedFacts = [
+      `Cadre de l'histoire : ${bible.universe || bible.locations?.[0]?.name || 'Univers défini'}`,
+      `Conflit central : ${bible.mainConflict || 'Confrontation des désirs et secrets'}`
+    ];
+
+    this.keyItems = (bible.keyItems || []).map(item => ({
+      name: typeof item === 'string' ? item : item.name,
+      significance: typeof item === 'string' ? 'Objet clé du récit' : (item.significance || '')
+    }));
+
     this.unresolvedQuestions = [...(bible.unresolvedQuestions || [
-      "Comment le protagoniste surmontera-t-il son conflit initial ?",
-      "Qui détient la clé du mystère principal ?"
+      "Comment le protagoniste surmontera-t-il l'opposition principale ?",
+      "Quelle est la véritable nature du secret caché ?"
     ])];
 
     this.events = [
       {
         chapter: 0,
-        summary: `Situation initiale : ${bible.synopsis || 'Début de l\'histoire.'}`,
-        impact: 'Mise en place de l\'univers'
+        title: 'Prélude',
+        summary: bible.synopsis || 'Mise en place de l\'intrigue et des protagonistes.',
+        keyEvent: 'Découverte du contexte et des enjeux initiaux.',
+        cliffhanger: ''
       }
     ];
 
     this.timeline = [
-      { step: 0, title: 'Origine', description: bible.universe || '' }
+      { step: 0, title: 'Origine', description: bible.universe || bible.synopsis || '' }
     ];
 
     this.completedChapters = [];
@@ -65,10 +82,10 @@ export class StoryMemory {
   }
 
   /**
-   * Analyse et intègre un chapitre tout juste généré dans la mémoire vivante
+   * Intègre un chapitre généré dans la mémoire vivante en extrayant les faits et évolutions
    */
   updateWithChapter(chapterNum, chapterTitle, chapterContent, planItem = {}) {
-    const summary = planItem.summary || `Chapitre ${chapterNum} complété.`;
+    const summary = planItem.summary || planItem.objective || `Chapitre ${chapterNum} complété.`;
     const keyEvent = planItem.keyEvent || `Événement clé du chapitre ${chapterNum}.`;
     const cliffhanger = planItem.cliffhanger || '';
 
@@ -89,23 +106,32 @@ export class StoryMemory {
       description: keyEvent
     });
 
-    // 3. Suivre la liste des chapitres complétés
+    // 3. Suivre les chapitres complétés
     if (!this.completedChapters.includes(chapterNum)) {
       this.completedChapters.push(chapterNum);
     }
 
-    // 4. Mettre à jour l'évolution des personnages
+    // 4. Mettre à jour les faits établis
+    this.establishedFacts.push(`Au Ch. ${chapterNum} (${chapterTitle}) : ${keyEvent}`);
+
+    // 5. Mettre à jour l'évolution des personnages
+    const lowerContent = (chapterContent || '').toLowerCase();
     this.characters.forEach(char => {
-      if (chapterContent.toLowerCase().includes(char.name.toLowerCase())) {
-        char.evolutionState = `Actif au Chapitre ${chapterNum} (${planItem.objective || 'Progression narrative'})`;
+      if (lowerContent.includes(char.name.toLowerCase())) {
+        char.evolutionState = `Après Ch. ${chapterNum} : ${planItem.objective || 'A vécu des bouleversements'}`;
       }
     });
 
-    // 5. Vérifier si un secret a été révélé
+    // 6. Vérifier si un secret a été révélé
     this.secrets.forEach(sec => {
-      if (!sec.isRevealed && sec.description && chapterContent.toLowerCase().includes(sec.description.toLowerCase().slice(0, 20))) {
-        sec.isRevealed = true;
-        sec.revealedInChapter = chapterNum;
+      if (!sec.isRevealed && sec.description) {
+        const keywords = sec.description.toLowerCase().split(/\s+/).filter(w => w.length > 4);
+        const matchCount = keywords.filter(kw => lowerContent.includes(kw)).length;
+        if (matchCount >= 2 || (planItem.keyEvent && planItem.keyEvent.toLowerCase().includes('révél'))) {
+          sec.isRevealed = true;
+          sec.revealedInChapter = chapterNum;
+          this.establishedFacts.push(`Secret révélé au Ch. ${chapterNum} : ${sec.description}`);
+        }
       }
     });
 
@@ -113,16 +139,17 @@ export class StoryMemory {
   }
 
   /**
-   * Génère le résumé contextuel de mémoire à injecter dans le prompt du prochain chapitre
+   * Génère le briefing contextuel exhaustif pour le prochain chapitre
    */
   getContextForNextChapter(nextChapterPlanItem) {
     const last3Events = this.events.slice(-3);
     const activeSecrets = this.secrets.filter(s => !s.isRevealed);
     const revealedSecrets = this.secrets.filter(s => s.isRevealed);
+    const recentFacts = this.establishedFacts.slice(-5);
 
     return {
       charactersList: this.characters.map(c => 
-        `- **${c.name}** (${c.role}, ${c.age ? c.age + ' ans, ' : ''}${c.traits}) : Objectif = ${c.goal}. Peur/Secret = ${c.secret || c.fear}. État actuel = ${c.evolutionState}`
+        `- **${c.name}** (${c.role}, ${c.age ? c.age + ' ans, ' : ''}${c.profession ? c.profession + ', ' : ''}${c.traits}) : Objectif = ${c.goal}. Peur/Secret = ${c.secret || c.fear}. État actuel = ${c.evolutionState}`
       ).join('\n'),
 
       locationsList: this.locations.map(l => 
@@ -130,15 +157,19 @@ export class StoryMemory {
       ).join('\n'),
 
       recentChronology: last3Events.map(e => 
-        `- Ch. ${e.chapter} [${e.title || 'Passé'}] : ${e.keyEvent || e.summary}`
+        `- Ch. ${e.chapter} [${e.title || 'Scène'}] : ${e.keyEvent || e.summary}`
       ).join('\n'),
 
-      activeSecrets: activeSecrets.map(s => `- 🔒 Secret non révélé : ${s.description}`).join('\n'),
+      recentEstablishedFacts: recentFacts.map(f => `- 📌 ${f}`).join('\n'),
+
+      activeSecrets: activeSecrets.map(s => `- 🔒 Secret encore caché : ${s.description}`).join('\n'),
       revealedSecrets: revealedSecrets.map(s => `- 🔓 Secret révélé au Ch. ${s.revealedInChapter} : ${s.description}`).join('\n'),
 
       unresolvedQuestions: this.unresolvedQuestions.map(q => `- ❓ ${q}`).join('\n'),
 
-      targetObjective: nextChapterPlanItem ? `Objectif du chapitre actuel : ${nextChapterPlanItem.objective}. Événement à faire survenir : ${nextChapterPlanItem.keyEvent}. ${nextChapterPlanItem.cliffhanger ? 'Finir sur ce cliffhanger : ' + nextChapterPlanItem.cliffhanger : ''}` : ''
+      targetObjective: nextChapterPlanItem 
+        ? `Objectif du chapitre : ${nextChapterPlanItem.objective || 'Faire progresser l\'intrigue'}. Événement à faire survenir : ${nextChapterPlanItem.keyEvent || 'Scène clé'}. ${nextChapterPlanItem.cliffhanger ? 'Finir sur ce cliffhanger : ' + nextChapterPlanItem.cliffhanger : ''}`
+        : ''
     };
   }
 
@@ -153,8 +184,11 @@ export class StoryMemory {
       locations: this.locations,
       timeline: this.timeline,
       secrets: this.secrets,
+      established_facts: this.establishedFacts,
       unresolved_questions: this.unresolvedQuestions,
       completed_chapters: this.completedChapters,
+      key_items: this.keyItems,
+      relationship_states: this.relationshipStates,
       current_state: this.currentState,
       updated_at: new Date().toISOString()
     };
@@ -170,8 +204,11 @@ export class StoryMemory {
     this.locations = data.locations || [];
     this.timeline = data.timeline || [];
     this.secrets = data.secrets || [];
+    this.establishedFacts = data.established_facts || [];
     this.unresolvedQuestions = data.unresolved_questions || [];
     this.completedChapters = data.completed_chapters || [];
+    this.keyItems = data.key_items || [];
+    this.relationshipStates = data.relationship_states || {};
     this.currentState = data.current_state || 'ready';
     return this;
   }
