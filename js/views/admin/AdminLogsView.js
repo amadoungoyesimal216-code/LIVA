@@ -54,7 +54,7 @@ export class AdminLogsView {
                 ` : this.logs.map(log => `
                   <tr>
                     <td style="color: var(--text-muted); font-size: 0.78rem; font-family: monospace;">
-                      ${new Date(log.created_at).toLocaleString('fr-FR')}
+                      ${log.created_at ? new Date(log.created_at).toLocaleString('fr-FR') : 'Récemment'}
                     </td>
                     <td>
                       <span style="font-weight: 700; color: var(--color-primary-light); font-size: 0.85rem;">

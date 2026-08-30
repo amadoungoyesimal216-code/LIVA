@@ -15,15 +15,15 @@ export class LibraryView {
 
     // Map reading stories
     const readingItems = (library.reading || []).map(r => {
-      const story = allStories.find(s => s.id === r.storyId);
+      const story = allStories.find(s => String(s.id).trim() === String(r.storyId).trim());
       return { progress: r, story };
     }).filter(item => item.story);
 
     // Map saved stories
-    const savedStories = (library.saved || []).map(id => allStories.find(s => s.id === id)).filter(Boolean);
+    const savedStories = (library.saved || []).map(id => allStories.find(s => String(s.id).trim() === String(id).trim())).filter(Boolean);
 
     // Map finished stories
-    const finishedStories = (library.finished || []).map(id => allStories.find(s => s.id === id)).filter(Boolean);
+    const finishedStories = (library.finished || []).map(id => allStories.find(s => String(s.id).trim() === String(id).trim())).filter(Boolean);
 
     // Collections
     const collections = library.collections || [];

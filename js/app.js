@@ -1,40 +1,40 @@
 // LIVA - Application Principale & Routeur SPA
-import { store, DEFAULT_AVATAR } from './state/store.js?v=38';
-import { ThemeManager } from './features/themeManager.js?v=38';
-import { AudioPlayer } from './features/audioPlayer.js?v=38';
-import { Toast } from './components/Toast.js?v=38';
-import { Modal } from './components/Modal.js?v=38';
-import { GENRES_DATA } from './data/genres.js?v=38';
-import { SupabaseService } from './services/supabaseClient.js?v=38';
-import { SupabaseAdminService } from './services/supabaseAdmin.js?v=38';
+import { store, DEFAULT_AVATAR } from './state/store.js?v=39';
+import { ThemeManager } from './features/themeManager.js?v=39';
+import { AudioPlayer } from './features/audioPlayer.js?v=39';
+import { Toast } from './components/Toast.js?v=39';
+import { Modal } from './components/Modal.js?v=39';
+import { GENRES_DATA } from './data/genres.js?v=39';
+import { SupabaseService } from './services/supabaseClient.js?v=39';
+import { SupabaseAdminService } from './services/supabaseAdmin.js?v=39';
 
 // Views Liva User
-import { HomeView } from './views/HomeView.js?v=38';
-import { ExploreView } from './views/ExploreView.js?v=38';
-import { StoryView } from './views/StoryView.js?v=38';
-import { ReaderView } from './views/ReaderView.js?v=38';
-import { LibraryView } from './views/LibraryView.js?v=38';
-import { CreateView } from './views/CreateView.js?v=38';
-import { ProfileView } from './views/ProfileView.js?v=38';
-import { SwipeView } from './views/SwipeView.js?v=38';
-import { OnboardingView } from './views/OnboardingView.js?v=38';
-import { AuthView } from './views/AuthView.js?v=38';
+import { HomeView } from './views/HomeView.js?v=39';
+import { ExploreView } from './views/ExploreView.js?v=39';
+import { StoryView } from './views/StoryView.js?v=39';
+import { ReaderView } from './views/ReaderView.js?v=39';
+import { LibraryView } from './views/LibraryView.js?v=39';
+import { CreateView } from './views/CreateView.js?v=39';
+import { ProfileView } from './views/ProfileView.js?v=39';
+import { SwipeView } from './views/SwipeView.js?v=39';
+import { OnboardingView } from './views/OnboardingView.js?v=39';
+import { AuthView } from './views/AuthView.js?v=39';
 
 // Views Liva Admin
-import { AdminLayout, ADMIN_SECTION_TITLES } from './views/admin/AdminLayout.js?v=38';
-import { AdminDashboardView } from './views/admin/AdminDashboardView.js?v=38';
-import { AdminStoriesView } from './views/admin/AdminStoriesView.js?v=38';
-import { AdminStoryEngineView } from './views/admin/AdminStoryEngineView.js?v=38';
-import { AdminChaptersView } from './views/admin/AdminChaptersView.js?v=38';
-import { AdminAuthorsView } from './views/admin/AdminAuthorsView.js?v=38';
-import { AdminUsersView } from './views/admin/AdminUsersView.js?v=38';
-import { AdminCommentsView } from './views/admin/AdminCommentsView.js?v=38';
-import { AdminModerationView } from './views/admin/AdminModerationView.js?v=38';
-import { AdminCategoriesView } from './views/admin/AdminCategoriesView.js?v=38';
-import { AdminNotificationsView } from './views/admin/AdminNotificationsView.js?v=38';
-import { AdminAnalyticsView } from './views/admin/AdminAnalyticsView.js?v=38';
-import { AdminSettingsView } from './views/admin/AdminSettingsView.js?v=38';
-import { AdminLogsView } from './views/admin/AdminLogsView.js?v=38';
+import { AdminLayout, ADMIN_SECTION_TITLES } from './views/admin/AdminLayout.js?v=39';
+import { AdminDashboardView } from './views/admin/AdminDashboardView.js?v=39';
+import { AdminStoriesView } from './views/admin/AdminStoriesView.js?v=39';
+import { AdminStoryEngineView } from './views/admin/AdminStoryEngineView.js?v=39';
+import { AdminChaptersView } from './views/admin/AdminChaptersView.js?v=39';
+import { AdminAuthorsView } from './views/admin/AdminAuthorsView.js?v=39';
+import { AdminUsersView } from './views/admin/AdminUsersView.js?v=39';
+import { AdminCommentsView } from './views/admin/AdminCommentsView.js?v=39';
+import { AdminModerationView } from './views/admin/AdminModerationView.js?v=39';
+import { AdminCategoriesView } from './views/admin/AdminCategoriesView.js?v=39';
+import { AdminNotificationsView } from './views/admin/AdminNotificationsView.js?v=39';
+import { AdminAnalyticsView } from './views/admin/AdminAnalyticsView.js?v=39';
+import { AdminSettingsView } from './views/admin/AdminSettingsView.js?v=39';
+import { AdminLogsView } from './views/admin/AdminLogsView.js?v=39';
 
 class AppRouter {
   constructor(store) {

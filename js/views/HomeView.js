@@ -302,10 +302,19 @@ export class HomeView {
   }
 
   bindCardClicks(container) {
+    // Click on hero trending banner
+    container.querySelectorAll('.hero-trending-banner').forEach(banner => {
+      banner.addEventListener('click', (e) => {
+        if (e.target.closest('button, a')) return;
+        const storyId = banner.getAttribute('data-story-id');
+        if (storyId) this.router.navigate(`/story/${storyId}`);
+      });
+    });
+
     // Click on vertical story cards
     container.querySelectorAll('.story-card-vertical, .story-card-short').forEach(card => {
       card.addEventListener('click', (e) => {
-        if (e.target.closest('button')) return;
+        if (e.target.closest('button, a')) return;
         const storyId = card.getAttribute('data-story-id');
         if (storyId) this.router.navigate(`/story/${storyId}`);
       });

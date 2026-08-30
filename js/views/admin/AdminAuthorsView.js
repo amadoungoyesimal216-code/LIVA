@@ -114,10 +114,13 @@ export class AdminAuthorsView {
   }
 
   attachEvents(container) {
-    container.querySelectorAll('.btn-toggle-author-status').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const authorId = btn.getAttribute('data-author-id');
-        const currentStatus = btn.getAttribute('data-current-status');
+    container.addEventListener('click', async (e) => {
+      const toggleBtn = e.target.closest('.btn-toggle-author-status');
+      if (toggleBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const authorId = toggleBtn.getAttribute('data-author-id');
+        const currentStatus = toggleBtn.getAttribute('data-current-status');
         const newStatus = currentStatus === 'suspended' ? 'active' : 'suspended';
         
         try {
@@ -128,7 +131,8 @@ export class AdminAuthorsView {
         } catch (err) {
           Toast.show('Erreur : ' + err.message, 'error', '⚠️');
         }
-      });
+        return;
+      }
     });
   }
 }

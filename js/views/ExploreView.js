@@ -242,14 +242,15 @@ export class ExploreView {
 
     let filtered = allStories;
     if (lower) {
-      filtered = allStories.filter(s => 
-        s.title.toLowerCase().includes(lower) ||
-        s.authorName.toLowerCase().includes(lower) ||
-        s.genre.toLowerCase().includes(lower) ||
-        (s.secondaryGenre && s.secondaryGenre.toLowerCase().includes(lower)) ||
-        s.description.toLowerCase().includes(lower) ||
-        s.tags.some(t => t.toLowerCase().includes(lower))
-      );
+      filtered = allStories.filter(s => {
+        const titleMatch = (s.title || '').toLowerCase().includes(lower);
+        const authorMatch = (s.authorName || '').toLowerCase().includes(lower);
+        const genreMatch = (s.genre || '').toLowerCase().includes(lower);
+        const secGenreMatch = (s.secondaryGenre || '').toLowerCase().includes(lower);
+        const descMatch = (s.description || '').toLowerCase().includes(lower);
+        const tagsMatch = (Array.isArray(s.tags) ? s.tags : []).some(t => typeof t === 'string' && t.toLowerCase().includes(lower));
+        return titleMatch || authorMatch || genreMatch || secGenreMatch || descMatch || tagsMatch;
+      });
     } else if (this.selectedGenre) {
       filtered = this.store.getStoriesByGenre(this.selectedGenre);
     }

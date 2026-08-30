@@ -218,12 +218,15 @@ export class AdminCategoriesView {
     container.querySelector('#btn-close-cat-modal')?.addEventListener('click', () => catModal?.classList.remove('active'));
     container.querySelector('#btn-cancel-cat-modal')?.addEventListener('click', () => catModal?.classList.remove('active'));
 
-    container.querySelectorAll('.btn-edit-category').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const cId = btn.getAttribute('data-cat-id');
+    container.addEventListener('click', (e) => {
+      const editBtn = e.target.closest('.btn-edit-category');
+      if (editBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const cId = editBtn.getAttribute('data-cat-id');
         const cat = this.categories.find(c => c.id === cId);
         if (cat) openCatModal(cat);
-      });
+      }
     });
 
     catForm?.addEventListener('submit', async (e) => {

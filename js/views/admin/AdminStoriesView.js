@@ -587,6 +587,7 @@ export class AdminStoriesView {
         genreInput.value = story.genre || 'Romance';
         secGenreInput.value = story.secondary_genre || '';
         statusInput.value = story.status || 'published';
+        if (descInput) descInput.value = story.description || '';
         // Gestion sécurisée des tags (string, array ou null)
         let tagsValue = '';
         if (Array.isArray(story.tags)) {

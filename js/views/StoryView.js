@@ -10,7 +10,21 @@ export class StoryView {
 
   render(params = {}) {
     const storyId = params.id;
-    const story = this.store.getStoryById(storyId) || this.store.getAllStories()[0];
+    const story = this.store.getStoryById(storyId) || 
+                  this.store.getAllStories().find(s => String(s.id).trim() === String(storyId).trim()) || 
+                  this.store.getAllStories()[0];
+
+    if (!story) {
+      return `
+        <div class="page-container animate-fade-in" style="padding: var(--space-8); text-align: center;">
+          <div style="font-size: 3rem; margin-bottom: 12px;">⏳</div>
+          <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--text-primary);">Chargement de l'histoire...</h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 6px;">Récupération des données depuis Supabase...</p>
+          <a href="#/" class="btn btn-primary btn-sm" style="margin-top: 16px;">Retour à l'accueil</a>
+        </div>
+      `;
+    }
+
     this.currentStory = story;
     this.currentStoryId = story.id;
     const author = this.store.getAuthorById(story.authorId);
@@ -18,54 +32,56 @@ export class StoryView {
     const isLiked = this.store.isLiked(story.id);
     const isFollowingAuthor = author ? this.store.isFollowedAuthor(author.id) : false;
     const readingProgress = this.store.getReadingProgress(story.id);
+    const storyTags = Array.isArray(story.tags) ? story.tags : (typeof story.tags === 'string' ? story.tags.split(',').map(t => t.trim()).filter(Boolean) : []);
+    const storyChapters = Array.isArray(story.chapters) ? story.chapters : [];
 
     return `
       <div class="story-detail-view page-container animate-fade-in" data-story-id="${story.id}">
         
         <!-- 1. En-tête Hero Immersif -->
         <section class="story-detail-hero">
-          <img src="${story.cover}" alt="${story.title}" class="story-backdrop-blur" />
+          <img src="${story.cover}" alt="${escapeHTML(story.title)}" class="story-backdrop-blur" />
           
           <div class="story-detail-cover-box">
-            <img src="${story.cover}" alt="${story.title}" class="story-detail-cover-img" />
+            <img src="${story.cover}" alt="${escapeHTML(story.title)}" class="story-detail-cover-img" />
           </div>
 
           <div class="story-detail-info">
             <div class="story-detail-genres">
-              <span>${story.genre}</span>
-              ${story.secondaryGenre ? `<span>·</span><span>${story.secondaryGenre}</span>` : ''}
-              ${story.featuredBadge ? `<span class="badge badge-gold" style="margin-left: 8px;">${story.featuredBadge}</span>` : ''}
+              <span>${escapeHTML(story.genre || 'Romance')}</span>
+              ${story.secondaryGenre ? `<span>·</span><span>${escapeHTML(story.secondaryGenre)}</span>` : ''}
+              ${story.featuredBadge ? `<span class="badge badge-gold" style="margin-left: 8px;">${escapeHTML(story.featuredBadge)}</span>` : ''}
             </div>
 
-            <h1 class="story-detail-title">${story.title}</h1>
-            ${story.subtitle ? `<p style="font-size: 1.1rem; color: rgba(255, 255, 255, 0.9); font-style: italic;">« ${story.subtitle} »</p>` : ''}
+            <h1 class="story-detail-title">${escapeHTML(story.title)}</h1>
+            ${story.subtitle ? `<p style="font-size: 1.1rem; color: rgba(255, 255, 255, 0.9); font-style: italic;">« ${escapeHTML(story.subtitle)} »</p>` : ''}
 
             <!-- Statistiques de l'histoire -->
             <div class="story-detail-stats-bar">
               <div class="stat-item" style="color: var(--color-accent-gold);">
                 <span>⭐</span>
-                <span>${story.rating} (${story.reviewsCount || 0} avis)</span>
+                <span>${story.rating || '5.0'} (${story.reviewsCount || 0} avis)</span>
               </div>
               <div class="stat-item">
                 <span>👁️</span>
-                <span>${story.readsCount} lectures</span>
+                <span>${story.readsCount || '0'} lectures</span>
               </div>
               <div class="stat-item">
                 <span>📖</span>
-                <span>${story.chaptersCount} chapitres</span>
+                <span>${storyChapters.length} chapitres</span>
               </div>
               <div class="stat-item">
                 <span>⏱️</span>
-                <span>${story.estimatedTime}</span>
+                <span>${story.estimatedTime || '10 min'}</span>
               </div>
             </div>
 
             <!-- Bloc Auteur -->
             <div class="story-author-block" id="btn-view-author" data-author-id="${story.authorId}">
               <div class="story-author-meta">
-                <img src="${story.authorAvatar}" alt="${story.authorName}" class="avatar avatar-md avatar-ring" />
+                <img src="${story.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'}" alt="${escapeHTML(story.authorName || 'Auteur')}" class="avatar avatar-md avatar-ring" />
                 <div>
-                  <div class="story-author-name">Écrit par ${story.authorName}</div>
+                  <div class="story-author-name">Écrit par ${escapeHTML(story.authorName || 'Auteur')}</div>
                   <div class="story-author-subtitle">${author ? `${author.followers} abonnés · ${author.storiesCount} histoires` : 'Autrice vérifiée'}</div>
                 </div>
               </div>
@@ -102,11 +118,11 @@ export class StoryView {
         <!-- 2. Synopsis & Tags -->
         <section class="story-synopsis-section">
           <h2 class="section-title">Synopsis</h2>
-          <div class="story-description-text">${story.description}</div>
+          <div class="story-description-text">${escapeHTML(story.description || 'Aucun synopsis disponible.').replace(/\n/g, '<br/>')}</div>
 
           <div class="story-tags-list">
-            ${story.tags.map(tag => `
-              <span class="story-tag-pill" data-tag="${tag}">#${tag}</span>
+            ${storyTags.map(tag => `
+              <span class="story-tag-pill" data-tag="${escapeHTML(tag)}">#${escapeHTML(tag)}</span>
             `).join('')}
           </div>
         </section>
@@ -115,25 +131,27 @@ export class StoryView {
         <section class="chapters-section">
           <div class="section-header">
             <div class="section-title-wrap">
-              <h2 class="section-title">Chapitres (${story.chapters.length})</h2>
+              <h2 class="section-title">Chapitres (${storyChapters.length})</h2>
               <span class="section-subtitle">Progression et temps de lecture par chapitre</span>
             </div>
           </div>
 
           <div class="chapters-list">
-            ${story.chapters.map((chap, index) => {
+            ${storyChapters.length === 0 ? `
+              <div style="padding: var(--space-4); color: var(--text-muted); font-size: 0.88rem;">Aucun chapitre disponible pour le moment.</div>
+            ` : storyChapters.map((chap, index) => {
               const isCurrent = readingProgress && readingProgress.currentChapterIndex === index;
               return `
                 <div class="chapter-row ${isCurrent ? 'chapter-row-active' : ''}" data-chapter-index="${index}">
                   <div class="chapter-left">
                     <div class="chapter-num-badge">${chap.number || index + 1}</div>
                     <div>
-                      <div class="chapter-title-text">${chap.title}</div>
+                      <div class="chapter-title-text">${escapeHTML(chap.title)}</div>
                       ${isCurrent ? `<span style="font-size: 0.72rem; color: var(--color-primary-light); font-weight: 700;">En cours de lecture (${readingProgress.progressPercent}%)</span>` : ''}
                     </div>
                   </div>
                   <div class="chapter-meta-right">
-                    <span>⏱️ ${chap.duration || '5 min'}</span>
+                    <span>⏱️ ${escapeHTML(chap.duration || '5 min')}</span>
                     <button class="btn btn-ghost btn-sm btn-read-chapter" data-chapter-index="${index}">Lire →</button>
                   </div>
                 </div>

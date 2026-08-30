@@ -130,10 +130,13 @@ export class AdminCommentsView {
       await this.refreshSelf(container);
     });
 
-    container.querySelectorAll('.btn-toggle-review-visibility').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const rId = btn.getAttribute('data-review-id');
-        const current = btn.getAttribute('data-current-status');
+    container.addEventListener('click', async (e) => {
+      const toggleBtn = e.target.closest('.btn-toggle-review-visibility');
+      if (toggleBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const rId = toggleBtn.getAttribute('data-review-id');
+        const current = toggleBtn.getAttribute('data-current-status');
         const newStatus = current === 'hidden' ? 'visible' : 'hidden';
 
         try {
@@ -144,12 +147,14 @@ export class AdminCommentsView {
         } catch (err) {
           Toast.show('Erreur : ' + err.message, 'error', '⚠️');
         }
-      });
-    });
+        return;
+      }
 
-    container.querySelectorAll('.btn-delete-review').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const rId = btn.getAttribute('data-review-id');
+      const deleteBtn = e.target.closest('.btn-delete-review');
+      if (deleteBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const rId = deleteBtn.getAttribute('data-review-id');
         const confirmed = confirm('Supprimer définitivement ce commentaire ?');
         if (!confirmed) return;
 
@@ -161,7 +166,8 @@ export class AdminCommentsView {
         } catch (err) {
           Toast.show('Erreur : ' + err.message, 'error', '⚠️');
         }
-      });
+        return;
+      }
     });
   }
 }

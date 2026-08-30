@@ -131,10 +131,13 @@ export class AdminModerationView {
       await this.refreshSelf(container);
     });
 
-    container.querySelectorAll('.btn-update-report').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const repId = btn.getAttribute('data-report-id');
-        const targetStatus = btn.getAttribute('data-status');
+    container.addEventListener('click', async (e) => {
+      const updateBtn = e.target.closest('.btn-update-report');
+      if (updateBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const repId = updateBtn.getAttribute('data-report-id');
+        const targetStatus = updateBtn.getAttribute('data-status');
 
         try {
           const adminUser = this.store.state.user || { id: 'admin', name: 'Admin' };
@@ -144,7 +147,8 @@ export class AdminModerationView {
         } catch (err) {
           Toast.show('Erreur : ' + err.message, 'error', '⚠️');
         }
-      });
+        return;
+      }
     });
   }
 }

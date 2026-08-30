@@ -23,7 +23,7 @@ export class ProfileView {
     const isAuth = this.store.state.isAuthenticated;
     const user = this.store.state.user;
     const allStories = this.store.getAllStories();
-    const likedStories = (user.likedStoryIds || []).map(id => allStories.find(s => s.id === id)).filter(Boolean);
+    const likedStories = (user.likedStoryIds || []).map(id => allStories.find(s => String(s.id).trim() === String(id).trim())).filter(Boolean);
 
     const badges = [
       { icon: '🏆', title: 'Lecteur Passionné', sub: 'Plus de 40 histoires dévorées' },

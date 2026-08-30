@@ -214,17 +214,45 @@ export class AdminUsersView {
 
     const closeRoleModal = () => modal?.classList.remove('active');
 
-    container.querySelectorAll('.btn-open-role-modal').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const uId = btn.getAttribute('data-user-id');
-        const role = btn.getAttribute('data-current-role');
-        const name = btn.getAttribute('data-name');
-        openRoleModal(uId, role, name);
-      });
-    });
-
     container.querySelector('#btn-close-role-modal')?.addEventListener('click', closeRoleModal);
     container.querySelector('#btn-cancel-role-modal')?.addEventListener('click', closeRoleModal);
+
+    // Écouteur délégué universel sur les boutons de la table
+    container.addEventListener('click', async (e) => {
+      const roleBtn = e.target.closest('.btn-open-role-modal');
+      if (roleBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const uId = roleBtn.getAttribute('data-user-id');
+        const role = roleBtn.getAttribute('data-current-role');
+        const name = roleBtn.getAttribute('data-name');
+        openRoleModal(uId, role, name);
+        return;
+      }
+
+      const statusBtn = e.target.closest('.btn-toggle-status');
+      if (statusBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const uId = statusBtn.getAttribute('data-user-id');
+        const currentStatus = statusBtn.getAttribute('data-current-status');
+        const userName = statusBtn.getAttribute('data-name');
+        const newStatus = currentStatus === 'suspended' ? 'active' : 'suspended';
+        
+        const confirmed = confirm(`Voulez-vous vraiment passer l'utilisateur "${userName}" au statut "${newStatus}" ?`);
+        if (!confirmed) return;
+
+        try {
+          const adminUser = this.store.state.user || { id: 'admin', name: 'Admin' };
+          await this.adminService.setUserStatus(uId, newStatus, adminUser);
+          Toast.show(`Statut utilisateur mis à jour (${newStatus}).`, 'info', '✨');
+          handleFilter();
+        } catch (err) {
+          Toast.show('Erreur : ' + err.message, 'error', '⚠️');
+        }
+        return;
+      }
+    });
 
     form?.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -240,28 +268,6 @@ export class AdminUsersView {
       } catch (err) {
         Toast.show('Erreur : ' + err.message, 'error', '⚠️');
       }
-    });
-
-    // 3. Changement de Statut (Suspendre / Activer)
-    container.querySelectorAll('.btn-toggle-status').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const uId = btn.getAttribute('data-user-id');
-        const currentStatus = btn.getAttribute('data-current-status');
-        const userName = btn.getAttribute('data-name');
-        const newStatus = currentStatus === 'suspended' ? 'active' : 'suspended';
-        
-        const confirmed = confirm(`Voulez-vous vraiment passer l'utilisateur "${userName}" au statut "${newStatus}" ?`);
-        if (!confirmed) return;
-
-        try {
-          const adminUser = this.store.state.user || { id: 'admin', name: 'Admin' };
-          await this.adminService.setUserStatus(uId, newStatus, adminUser);
-          Toast.show(`Statut utilisateur mis à jour (${newStatus}).`, 'info', '✨');
-          handleFilter();
-        } catch (err) {
-          Toast.show('Erreur : ' + err.message, 'error', '⚠️');
-        }
-      });
     });
   }
 }

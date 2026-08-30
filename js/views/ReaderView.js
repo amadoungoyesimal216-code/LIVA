@@ -19,7 +19,23 @@ export class ReaderView {
   render(params = {}) {
     const storyId = params.id;
     this.chapterIndex = parseInt(params.chapterIndex || '0', 10);
-    this.story = this.store.getStoryById(storyId) || this.store.getAllStories()[0];
+    this.story = this.store.getStoryById(storyId) || 
+                 this.store.getAllStories().find(s => String(s.id).trim() === String(storyId).trim()) || 
+                 this.store.getAllStories()[0];
+
+    if (!this.story) {
+      return `
+        <div class="reader-view" style="display: flex; align-items: center; justify-content: center; min-height: 80vh; text-align: center; padding: 24px;">
+          <div>
+            <div style="font-size: 3rem; margin-bottom: 12px;">⏳</div>
+            <h2 style="font-size: 1.3rem; font-weight: 800; color: #fff;">Chargement du lecteur...</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 6px;">Récupération du récit en cours...</p>
+            <a href="#/" class="btn btn-primary btn-sm" style="margin-top: 16px;">Retour à l'accueil</a>
+          </div>
+        </div>
+      `;
+    }
+
     this.chapter = (this.story?.chapters && this.story.chapters[this.chapterIndex]) || 
                    (this.story?.chapters && this.story.chapters[0]) || 
                    { title: 'Chapitre 1', content: '' };

@@ -326,7 +326,7 @@ export class AdminDashboardView {
                 <div style="padding: var(--space-2) 0; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 0.82rem;">
                   <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
                     <span style="font-weight: 700; color: var(--color-primary-light);">${escapeHTML(l.admin_name || 'Admin')}</span>
-                    <span style="font-size: 0.72rem; color: var(--text-muted);">${new Date(l.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+                    <span style="font-size: 0.72rem; color: var(--text-muted);">${l.created_at ? new Date(l.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : 'Récemment'}</span>
                   </div>
                   <div style="color: var(--text-secondary);">${escapeHTML(l.details)}</div>
                 </div>
