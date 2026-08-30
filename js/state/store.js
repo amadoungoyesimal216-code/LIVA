@@ -66,7 +66,20 @@ class AppStore {
   constructor() {
     this.listeners = new Set();
     this.state = this.loadState();
-    this.stories = [...STORIES_DATA];
+    
+    // Initialiser immédiatement avec le cache local pour 0ms d'attente
+    let initialStories = [...STORIES_DATA];
+    try {
+      const cached = localStorage.getItem('liva_cached_public_stories');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          initialStories = parsed;
+        }
+      }
+    } catch (e) {}
+
+    this.stories = initialStories;
     this.authors = [...AUTHORS_DATA];
     this.genres = [...GENRES_DATA];
     this.isSyncing = false;
@@ -83,12 +96,16 @@ class AppStore {
     try {
       // 1. Charger le catalogue public depuis Supabase
       const [remoteStories, remoteAuthors] = await Promise.all([
-        SupabaseService.fetchStories(),
-        SupabaseService.fetchAuthors()
+        SupabaseService.fetchStories(true),
+        SupabaseService.fetchAuthors(true)
       ]);
 
-      this.stories = remoteStories || [];
-      this.authors = remoteAuthors || [];
+      if (remoteStories && remoteStories.length > 0) {
+        this.stories = remoteStories;
+      }
+      if (remoteAuthors && remoteAuthors.length > 0) {
+        this.authors = remoteAuthors;
+      }
 
       // 2. Vérifier si une session Supabase active existe
       const session = await SupabaseService.getSession();
@@ -117,6 +134,8 @@ class AppStore {
       });
 
       this.notify('SUPABASE_INIT_SUCCESS');
+      this.notify('SUPABASE_SYNC_COMPLETE');
+      this.notify('STORIES_LOADED');
     } catch (e) {
       console.warn('[AppStore] Erreur synchronisation Supabase:', e);
     } finally {

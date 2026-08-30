@@ -590,7 +590,7 @@ export class SupabaseService {
   static async fetchStories(forceRefresh = false) {
     try {
       const now = Date.now();
-      if (!forceRefresh && this._cachedStories && (now - this._lastStoriesTime < 45000)) {
+      if (!forceRefresh && this._cachedStories && (now - this._lastStoriesTime < 30000)) {
         return this._cachedStories;
       }
 
@@ -605,67 +605,93 @@ export class SupabaseService {
       }
       if (!storiesData || storiesData.length === 0) return [];
 
-      const { data: chaptersData } = await supabase.from('chapters').select('id, story_id, number, title, duration, read_time_min, content').order('number', { ascending: true });
-      const { data: reviewsData } = await supabase.from('reviews').select('*').order('created_at', { ascending: false });
+      let chaptersData = [];
+      let reviewsData = [];
+      try {
+        const [chRes, revRes] = await Promise.all([
+          supabase.from('chapters').select('id, story_id, number, title, duration, read_time_min, content').order('number', { ascending: true }),
+          supabase.from('reviews').select('*').order('created_at', { ascending: false })
+        ]);
+        chaptersData = chRes.data || [];
+        reviewsData = revRes.data || [];
+      } catch (subErr) {
+        console.warn('[SupabaseService] Warning fetch sub-entities:', subErr);
+      }
 
       const stories = storiesData.map(s => {
-        const storyChapters = (chaptersData || []).filter(c => c.story_id === s.id).map(c => ({
-          id: c.id.replace(`${s.id}-`, ''),
-          number: c.number,
-          title: c.title,
-          duration: c.duration,
-          readTimeMin: c.read_time_min,
-          content: c.content
-        }));
+        const storyChapters = (chaptersData || [])
+          .filter(c => String(c.story_id).trim() === String(s.id).trim())
+          .map(c => ({
+            id: String(c.id).replace(`${s.id}-`, ''),
+            number: c.number || 1,
+            title: c.title || `Chapitre ${c.number || 1}`,
+            duration: c.duration || `${c.read_time_min || 5} min`,
+            readTimeMin: c.read_time_min || 5,
+            content: c.content || ''
+          }));
 
-        const storyReviews = (reviewsData || []).filter(r => r.story_id === s.id).map(r => ({
-          id: r.id.replace(`${s.id}-`, ''),
-          userId: r.user_id,
-          userName: r.user_name,
-          userAvatar: r.user_avatar || DEFAULT_AVATAR,
-          rating: r.rating,
-          date: r.date,
-          content: r.content,
-          likes: r.likes || 0
-        }));
+        const storyReviews = (reviewsData || [])
+          .filter(r => String(r.story_id).trim() === String(s.id).trim())
+          .map(r => ({
+            id: String(r.id).replace(`${s.id}-`, ''),
+            userId: r.user_id,
+            userName: r.user_name || 'Lecteur',
+            userAvatar: r.user_avatar || DEFAULT_AVATAR,
+            rating: r.rating || 5,
+            date: r.date || 'Récemment',
+            content: r.content || '',
+            likes: r.likes || 0
+          }));
+
+        const tagsArray = Array.isArray(s.tags)
+          ? s.tags
+          : (typeof s.tags === 'string' ? s.tags.split(',').map(t => t.trim()).filter(Boolean) : []);
 
         return {
-          id: s.id,
-          title: s.title,
-          subtitle: s.subtitle,
-          authorId: s.author_id,
-          authorName: s.author_name,
-          authorAvatar: s.author_avatar,
-          cover: s.cover,
-          banner: s.banner,
-          genre: s.genre,
-          secondaryGenre: s.secondary_genre,
+          id: String(s.id),
+          title: s.title || 'Histoire sans titre',
+          subtitle: s.subtitle || '',
+          authorId: s.author_id || 'author',
+          authorName: s.author_name || 'Auteur LIVA',
+          authorAvatar: s.author_avatar || DEFAULT_AVATAR,
+          cover: s.cover || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80',
+          banner: s.banner || s.cover || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80',
+          genre: s.genre || 'Romance',
+          secondaryGenre: s.secondary_genre || '',
           rating: Number(s.rating) || 5.0,
-          reviewsCount: s.reviews_count,
-          readsCount: s.reads_count,
-          readsRaw: s.reads_raw,
-          likesCount: s.likes_count,
-          chaptersCount: s.chapters_count,
-          estimatedTime: s.estimated_time,
-          isTrending: s.is_trending,
-          isHero: s.is_hero,
-          isShort: s.is_short,
-          featuredBadge: s.featured_badge,
-          description: s.description,
-          tags: s.tags || [],
+          reviewsCount: s.reviews_count || storyReviews.length || 0,
+          readsCount: String(s.reads_count || '0'),
+          readsRaw: s.reads_raw || 0,
+          likesCount: s.likes_count || 0,
+          chaptersCount: s.chapters_count || Math.max(1, storyChapters.length),
+          estimatedTime: s.estimated_time || '10 min',
+          isTrending: Boolean(s.is_trending),
+          isHero: Boolean(s.is_hero),
+          isShort: Boolean(s.is_short),
+          featuredBadge: s.featured_badge || '',
+          description: s.description || '',
+          tags: tagsArray,
           status: s.status || 'published',
-          audioDuration: s.audio_duration,
-          audioVoice: s.audio_voice,
-          chapters: storyChapters,
+          audioDuration: s.audio_duration || '5 min',
+          audioVoice: s.audio_voice || 'Amira (Voix IA Chaleureuse)',
+          chapters: storyChapters.length > 0 ? storyChapters : [{ id: '1', number: 1, title: 'Chapitre 1', duration: '5 min', readTimeMin: 5, content: s.description || 'Début de l\'histoire...' }],
           reviews: storyReviews
         };
       });
 
       this._cachedStories = stories;
       this._lastStoriesTime = now;
+      try {
+        localStorage.setItem('liva_cached_public_stories', JSON.stringify(stories));
+      } catch (e) {}
+
       return stories;
     } catch (err) {
       console.warn('[SupabaseService] fetchStories offline/fallback:', err);
+      try {
+        const local = localStorage.getItem('liva_cached_public_stories');
+        if (local) return JSON.parse(local);
+      } catch (e) {}
       return this._cachedStories || [];
     }
   }
