@@ -135,11 +135,32 @@ class AppStore {
 
       this.notify('SUPABASE_INIT_SUCCESS');
       this.notify('SUPABASE_SYNC_COMPLETE');
-      this.notify('STORIES_LOADED');
+      this.notify('STORIES_LOADED', { count: this.stories.length });
     } catch (e) {
       console.warn('[AppStore] Erreur synchronisation Supabase:', e);
     } finally {
       this.isSyncing = false;
+    }
+  }
+
+  /**
+   * Recharge immédiatement et force la mise à jour des histoires depuis Supabase
+   */
+  async reloadStories(forceRefresh = true) {
+    try {
+      if (forceRefresh) {
+        SupabaseService.clearPublicCache();
+      }
+      const remoteStories = await SupabaseService.fetchStories(forceRefresh);
+      if (remoteStories && remoteStories.length > 0) {
+        this.stories = remoteStories;
+        this.notify('STORIES_LOADED', { count: this.stories.length });
+        this.notify('SUPABASE_SYNC_COMPLETE');
+      }
+      return this.stories;
+    } catch (err) {
+      console.warn('[AppStore] Erreur reloadStories:', err);
+      return this.stories;
     }
   }
 
@@ -277,36 +298,56 @@ class AppStore {
 
   // --- Histoires & Auteurs ---
   getAllStories() {
-    return this.stories;
+    return this.stories || [];
   }
 
   getStoryById(id) {
-    return this.stories.find(s => s.id === id) || null;
+    if (!id) return null;
+    return (this.stories || []).find(s => String(s.id).trim() === String(id).trim()) || null;
   }
 
   getHeroStory() {
-    return this.stories.find(s => s.isHero) || this.stories[0] || null;
+    const list = this.stories || [];
+    return list.find(s => s.isHero && s.status === 'published') || 
+           list.find(s => s.isHero) || 
+           list.find(s => s.status === 'published') || 
+           list[0] || 
+           null;
   }
 
   getTrendingStories() {
-    return this.stories.filter(s => s.isTrending);
+    const list = this.stories || [];
+    const trending = list.filter(s => s.isTrending && s.status === 'published');
+    if (trending.length > 0) return trending;
+    const anyTrending = list.filter(s => s.isTrending);
+    if (anyTrending.length > 0) return anyTrending;
+    return list.filter(s => s.status === 'published').slice(0, 6);
   }
 
   getShorts(category = 'all') {
-    let shorts = this.stories.filter(s => s.isShort);
+    const list = this.stories || [];
+    let shorts = list.filter(s => s.isShort && s.status === 'published');
+    if (shorts.length === 0) {
+      shorts = list.filter(s => s.isShort);
+    }
+    if (shorts.length === 0) {
+      shorts = list.filter(s => s.status === 'published');
+    }
     if (category !== 'all') {
-      shorts = shorts.filter(s => s.estimatedTime.includes(category));
+      const filtered = shorts.filter(s => s.estimatedTime && s.estimatedTime.includes(category));
+      if (filtered.length > 0) return filtered;
     }
     return shorts;
   }
 
   getStoriesByGenre(genreId) {
-    if (!genreId || genreId === 'all') return this.stories;
+    const list = this.stories || [];
+    if (!genreId || genreId === 'all') return list;
     const gObj = this.genres.find(g => g.id === genreId.toLowerCase());
     const gName = gObj ? gObj.name.toLowerCase() : genreId.toLowerCase();
     const gId = genreId.toLowerCase();
 
-    return this.stories.filter(s => {
+    return list.filter(s => {
       const storyGenre = (s.genre || '').toLowerCase();
       const storySecGenre = (s.secondaryGenre || '').toLowerCase();
       const storyTags = (s.tags || []).map(t => t.toLowerCase());
@@ -333,14 +374,15 @@ class AppStore {
   }
 
   getRecommendedStories(limit = 6) {
+    const list = (this.stories || []).filter(s => s.status === 'published');
     const userGenres = this.state.user.favoriteGenres || [];
     if (userGenres.length === 0) {
-      return this.stories.slice(0, limit);
+      return list.length > 0 ? list.slice(0, limit) : (this.stories || []).slice(0, limit);
     }
-    const matched = this.stories.filter(s => 
+    const matched = list.filter(s => 
       userGenres.some(ug => ug.toLowerCase() === s.genre.toLowerCase() || (s.secondaryGenre && ug.toLowerCase() === s.secondaryGenre.toLowerCase()))
     );
-    return matched.length > 0 ? matched.slice(0, limit) : this.stories.slice(0, limit);
+    return matched.length > 0 ? matched.slice(0, limit) : (list.length > 0 ? list.slice(0, limit) : (this.stories || []).slice(0, limit));
   }
 
   getAuthorById(authorId) {
@@ -621,8 +663,10 @@ class AppStore {
     this.saveState();
     this.notify('AUTHORED_STORY_SAVED', { story: newStory });
 
-    // 3. Sauvegarde dans Supabase Cloud
+    // 3. Sauvegarde dans Supabase Cloud & Invalidation du Cache
     await SupabaseService.saveAuthoredStory(newStory);
+    SupabaseService.clearPublicCache();
+    await this.reloadStories(true);
     return newStory;
   }
 

@@ -1,7 +1,7 @@
 // LIVA STORY ENGINE — Orchestrateur Central & Persistance Supabase (storyEngineService.js)
 import { StoryMemory } from './storyMemory.js';
 import { AIProvider } from './aiProvider.js';
-import { supabase } from '../../services/supabaseClient.js';
+import { supabase, SupabaseService } from '../../services/supabaseClient.js';
 import { SupabaseAdminService } from '../../services/supabaseAdmin.js';
 
 export class StoryEngineService {
@@ -321,6 +321,10 @@ export class StoryEngineService {
     }).eq('id', storyId);
 
     if (error) throw error;
+    try {
+      SupabaseService.clearPublicCache();
+      SupabaseAdminService.clearCache();
+    } catch (e) {}
     return true;
   }
 }

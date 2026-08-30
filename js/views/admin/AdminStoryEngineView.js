@@ -1127,11 +1127,13 @@ export class AdminStoryEngineView {
   async _handlePublishStory(container) {
     try {
       await this.engine.publishStory(this.storyId);
+      this.adminService?.clearCache?.();
+      await this.store.reloadStories(true);
       Toast.show('🚀 Histoire publiée avec succès dans LIVA !', 'success', '🎉');
       this.router.navigate(`/story/${this.storyId}`);
     } catch (err) {
       console.error(err);
-      Toast.show('Erreur lors de la publication.', 'error', '❌');
+      Toast.show('Erreur lors de la publication : ' + (err.message || err), 'error', '❌');
     }
   }
 

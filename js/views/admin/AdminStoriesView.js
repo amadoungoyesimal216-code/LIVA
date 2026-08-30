@@ -26,7 +26,7 @@ export class AdminStoriesView {
       search: this.filterSearch,
       genre: this.filterGenre,
       status: this.filterStatus
-    });
+    }, true);
 
     const formatK = (n) => {
       const num = Number(n) || 0;
@@ -707,7 +707,7 @@ export class AdminStoriesView {
         closeModal();
         Toast.show(`Histoire "${storyPayload.title}" enregistrée et synchronisée ! 🎉`, 'success', '🚀', 5000);
         
-        await this.store.initSupabaseSync();
+        await this.store.reloadStories(true);
         handleFilterChange();
       } catch (err) {
         Toast.show('Erreur lors de l\'enregistrement : ' + err.message, 'error', '⚠️', 5000);
@@ -771,7 +771,7 @@ export class AdminStoriesView {
           const adminUser = this.store.state.user || { id: 'admin', name: 'Administrateur' };
           await this.adminService.upsertStory({ ...st, status: newStatus }, adminUser);
           Toast.show(`Histoire ${newStatus === 'published' ? 'publiée en ligne 🚀' : 'mise en brouillon 📦'}`, 'info', '✨');
-          await this.store.initSupabaseSync();
+          await this.store.reloadStories(true);
           handleFilterChange();
         } catch (err) {
           Toast.show('Erreur : ' + err.message, 'error', '⚠️');
@@ -804,7 +804,7 @@ export class AdminStoriesView {
         const adminUser = this.store.state.user || { id: 'admin', name: 'Administrateur' };
         await this.adminService.deleteStory(storyIdToDelete, storyTitleToDelete, adminUser);
         Toast.show(`L'histoire "${storyTitleToDelete}" a été supprimée avec succès.`, 'success', '🗑️');
-        await this.store.initSupabaseSync();
+        await this.store.reloadStories(true);
         handleFilterChange();
       } catch (err) {
         Toast.show('Erreur lors de la suppression : ' + err.message, 'error', '⚠️');
